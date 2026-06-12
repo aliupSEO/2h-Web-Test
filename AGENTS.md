@@ -62,11 +62,15 @@ const res = await fetch("https://somesite.com/graphql", ...);
 - **Revalidation is set to `1` second** — do not change this without a strong reason.
 - **Pages are Server Components** — fetch data at the page level, pass as props to client components.
 
-### SEO field shape (expected from WPGraphQL + Yoast/RankMath)
+### SEO field shape (expected from WPGraphQL + RankMath)
+
+**Note:** We use RankMath, so the focus keyword field is `focusKeywords` (not `focuskw` which is Yoast). Ensure you map `seo.focusKeywords` to the Next.js `keywords` metadata array in all pages.
+
 ```graphql
 seo {
   title
   description
+  focusKeywords
   canonicalUrl
   robots
   openGraph {
@@ -105,11 +109,18 @@ Server: app/api/contact/route.ts
 ## 5. App Router Conventions
 
 - **Server Components by default** — only add `"use client"` when you need browser APIs, state, or event handlers.
-- **Metadata:** Export a `metadata` object or `generateMetadata` function from every page:
+- **Metadata:** Export a `metadata` object or `generateMetadata` function from every page. When using dynamic metadata from WPGraphQL, ALWAYS map `seo.focusKeywords` to the `keywords` field:
   ```ts
   export const metadata: Metadata = { title: "...", description: "..." };
   // or dynamic:
-  export async function generateMetadata(): Promise<Metadata> { ... }
+  export async function generateMetadata(): Promise<Metadata> { 
+    const page = await getPage();
+    return {
+      title: page?.seo?.title,
+      description: page?.seo?.description,
+      keywords: page?.seo?.focusKeywords ? [page.seo.focusKeywords] : undefined,
+    };
+  }
   ```
 - **Route structure:** One folder = one page. Dynamic routes use `[slug]` folders.
 - **API Routes:** Live in `app/api/<name>/route.ts`. Export named HTTP method handlers (`GET`, `POST`, etc.).
@@ -239,7 +250,7 @@ lib/
 
 For this template to work, the WordPress site needs:
 - **WPGraphQL** plugin (provides the `/graphql` endpoint)
-- **Yoast SEO** or **RankMath** + **WPGraphQL SEO** plugin (provides SEO fields in GraphQL)
+- **RankMath** + **WPGraphQL for Rank Math SEO** bridge plugin (do NOT use the generic Yoast WPGraphQL SEO plugin)
 - **firebase-form** custom plugin (provides `/wp-json/firebase-form/v1/submit` and `/wp-json/firebase-form/v1/settings`)
 
 If those plugins aren't installed, the GraphQL queries will still work but SEO fields will be null, and the contact form will fall back to Firestore directly.

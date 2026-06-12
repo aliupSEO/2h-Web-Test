@@ -59,6 +59,7 @@ export const SEO_FIELDS = `
   seo {
     title
     description
+    focusKeywords
     canonicalUrl
     robots
     openGraph {
@@ -187,4 +188,47 @@ export async function getFormSettings() {
     console.error("Error fetching form settings:", error);
     return null;
   }
+}
+
+/**
+ * Fetches the primary menu items from WPGraphQL.
+ * Falls back to top-level pages if no menu items are registered.
+ */
+export async function getMenuItems() {
+  const data = await fetchGraphQL(`
+    query {
+      menuItems(first: 10) {
+        nodes {
+          id
+          label
+          uri
+        }
+      }
+    }
+  `);
+
+  if (data?.menuItems?.nodes && data.menuItems.nodes.length > 0) {
+    return data.menuItems.nodes;
+  }
+
+  // Fallback: top-level pages as nav items
+  const pagesData = await fetchGraphQL(`
+    query {
+      pages(first: 5) {
+        nodes {
+          id
+          title
+          uri
+        }
+      }
+    }
+  `);
+
+  return (
+    pagesData?.pages?.nodes?.map((page: { id: string; title: string; uri: string }) => ({
+      id: page.id,
+      label: page.title,
+      uri: page.uri,
+    })) ?? []
+  );
 }
