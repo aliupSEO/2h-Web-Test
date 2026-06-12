@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
+/* =====================================================
+   BRAND TOKENS — edit these to skin a new project
+   ===================================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #f4f4f5;
 }
 
 @theme inline {
+  /* Typography */
+  --font-sans: var(--font-inter);
+
+  /* Surface */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Brand — green/black palette */
+  --color-brand-green:       #22c55e;   /* emerald-500 */
+  --color-brand-green-light: #86efac;   /* emerald-300 */
+  --color-brand-green-dark:  #16a34a;   /* emerald-600 */
+  --color-brand-dark:        #0a0a0a;   /* near black */
+  --color-brand-card:        #111111;   /* card surface */
+  --color-brand-border:      #1f2937;   /* subtle border */
+  --color-brand-muted:       #6b7280;   /* muted text */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* =====================================================
+   BASE RESETS
+   ===================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =====================================================
+   WORDPRESS CONTENT — prose styles for dangerouslySetInnerHTML
+   These apply to raw WP page content rendered in pages.
+   ===================================================== */
+.wp-content {
+  line-height: 1.75;
+  color: var(--foreground);
+}
+.wp-content h1,
+.wp-content h2,
+.wp-content h3,
+.wp-content h4 {
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: #f4f4f5;
+}
+.wp-content p {
+  margin-bottom: 1em;
+}
+.wp-content a {
+  color: #22c55e;
+  text-decoration: underline;
+}
+.wp-content ul,
+.wp-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+.wp-content li {
+  margin-bottom: 0.25em;
+}
+.wp-content img {
+  max-width: 100%;
+  border-radius: 8px;
 }
