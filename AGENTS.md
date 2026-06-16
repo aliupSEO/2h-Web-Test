@@ -24,6 +24,57 @@ The idea: clone this repo, fill in `.env.local`, and immediately start building 
 
 ---
 
+## 1.1 ⚠️ Git Repository Setup — NEVER Push to the Template Repo
+
+> **This project is a clone-and-go template.** When setting up a new project from this template,
+> the agent MUST ensure that code is NEVER pushed back to the original template repository
+> `https://github.com/aliupSEO/2h-Website-Template.git`.
+
+### Mandatory setup steps (run ONCE when starting a new client project)
+
+1. **Remove the template origin immediately:**
+   ```bash
+   git remote remove origin
+   ```
+
+2. **Ask the user to create a new GitHub repository** for the client project.
+   Prompt them with:
+   > "Please create a new GitHub repository for this project and provide the URL
+   > (e.g., `https://github.com/your-org/client-project-name.git`)."
+
+3. **Set the new repo as origin** once the user provides the URL:
+   ```bash
+   git remote add origin <user-provided-repo-url>
+   ```
+
+4. **Rename the project** to match the client's web branding:
+   - Update the `name` field in `package.json` (e.g., `"name": "client-brand-website"`)
+   - Rename the project directory if needed (or instruct the user to do so)
+   - The repo name and project name should reflect the **client's brand**, NOT "2h-Website-Template"
+
+5. **Verify** the remote is correct before any push:
+   ```bash
+   git remote -v
+   ```
+
+### Rules
+
+- ❌ **NEVER run `git push` while the origin is still `https://github.com/aliupSEO/2h-Website-Template.git`**
+- ❌ **NEVER skip the origin removal step** — this must happen before any code changes are pushed
+- ❌ **NEVER keep the project name as "2h-Website-Template"** in `package.json` or the repo — always rename to the client's brand
+- ✅ **Always confirm** the new origin URL with the user before pushing
+- ✅ **Always rename** `package.json` `name` field to match the client project
+
+### What to do if origin is still the template repo
+
+If at any point you detect that `origin` points to `https://github.com/aliupSEO/2h-Website-Template.git`:
+1. **STOP** — do not push any code
+2. Run `git remote remove origin`
+3. Ask the user for the correct repository URL
+4. Set the new origin and proceed
+
+---
+
 ## 2. ⚠️ THE GOLDEN RULE — ZERO HARDCODED CONTENT
 
 > **EVERY piece of visible text, heading, paragraph, image URL, button label, link,
@@ -568,6 +619,8 @@ export default nextConfig;
 - ❌ Do NOT install `axios` — use native `fetch`
 - ❌ Do NOT use `getServerSideProps` or `getStaticProps` — this is App Router, not Pages Router
 - ❌ Do NOT create `pages/` directory — it will conflict with App Router
+- ❌ Do NOT push code to `https://github.com/aliupSEO/2h-Website-Template.git` — this is the template repo, NOT your project repo. Remove it as origin and set the client's repo (see §1.1)
+- ❌ Do NOT keep `"name": "2h-website-template"` in `package.json` — rename to the client's brand
 - ❌ Do NOT use `className` with template literals for Tailwind classes — Tailwind's JIT scanner won't pick them up reliably:
   ```ts
   // WRONG
@@ -748,6 +801,8 @@ The plugin injects these CSS variables (among others) that components should ref
 
 Before submitting any code, verify:
 
+- [ ] **Git origin is NOT the template repo** — `origin` must not point to `https://github.com/aliupSEO/2h-Website-Template.git`; see §1.1
+- [ ] **Project name updated** — `package.json` `name` reflects the client's brand, not "2h-Website-Template"
 - [ ] **No hardcoded visible text** — every string rendered to the user comes from WordPress
 - [ ] **GraphQL query exists** in `lib/graphql.ts` for the page's data needs
 - [ ] **SEO fields fetched** — `generateMetadata()` maps `seo.title`, `seo.description`, `seo.focusKeywords`
