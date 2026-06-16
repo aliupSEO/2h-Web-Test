@@ -15,40 +15,53 @@
 // ---------------------------------------------------------------------------
 
 export async function fetchGraphQL(query: string, variables: Record<string, unknown> = {}) {
-  const endpoint =
-    process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL ||
-    (() => {
-      throw new Error(
-        "NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL is not set. Add it to .env.local"
-      );
-    })();
-
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ query, variables }),
-    // ISR: revalidate every 1s so WordPress edits appear almost instantly
-    // while providing a tiny buffer against server rate limits.
-    next: { revalidate: 1 },
-  });
-
-  const contentType = res.headers.get("content-type");
-  if (!contentType?.includes("application/json")) {
-    const text = await res.text();
-    console.error("Non-JSON response from WPGraphQL:", text.substring(0, 500));
-    throw new Error(`Expected JSON from GraphQL endpoint but got HTML. Status: ${res.status}`);
+  const endpoint = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL;
+  if (!endpoint || endpoint.includes("your-wordpress-site.com")) {
+    console.warn("WordPress GraphQL endpoint is not configured or is using placeholder. Skipping fetch.");
+    return null;
   }
 
-  const json = await res.json();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
 
-  if (json.errors) {
-    console.error("GraphQL errors:", json.errors);
-    throw new Error("GraphQL query returned errors — check the WP server logs.");
+  // Optional: WordPress Application Password auth
+  const username = process.env.WORDPRESS_API_USERNAME;
+  const password = process.env.WORDPRESS_API_PASSWORD;
+  if (username && password) {
+    const authString = Buffer.from(`${username}:${password}`).toString("base64");
+    headers["Authorization"] = `Basic ${authString}`;
   }
 
-  return json.data;
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query, variables }),
+      // ISR: revalidate every 1s so WordPress edits appear almost instantly
+      // while providing a tiny buffer against server rate limits.
+      next: { revalidate: 1 },
+    });
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType?.includes("application/json")) {
+      const text = await res.text();
+      console.warn("Non-JSON response from WPGraphQL:", text.substring(0, 200));
+      return null;
+    }
+
+    const json = await res.json();
+
+    if (json.errors) {
+      console.error("GraphQL errors:", json.errors);
+      return null;
+    }
+
+    return json.data;
+  } catch (error) {
+    console.error("Failed to fetch from WPGraphQL:", error);
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------

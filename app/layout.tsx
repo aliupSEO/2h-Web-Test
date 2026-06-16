@@ -44,15 +44,15 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <head>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        {/* Design system tokens from WordPress — injected at top of body.
+            CSS custom properties on :root work regardless of <style> placement. */}
         {dsCSS && (
           <style
             id="design-system-tokens"
             dangerouslySetInnerHTML={{ __html: dsCSS }}
           />
         )}
-      </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
       </body>
     </html>
