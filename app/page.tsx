@@ -33,7 +33,7 @@ export default async function HomePage() {
   const page = await getHomePage();
 
   return (
-    <main className="min-h-screen bg-brand-dark text-foreground relative overflow-hidden">
+    <main className="min-h-screen text-foreground relative overflow-hidden" style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>
       {/* Header — self-fetching server component */}
       <Header />
 

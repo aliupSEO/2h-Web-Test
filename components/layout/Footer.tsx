@@ -4,6 +4,7 @@
  * Site-wide footer with branding, social links, and navigation.
  * Fetches its own data from the Design System Settings plugin.
  * Shows "Not set" fallbacks when WordPress/plugin is not connected.
+ * Colors from CSS variables (Design System Settings plugin).
  *
  * AGENT RULES:
  * - Footer text comes from WordPress Design System Settings — NEVER hardcode company info.
@@ -40,7 +41,13 @@ export default async function Footer() {
     : [];
 
   return (
-    <footer className="bg-brand-dark border-t border-brand-border">
+    <footer
+      className="border-t"
+      style={{
+        background: "var(--color-bg-dark, #000000)",
+        borderColor: "var(--color-brand-border, #1f2937)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-6 md:px-16 lg:px-24 py-16">
         {/* Top Row — Logo + Tagline + Social */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
@@ -57,14 +64,20 @@ export default async function Footer() {
                   />
                 </div>
               ) : (
-                <span className="text-white text-lg font-bold tracking-wider opacity-50">
+                <span
+                  className="text-lg font-bold tracking-wider opacity-60"
+                  style={{ color: "var(--color-text-light, #ffffff)" }}
+                >
                   {siteTitle || "LOGO"}
                 </span>
               )}
             </Link>
-            <p className="text-zinc-500 text-sm max-w-xs">
+            <p
+              className="text-sm max-w-xs"
+              style={{ color: "var(--color-brand-muted, #6b7280)" }}
+            >
               {tagline || (
-                <span className="text-zinc-700 italic">Tagline not set</span>
+                <span className="opacity-50 italic">Tagline not set</span>
               )}
             </p>
           </div>
@@ -79,13 +92,20 @@ export default async function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.name}
-                  className="w-9 h-9 rounded-full bg-zinc-800 hover:bg-brand-green flex items-center justify-center text-zinc-400 hover:text-black transition-all duration-300"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:opacity-80"
+                  style={{
+                    background: "var(--color-bg-alternate, #111111)",
+                    color: "var(--color-brand-muted, #6b7280)",
+                  }}
                 >
                   {s.icon}
                 </a>
               ))
             ) : (
-              <span className="text-zinc-700 text-xs italic">
+              <span
+                className="text-xs italic opacity-40"
+                style={{ color: "var(--color-brand-muted, #6b7280)" }}
+              >
                 Social links not set
               </span>
             )}
@@ -93,15 +113,21 @@ export default async function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-brand-border mb-8" />
+        <div
+          className="h-px mb-8"
+          style={{ background: "var(--color-brand-border, #1f2937)" }}
+        />
 
         {/* Bottom Row — Copyright */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-zinc-600 text-xs">
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-brand-muted, #6b7280)" }}
+          >
             {copyright || (
               <>
                 © {currentYear}{" "}
-                <span className="text-zinc-700 italic">
+                <span className="opacity-80">
                   {siteTitle || "Company Name"}
                 </span>
               </>
@@ -109,16 +135,18 @@ export default async function Footer() {
           </p>
 
           {/* Quick links */}
-          <nav className="flex items-center gap-6 text-xs text-zinc-600">
+          <nav className="flex items-center gap-6 text-xs">
             <Link
               href="/impressum"
-              className="hover:text-zinc-400 transition-colors"
+              className="transition-opacity hover:opacity-70"
+              style={{ color: "var(--color-brand-muted, #6b7280)" }}
             >
               Impressum
             </Link>
             <Link
               href="/datenschutz"
-              className="hover:text-zinc-400 transition-colors"
+              className="transition-opacity hover:opacity-70"
+              style={{ color: "var(--color-brand-muted, #6b7280)" }}
             >
               Datenschutz
             </Link>

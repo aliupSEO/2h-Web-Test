@@ -245,3 +245,27 @@ export async function getMenuItems() {
     })) ?? []
   );
 }
+
+// ---------------------------------------------------------------------------
+// Content parsers — utilities for extracting structured data from WordPress HTML
+// ---------------------------------------------------------------------------
+
+/**
+ * Decode common HTML entities returned by WordPress REST/GraphQL.
+ * WordPress content often contains encoded curly quotes, dashes, and ampersands.
+ * Use this when extracting text from WordPress HTML for display.
+ */
+export function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&#8217;/g, "\u2019")  // right single quote / apostrophe '
+    .replace(/&#8216;/g, "\u2018")  // left single quote '
+    .replace(/&#8220;/g, "\u201C")  // left double quote "
+    .replace(/&#8221;/g, "\u201D")  // right double quote "
+    .replace(/&#8211;/g, "\u2013")  // en dash –
+    .replace(/&#8212;/g, "\u2014")  // em dash —
+    .replace(/&#038;/g,  "&")       // ampersand
+    .replace(/&amp;/g,   "&")
+    .replace(/&lt;/g,    "<")
+    .replace(/&gt;/g,    ">")
+    .replace(/&quot;/g,  '"');
+}

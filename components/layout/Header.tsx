@@ -4,6 +4,7 @@
  * Site-wide header / navigation bar.
  * Fetches its own data (menu items + branding) from WordPress.
  * Shows "LOGO" and "NOT SET" fallbacks when WordPress is not connected.
+ * Colors from CSS variables (Design System Settings plugin).
  *
  * AGENT RULES:
  * - Navigation labels come from WordPress menus — NEVER hardcode nav text.
@@ -27,32 +28,38 @@ export default async function Header() {
   const siteTitle = dsSettings?.branding?.site_title || null;
 
   return (
-    <header className="absolute top-0 left-0 w-full z-20 flex justify-between items-center px-6 md:px-16 lg:px-24 py-8 bg-transparent">
+    <header className="absolute top-0 left-0 w-full z-20 flex items-center justify-between px-6 sm:px-10 md:px-16 lg:px-24 py-8 bg-transparent">
+
       {/* Logo */}
-      <Link href="/" className="relative h-12 w-48 block flex items-center">
+      <Link href="/" className="flex-shrink-0 relative h-12 w-48 flex items-center">
         {logoUrl ? (
           <Image
             src={logoUrl}
             alt={siteTitle || "Logo"}
             fill
             priority
+            sizes="192px"
             className="object-contain object-left"
           />
         ) : (
-          <span className="text-white text-xl font-bold tracking-wider opacity-50">
+          <span
+            className="text-xl font-bold tracking-wider opacity-50"
+            style={{ color: "var(--color-text-light, #ffffff)" }}
+          >
             {siteTitle || "LOGO"}
           </span>
         )}
       </Link>
 
-      {/* Navigation */}
-      <nav className="hidden lg:flex items-center gap-8 text-[11px] sm:text-xs tracking-[2px] font-semibold text-white">
+      {/* Desktop Navigation */}
+      <nav className="hidden lg:flex items-center gap-8 text-[11px] sm:text-xs tracking-[2px] font-semibold">
         {menuItems && menuItems.length > 0 ? (
           menuItems.map((item: { id: string; label: string; uri: string }) => (
             <Link
               key={item.id}
               href={item.uri}
-              className="hover:text-brand-green transition-colors"
+              className="transition-opacity duration-200 hover:opacity-60"
+              style={{ color: "var(--color-text-light, #ffffff)" }}
             >
               {item.label.toUpperCase()}
             </Link>
@@ -60,10 +67,10 @@ export default async function Header() {
         ) : (
           /* Fallback nav items when WP menus not configured */
           <>
-            <span className="text-zinc-600 cursor-default">HOME</span>
-            <span className="text-zinc-600 cursor-default">ABOUT</span>
-            <span className="text-zinc-600 cursor-default">SERVICES</span>
-            <span className="text-zinc-600 cursor-default">CONTACT</span>
+            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>HOME</span>
+            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>ABOUT</span>
+            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>SERVICES</span>
+            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>CONTACT</span>
           </>
         )}
       </nav>
@@ -72,7 +79,7 @@ export default async function Header() {
       <div className="hidden lg:block">
         <Link
           href="/contact"
-          className="px-6 py-2.5 bg-brand-green hover:bg-brand-green-light text-black text-[11px] font-semibold uppercase tracking-[1.5px] rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95"
+          className="inline-block transition-all duration-300 active:scale-95 hover:scale-105 btn-primary"
         >
           {dsSettings?.branding?.tagline
             ? dsSettings.branding.tagline.length > 30
@@ -81,6 +88,16 @@ export default async function Header() {
             : "Get in Touch"}
         </Link>
       </div>
+
+      {/* Mobile hamburger */}
+      <button
+        className="lg:hidden p-2"
+        aria-label="Open menu"
+      >
+        <span className="block w-5 h-0.5 rounded mb-1.5" style={{ background: "var(--color-text-light, #ffffff)" }} />
+        <span className="block w-5 h-0.5 rounded mb-1.5" style={{ background: "var(--color-text-light, #ffffff)" }} />
+        <span className="block w-5 h-0.5 rounded" style={{ background: "var(--color-text-light, #ffffff)" }} />
+      </button>
     </header>
   );
 }

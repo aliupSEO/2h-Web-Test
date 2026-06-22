@@ -6,6 +6,7 @@
  */
 
 import Image from "next/image";
+import Link from "next/link";
 
 interface CTASectionProps {
   /** Section badge / subtitle */
@@ -38,10 +39,10 @@ export default function CTASection({
   perks,
 }: CTASectionProps) {
   return (
-    <section className="relative py-32 px-6 md:px-16 lg:px-24 bg-black overflow-hidden border-t border-zinc-900">
-      {/* Green separator */}
+    <section className="relative py-32 px-6 md:px-16 lg:px-24 overflow-hidden border-t" style={{ background: "var(--color-bg-dark, #000000)", borderColor: "var(--color-brand-border, #1f2937)" }}>
+      {/* Brand color separator */}
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-        <div className="w-[1.5px] h-12 bg-brand-green" />
+        <div className="w-[1.5px] h-12" style={{ background: "var(--color-brand-primary, #22c55e)" }} />
       </div>
 
       {/* Background Image */}
@@ -60,45 +61,64 @@ export default function CTASection({
       <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
         {badge && (
           <div className="flex items-center gap-2 mb-6">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-green flex-shrink-0" />
-            <span className="text-brand-green text-xs sm:text-sm uppercase tracking-[2.5px] font-medium">
+            <span
+              className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+              style={{ background: "var(--color-brand-primary, #22c55e)" }}
+            />
+            <span
+              className="text-xs sm:text-sm uppercase tracking-[2.5px] font-medium"
+              style={{ color: "var(--color-brand-primary, #22c55e)" }}
+            >
               {badge}
             </span>
           </div>
         )}
 
-        <h2 className="text-3xl sm:text-[48px] lg:text-[54px] uppercase tracking-[1.5px] leading-[1.1] font-medium text-white mb-8">
+        <h2
+          className="text-3xl sm:text-[48px] lg:text-[54px] uppercase tracking-[1.5px] leading-[1.1] font-medium mb-8"
+          style={{ color: "var(--color-text-light, #ffffff)" }}
+        >
           {title}
         </h2>
 
         {description &&
           (descriptionIsHtml ? (
             <div
-              className="text-zinc-200 text-sm sm:text-base lg:text-lg max-w-3xl mb-12 leading-relaxed font-medium"
+              className="text-sm sm:text-base lg:text-lg max-w-3xl mb-12 leading-relaxed font-medium"
+              style={{ color: "var(--color-text-light, #e4e4e7)" }}
               dangerouslySetInnerHTML={{ __html: description }}
             />
           ) : (
-            <p className="text-zinc-200 text-sm sm:text-base lg:text-lg max-w-3xl mb-12 leading-relaxed font-medium">
+            <p
+              className="text-sm sm:text-base lg:text-lg max-w-3xl mb-12 leading-relaxed font-medium"
+              style={{ color: "var(--color-text-light, #e4e4e7)" }}
+            >
               {description}
             </p>
           ))}
 
         {cta && (
-          <a
+          <Link
             href={cta.href}
             target={cta.external ? "_blank" : undefined}
             rel={cta.external ? "noopener noreferrer" : undefined}
-            className="inline-block px-10 py-4 bg-transparent border border-brand-green hover:bg-brand-green hover:text-black text-white text-[13px] font-semibold uppercase tracking-[1.5px] rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl bg-black/20 backdrop-blur-sm"
+            className="inline-block transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl backdrop-blur-sm btn-outline"
           >
             {cta.text}
-          </a>
+          </Link>
         )}
 
         {perks && perks.length > 0 && (
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-zinc-300 text-xs sm:text-sm uppercase tracking-[2px] font-medium">
+          <div
+            className="mt-12 flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-xs sm:text-sm uppercase tracking-[2px] font-medium"
+            style={{ color: "var(--color-text-light, #d4d4d8)" }}
+          >
             {perks.map((perk, i) => (
               <div key={i} className="flex items-center gap-1.5">
-                <span className="text-brand-green font-bold text-lg leading-none">*</span>
+                <span
+                  className="font-bold text-lg leading-none"
+                  style={{ color: "var(--color-brand-primary, #22c55e)" }}
+                >*</span>
                 {perk}
               </div>
             ))}

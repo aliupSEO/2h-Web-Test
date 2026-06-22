@@ -148,10 +148,13 @@ export async function getDesignSystemSettings(): Promise<DesignSystemSettings | 
   }
 
   try {
-    const res = await fetch(`${baseUrl}/wp-json/design-system/v1/settings`, {
+    // Generate a cache buster that changes every second to bypass the host Nginx proxy cache,
+    // while allowing Next.js to share the response within the 1-second revalidation period.
+    const cacheBuster = Math.floor(Date.now() / 1000);
+    const res = await fetch(`${baseUrl}/wp-json/design-system/v1/settings?t=${cacheBuster}`, {
       method: "GET",
       headers: { Accept: "application/json" },
-      next: { revalidate: 60 },
+      next: { revalidate: 1 },
     });
 
     if (!res.ok) {
@@ -197,6 +200,7 @@ export function getDesignSystemCSS(settings: DesignSystemSettings): string {
   lines.push("  /* Background Colors */");
   lines.push(`  --background: ${colors.backgrounds.base};`);
   lines.push(`  --color-bg-base: ${colors.backgrounds.base};`);
+  lines.push(`  --color-bg-primary: ${colors.backgrounds.base};`);
   lines.push(`  --color-bg-alternate: ${colors.backgrounds.alternate};`);
   lines.push(`  --color-bg-dark: ${colors.backgrounds.dark};`);
   lines.push(`  --color-brand-card: ${colors.backgrounds.alternate};`);

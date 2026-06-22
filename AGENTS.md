@@ -10,6 +10,43 @@ writing any code.** Heed deprecation notices.
 
 ---
 
+## ⛔ CRITICAL — READ THIS FIRST BEFORE WRITING ANY CODE
+
+**This template has TWO absolute rules that MUST NEVER be broken:**
+
+### RULE 1: ZERO HARDCODED CONTENT — All text from WordPress
+
+❌ **NEVER write visible text as string literals in JSX.** Every heading, paragraph, button label, phone number, address, image URL, and call-to-action MUST be fetched from WordPress via GraphQL (`lib/graphql.ts`).
+
+**If WordPress is unreachable or returns null:** Show a "WordPress Connection Needed" message and **TELL THE USER IN CHAT** that the WordPress page/content needs to be created. Do NOT silently fall back to hardcoded content.
+
+### RULE 2: ZERO HARDCODED STYLES — All colors/buttons from Design System CSS variables
+
+❌ **NEVER use hardcoded color values** like `bg-green-500`, `text-white`, `bg-black`, `text-zinc-400`, `border-emerald-500`, or `bg-[#22c55e]`.
+
+✅ **ALWAYS use CSS variables** from the Design System Settings plugin:
+- Colors: `style={{ color: "var(--color-text-primary, #f4f4f5)" }}`
+- Backgrounds: `style={{ background: "var(--color-bg-dark, #0a0a0a)" }}`
+- Buttons: Use the `btn-primary`, `btn-secondary`, `btn-outline`, or `btn-text-only` utility classes
+- Borders: `style={{ borderColor: "var(--color-brand-border, #1f2937)" }}`
+- Brand accent dots/separators: `style={{ background: "var(--color-brand-primary, #22c55e)" }}`
+
+**The fallback value** (after the comma) is the generic template default. It is shown ONLY if the Design System plugin is not installed. When the plugin IS installed, the CSS variable overrides it.
+
+### STOP-AND-TELL PROTOCOL
+
+When you encounter any of these situations, **STOP writing code and TELL THE USER in the chat**:
+
+| Situation | What to tell the user |
+|---|---|
+| Need content for a section but no WP page exists | "I need a WordPress page with slug `X` created with the section content. Please create it and I'll fetch it via GraphQL." |
+| GraphQL query returns null or errors | "The WordPress page `X` is not returning data. Please check: (1) WPGraphQL plugin is installed, (2) Page exists with correct slug, (3) `.env.local` has the correct endpoint." |
+| Design System settings not loading | "The Design System Settings plugin doesn't appear to be installed/configured on your WordPress site. Please install it from `wordpress-plugins/design-system-settings.zip` and configure the colors/fonts." |
+| Need a specific image for a section | "Please upload the image to WordPress media library and set it as the featured image for the `X` page." |
+| Tempted to hardcode text/colors | **STOP. Re-read this section.** Ask the user to provide the content via WordPress instead. |
+
+---
+
 ## 1. Project Overview
 
 This is a **clone-and-go WordPress-connected Next.js template**.
@@ -366,13 +403,81 @@ Use them in classes like `bg-brand-green`, `text-brand-dark`.
 
 ---
 
-## 10. Styling Rules
+## 10. Styling Rules — ⚠️ MANDATORY CSS Variables from Design System
 
-- **No inline `style={{}}` unless strictly necessary** (e.g., dynamic CSS custom properties like gradients). Use Tailwind classes.
+> **ALL colors in components MUST come from CSS variables set by the WordPress Design System Settings plugin.** This is NOT optional. If you hardcode `text-white`, `bg-black`, `bg-green-500`, or any color utility class, you are BREAKING the design system and the client cannot change colors from WordPress.
+
+### The correct way to apply colors
+
+Use `style={{}}` with CSS variables and fallback defaults:
+
+```tsx
+// ✅ CORRECT — CSS variable with fallback
+<h1 style={{ color: "var(--color-text-light, #ffffff)" }}>Title</h1>
+<section style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>...</section>
+<span style={{ color: "var(--color-brand-primary, #22c55e)" }}>Accent</span>
+<div style={{ borderColor: "var(--color-brand-border, #1f2937)" }}>...</div>
+
+// ❌ WRONG — hardcoded Tailwind color classes
+<h1 className="text-white">Title</h1>
+<section className="bg-black">...</section>
+<span className="text-green-500">Accent</span>
+<div className="border-zinc-800">...</div>
+
+// ❌ ALSO WRONG — hardcoded hex in arbitrary values
+<h1 className="text-[#ffffff]">Title</h1>
+<section className="bg-[#0a0a0a]">...</section>
+```
+
+### Available CSS variable families
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `--color-brand-primary` | Brand accent color (buttons, highlights) | `#22c55e` |
+| `--color-brand-accent` | Secondary accent | `#86efac` |
+| `--color-bg-dark` | Dark background | `#0a0a0a` |
+| `--color-bg-primary` | Main page background | `#0a0a0a` |
+| `--color-bg-alternate` | Alternate section background | `#111111` |
+| `--color-text-primary` | Primary text color | `#f4f4f5` |
+| `--color-text-secondary` | Secondary/muted text | `#a1a1aa` |
+| `--color-text-light` | Light text (on dark bg) | `#ffffff` |
+| `--color-brand-muted` | Muted accent text | `#6b7280` |
+| `--color-brand-border` | Border color | `#1f2937` |
+
+### Button styling — use `btn-*` utility classes
+
+The template provides 4 button utility classes in `globals.css` that are fully controlled by the Design System plugin:
+
+```tsx
+// ✅ CORRECT — use btn-* utility classes
+<Link href="/contact" className="btn-primary">Get in Touch</Link>
+<Link href="/about" className="btn-secondary">Learn More</Link>
+<Link href="/services" className="btn-outline">Our Services</Link>
+<button className="btn-text-only">Read more →</button>
+
+// ❌ WRONG — manually styling buttons with hardcoded colors
+<Link href="/contact" className="bg-green-500 text-black px-6 py-3 rounded-full">Get in Touch</Link>
+<button className="bg-transparent border border-green-500 text-white">Learn More</button>
+```
+
+These `btn-*` classes automatically pick up colors, padding, border-radius, and hover states from the WordPress Design System Settings. Never recreate button styles manually.
+
+### Non-color Tailwind classes ARE fine
+
+You CAN still use Tailwind for:
+- **Layout:** `flex`, `grid`, `gap-4`, `px-6`, `py-8`, `max-w-7xl`, `mx-auto`
+- **Typography (non-color):** `text-xl`, `font-bold`, `tracking-wider`, `uppercase`, `leading-relaxed`
+- **Spacing:** `mt-4`, `mb-8`, `p-6`
+- **Responsive:** `md:px-16`, `lg:text-5xl`, `hidden lg:flex`
+- **Effects (non-color):** `shadow-xl`, `backdrop-blur-sm`, `transition-all`, `hover:scale-105`
+- **Sizing:** `w-full`, `min-h-screen`, `h-12`
+
+### Other styling rules
+
 - **No CSS Modules** — not set up, don't add them.
-- **Green + black is the brand palette** — `emerald-*` and `green-*` Tailwind shades for accents, `zinc-900` / `black` for backgrounds. Customise the exact shades in `globals.css` `@theme inline` block.
-- **Typography:** Inter (loaded via `next/font/google` in `layout.tsx`). Add other fonts (e.g., Federo, Barlow) in `layout.tsx` and register them as CSS variables in `globals.css`.
-- **Animations:** Use Tailwind's built-in `animate-*` utilities. Do not install Framer Motion unless explicitly asked.
+- **The brand palette defaults** are green accent + dark backgrounds. These are just fallbacks — the real palette comes from WordPress Design System Settings.
+- **Typography:** Inter (loaded via `next/font/google` in `layout.tsx`). Add other fonts in `layout.tsx` and register as CSS variables in `globals.css`.
+- **Animations:** Use the custom animation classes defined in `globals.css`: `animate-fade-slide-up`, `animate-fade-in`, and delay utilities (`animation-delay-100` through `animation-delay-600`). Do not install Framer Motion unless explicitly asked.
 - **WordPress content styling:** Use the `.wp-content` class (defined in `globals.css`) when rendering raw WP HTML with `dangerouslySetInnerHTML`.
 
 ---
@@ -717,11 +822,11 @@ wp_options (ds_settings)
     ↓
 GET /wp-json/design-system/v1/settings (public REST API)
     ↓
-lib/design-system.ts → getDesignSystemSettings() (fetched in layout.tsx, 60s cache)
+lib/design-system.ts → getDesignSystemSettings() (fetched in layout.tsx, 1s cache with cache-busting)
     ↓
 getDesignSystemCSS() → generates CSS custom properties string
     ↓
-layout.tsx → <style id="design-system-tokens"> injected in <head>
+layout.tsx → <style id="design-system-tokens"> injected in <body>
     ↓
 Overrides defaults in globals.css → components use the tokens
 ```
@@ -731,8 +836,8 @@ Overrides defaults in globals.css → components use the tokens
 - **Always use `getDesignSystemSettings()`** from `lib/design-system.ts` — never call the endpoint directly.
 - **Fetch in `layout.tsx` only** — the root layout injects tokens globally. Individual pages do NOT need to fetch design settings.
 - **For branding data** (logos, social URLs, footer text), fetch `getDesignSystemSettings()` in the component that needs it (e.g., Header, Footer) OR pass it down from layout.
-- **Revalidation is 60 seconds** — design tokens change rarely.
-- **Null-safe** — if the plugin isn't installed, `getDesignSystemSettings()` returns `null` and the hardcoded defaults in `globals.css` are used.
+- **Revalidation is 1 second** with cache-busting query param — design tokens update in real-time.
+- **Null-safe** — if the plugin isn't installed, `getDesignSystemSettings()` returns `null` and the CSS variable fallbacks in component `style={{}}` props are used.
 
 ### CSS custom properties injected
 
@@ -772,19 +877,35 @@ The plugin injects these CSS variables (among others) that components should ref
 ### Using design tokens in components
 
 ```tsx
-// ✅ CORRECT — use CSS variables
-<button className="bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] 
-  rounded-[var(--btn-primary-border-radius)] 
-  hover:bg-[var(--btn-primary-hover-bg)]">
-  {label}
-</button>
+// ✅ CORRECT — use btn-* utility classes for buttons
+<Link href="/contact" className="btn-primary">Get in Touch</Link>
+<Link href="/about" className="btn-outline">Learn More</Link>
 
-// ✅ ALSO CORRECT — use the Tailwind token aliases
-<div className="bg-brand-green text-brand-dark">{content}</div>
+// ✅ CORRECT — use CSS variables with fallbacks for colors
+<h1 style={{ color: "var(--color-text-light, #ffffff)" }}>Heading</h1>
+<section style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>...</section>
+<span style={{ color: "var(--color-brand-primary, #22c55e)" }}>Accent</span>
 
-// ❌ WRONG — hardcoded colors
+// ✅ CORRECT — use Tailwind for NON-COLOR properties
+<div className="flex items-center gap-4 px-6 py-8 text-xl font-bold">...</div>
+
+// ❌ WRONG — hardcoded color Tailwind classes
 <button className="bg-green-500 text-black hover:bg-green-400">{label}</button>
+<h1 className="text-white">Heading</h1>
+<section className="bg-black">Content</section>
+<span className="text-zinc-400">Muted text</span>
+
+// ❌ WRONG — manually styling buttons instead of using btn-* classes
+<Link className="bg-green-500 text-black px-6 py-3 rounded-full hover:bg-green-400">
+  Get in Touch
+</Link>
 ```
+
+### ⚠️ Key principle: Separate color from layout
+
+- **Colors** → Always `style={{ color/background/borderColor: "var(--css-variable, fallback)" }}`
+- **Layout, spacing, typography size, effects** → Tailwind utility classes (`flex`, `gap-4`, `text-xl`, `font-bold`, `shadow-lg`)
+- **Buttons** → Always `btn-primary`, `btn-secondary`, `btn-outline`, or `btn-text-only` classes
 
 ### Installation (for new projects)
 
@@ -801,19 +922,32 @@ The plugin injects these CSS variables (among others) that components should ref
 
 Before submitting any code, verify:
 
-- [ ] **Git origin is NOT the template repo** — `origin` must not point to `https://github.com/aliupSEO/2h-Website-Template.git`; see §1.1
-- [ ] **Project name updated** — `package.json` `name` reflects the client's brand, not "2h-Website-Template"
-- [ ] **No hardcoded visible text** — every string rendered to the user comes from WordPress
+### Content (ZERO hardcoded text)
+- [ ] **No hardcoded visible text** — every string rendered to the user comes from WordPress via GraphQL
 - [ ] **GraphQL query exists** in `lib/graphql.ts` for the page's data needs
 - [ ] **SEO fields fetched** — `generateMetadata()` maps `seo.title`, `seo.description`, `seo.focusKeywords`
-- [ ] **Null handled gracefully** — page shows "WordPress Connection Needed" when data is `null`
+- [ ] **Null handled gracefully** — page shows "WordPress Connection Needed" when data is `null`, NOT hardcoded fallback content
+- [ ] **Told the user** in chat if a WordPress page needs to be created for the content
+- [ ] **Branding data from WP** — logos, social URLs, footer copyright come from `getDesignSystemSettings()`, NOT hardcoded
+
+### Styling (ZERO hardcoded colors)
+- [ ] **No hardcoded color classes** — no `text-white`, `bg-black`, `bg-green-500`, `text-zinc-400`, `border-emerald-500` etc.
+- [ ] **All colors use CSS variables** — `style={{ color: "var(--color-text-light, #ffffff)" }}`
+- [ ] **All backgrounds use CSS variables** — `style={{ background: "var(--color-bg-dark, #0a0a0a)" }}`
+- [ ] **All borders use CSS variables** — `style={{ borderColor: "var(--color-brand-border, #1f2937)" }}`
+- [ ] **Buttons use `btn-*` classes** — `btn-primary`, `btn-secondary`, `btn-outline`, or `btn-text-only`
+- [ ] **Tailwind used ONLY for non-color properties** — layout, spacing, typography size, responsive breakpoints, effects
+
+### Architecture
 - [ ] **One component per file** — sections are in `components/sections/`, not inline
-- [ ] **Components receive data via props** — no data fetching inside components
+- [ ] **Components receive data via props** — no data fetching inside section components
 - [ ] **`"use client"` only where needed** — forms, sliders, scroll handlers
 - [ ] **Images use `<Image>`** from `next/image`
 - [ ] **Internal links use `<Link>`** from `next/link`
+
+### Infrastructure
+- [ ] **Git origin is NOT the template repo** — see §1.1
+- [ ] **Project name updated** — `package.json` `name` reflects the client's brand
 - [ ] **No `tailwind.config.js`** — Tailwind v4 is configured via CSS
 - [ ] **`.env.example` updated** if new env vars were added
 - [ ] **`next.config.ts` has remote image patterns** configured
-- [ ] **Design tokens used** — colors, borders, shadows reference CSS variables from `globals.css` / design system, NOT hardcoded hex values
-- [ ] **Branding data from WP** — logos, social URLs, footer copyright come from `getDesignSystemSettings()`, NOT hardcoded
