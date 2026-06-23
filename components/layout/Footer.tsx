@@ -100,7 +100,7 @@ export default async function Footer() {
               <div className="w-full">
                 <Link 
                   href={footerData.btnLink}
-                  className="flex border border-[var(--color-brand-primary,#b6ef00)] text-white hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black rounded-full px-4 py-3.5 text-[11px] font-medium tracking-[1.5px] uppercase transition-all duration-300 text-center justify-center items-center leading-[1.3] w-[230px]"
+                  className="flex border border-[var(--color-brand-primary,#b6ef00)] text-white hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black rounded-full px-4 py-3.5 text-[11px] font-medium tracking-[1.5px] uppercase transition-all duration-300 text-center justify-center items-center leading-[1.3] w-full sm:w-[230px]"
                 >
                   {/* Use a wrapper to force the specific wrap if the text matches */}
                   <span className="whitespace-pre-line">
@@ -151,20 +151,20 @@ export default async function Footer() {
         </div>
 
         {/* Divider & Bottom Bar (Flex container for divider and items) */}
-        <div className="pt-8 border-t border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-6 relative">
-          <nav className="flex items-center gap-6 text-[13px] text-zinc-400">
-            <Link href="/impressum" className="transition-colors hover:text-white">Impressum</Link>
-            <Link href="/datenschutz" className="transition-colors hover:text-white">Datenschutz</Link>
-          </nav>
-
-          <p className="text-[13px] text-zinc-400 absolute left-1/2 -translate-x-1/2 hidden md:block">
-            {copyright || `© Copyright ${currentYear} ${siteTitle || "2H Web Solutions"}`}
-          </p>
-
-          <div className="flex items-center">
-            <ScrollToTop />
+          <div className="pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-6 relative">
+            <nav className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[13px] text-zinc-400 order-2 md:order-1">
+              <Link href="/impressum" className="transition-colors hover:text-white">Impressum</Link>
+              <Link href="/datenschutz" className="transition-colors hover:text-white">Datenschutz</Link>
+            </nav>
+  
+            <p className="text-[13px] text-zinc-400 text-center md:absolute md:left-1/2 md:-translate-x-1/2 order-3 md:order-2">
+              {copyright || `© Copyright ${currentYear} ${siteTitle || "2H Web Solutions"}`}
+            </p>
+  
+            <div className="flex items-center order-1 md:order-3">
+              <ScrollToTop />
+            </div>
           </div>
-        </div>
       </div>
     </footer>
   );

@@ -14,27 +14,45 @@ interface HeaderClientProps {
 
 export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle }: HeaderClientProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
     
-    // Check initial scroll position
     handleScroll();
-    
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const logoUrl = isScrolled ? (logoDark || logoLight) : logoLight;
-  const textColor = isScrolled ? "#111111" : "var(--color-text-light, #ffffff)";
+  const logoUrl = isScrolled || isMobileMenuOpen ? (logoDark || logoLight) : logoLight;
+  const textColor = isScrolled || isMobileMenuOpen ? "#111111" : "var(--color-text-light, #ffffff)";
+
+  const navItems = menuItems && menuItems.length > 0 ? menuItems : [
+    { id: "fallback-1", label: "STARTSEITE", uri: "/" },
+    { 
+      id: "fallback-2", 
+      label: "DIGITALE LÖSUNGEN", 
+      uri: "/unsere-leistungen",
+      childItems: {
+        nodes: [
+          { id: "sub-1", label: "Webdesign", uri: "/service/webdesign/" },
+          { id: "sub-2", label: "SEO", uri: "/service/seo-beratung-wien/" },
+          { id: "sub-3", label: "Google Ads", uri: "/service/google-ads-agentur-wien/" }
+        ]
+      }
+    },
+    { id: "fallback-3", label: "REFERENZEN", uri: "/referenzen" },
+    { id: "fallback-4", label: "ÜBER 2H", uri: "/uber-2h" },
+    { id: "fallback-5", label: "KONTAKT", uri: "/kontakt" }
+  ];
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-white shadow-md py-4" : "bg-transparent py-8"}`}>
-      <div className="max-w-[1300px] mx-auto w-full px-6 sm:px-10 md:px-12 lg:px-24 flex items-center justify-between">
+    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled || isMobileMenuOpen ? "bg-white shadow-md py-4" : "bg-transparent py-8"}`}>
+      <div className="max-w-[1300px] mx-auto w-full px-6 sm:px-10 md:px-12 lg:px-24 flex items-center justify-between relative z-50">
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0 relative h-[45px] w-[180px] flex items-center">
+        <Link href="/" className="flex-shrink-0 relative h-[45px] w-[180px] flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
           {logoUrl ? (
             <Image
               src={logoUrl}
@@ -55,38 +73,52 @@ export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle
         </Link>
 
         {/* Desktop Navigation */}
-        {menuItems && menuItems.length > 0 ? (
-          <HeaderNav items={menuItems} isScrolled={isScrolled} />
-        ) : (
-          <HeaderNav items={[
-            { id: "fallback-1", label: "STARTSEITE", uri: "/" },
-            { 
-              id: "fallback-2", 
-              label: "DIGITALE LÖSUNGEN", 
-              uri: "/unsere-leistungen",
-              childItems: {
-                nodes: [
-                  { id: "sub-1", label: "Webdesign", uri: "/service/webdesign/" },
-                  { id: "sub-2", label: "SEO", uri: "/service/seo-beratung-wien/" },
-                  { id: "sub-3", label: "Google Ads", uri: "/service/google-ads-agentur-wien/" }
-                ]
-              }
-            },
-            { id: "fallback-3", label: "REFERENZEN", uri: "/referenzen" },
-            { id: "fallback-4", label: "ÜBER 2H", uri: "/uber-2h" },
-            { id: "fallback-5", label: "KONTAKT", uri: "/kontakt" }
-          ]} isScrolled={isScrolled} />
-        )}
+        <HeaderNav items={navItems} isScrolled={isScrolled || isMobileMenuOpen} />
 
         {/* Mobile hamburger */}
         <button
-          className="lg:hidden p-2"
-          aria-label="Open menu"
+          className="lg:hidden p-2 relative z-50"
+          aria-label="Toggle menu"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
-          <span className="block w-6 h-0.5 rounded mb-1.5 transition-colors duration-300" style={{ background: textColor }} />
-          <span className="block w-6 h-0.5 rounded mb-1.5 transition-colors duration-300" style={{ background: textColor }} />
-          <span className="block w-6 h-0.5 rounded transition-colors duration-300" style={{ background: textColor }} />
+          <span className={`block w-6 h-0.5 rounded mb-1.5 transition-all duration-300 ${isMobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} style={{ background: textColor }} />
+          <span className={`block w-6 h-0.5 rounded mb-1.5 transition-all duration-300 ${isMobileMenuOpen ? "opacity-0" : ""}`} style={{ background: textColor }} />
+          <span className={`block w-6 h-0.5 rounded transition-all duration-300 ${isMobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} style={{ background: textColor }} />
         </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div 
+        className={`fixed inset-0 bg-white z-40 transition-transform duration-500 ease-in-out lg:hidden pt-24 px-6 overflow-y-auto ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <nav className="flex flex-col gap-6">
+          {navItems.map((item) => (
+            <div key={item.id} className="border-b border-zinc-100 pb-4">
+              <Link 
+                href={item.uri} 
+                className="text-xl font-medium tracking-wide uppercase text-black hover:text-[var(--color-brand-primary)]"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+              {item.childItems?.nodes && item.childItems.nodes.length > 0 && (
+                <ul className="mt-4 flex flex-col gap-3 pl-4">
+                  {item.childItems.nodes.map(child => (
+                    <li key={child.id}>
+                      <Link 
+                        href={child.uri}
+                        className="text-base text-zinc-600 hover:text-[var(--color-brand-primary)]"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {child.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </nav>
       </div>
     </header>
   );
