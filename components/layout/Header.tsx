@@ -29,10 +29,10 @@ export default async function Header() {
   const siteTitle = dsSettings?.branding?.site_title || null;
 
   return (
-    <header className="absolute top-0 left-0 w-full z-20 flex items-center justify-between px-6 sm:px-10 md:px-16 lg:px-24 py-8 bg-transparent">
-
+    <header className="absolute top-0 left-0 w-full z-20 bg-transparent py-8">
+      <div className="max-w-7xl mx-auto w-full px-6 sm:px-10 md:px-16 flex items-center justify-between">
       {/* Logo */}
-      <Link href="/" className="flex-shrink-0 relative h-12 w-48 flex items-center">
+      <Link href="/" className="flex-shrink-0 relative h-[42px] w-[170px] flex items-center">
         {logoUrl ? (
           <Image
             src={logoUrl}
@@ -75,6 +75,7 @@ export default async function Header() {
         <span className="block w-5 h-0.5 rounded mb-1.5" style={{ background: "var(--color-text-light, #ffffff)" }} />
         <span className="block w-5 h-0.5 rounded" style={{ background: "var(--color-text-light, #ffffff)" }} />
       </button>
+      </div>
     </header>
   );
 }

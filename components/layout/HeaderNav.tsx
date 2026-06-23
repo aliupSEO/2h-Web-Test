@@ -23,7 +23,7 @@ export default function HeaderNav({ items }: { items: MenuItem[] }) {
   };
 
   return (
-    <nav className="hidden lg:flex items-center gap-6 text-[14px] font-sans font-medium ml-auto">
+    <nav className="hidden lg:flex items-center gap-8 text-[14px] font-sans font-medium ml-auto">
       {items.map((item) => {
         const active = isActive(item.uri);
         // Simple check if it has children or if the label contains something indicating a dropdown
