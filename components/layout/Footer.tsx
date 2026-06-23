@@ -52,10 +52,10 @@ export default async function Footer() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 py-12 md:py-20">
         
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 mb-12 md:mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-12 mb-12 md:mb-20">
           
           {/* Column 1: Brand & Social */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+          <div className="col-span-2 md:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
             <Link href="/" className="block mb-6 md:mb-4">
               {logoUrl ? (
                 <div className="relative h-[60px] w-[180px]">
@@ -100,7 +100,7 @@ export default async function Footer() {
               <div className="w-full flex justify-center md:justify-start">
                 <Link 
                   href={footerData.btnLink}
-                  className="flex border border-[var(--color-brand-primary,#b6ef00)] text-white hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black rounded-full px-4 py-3.5 text-[11px] font-medium tracking-[1.5px] uppercase transition-all duration-300 text-center justify-center items-center leading-[1.3] w-full sm:w-[230px]"
+                  className="flex border border-[var(--color-brand-primary,#b6ef00)] text-white hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black rounded-full px-4 py-2.5 md:py-3.5 text-[10px] md:text-[11px] font-medium tracking-[1.5px] uppercase transition-all duration-300 text-center justify-center items-center leading-[1.3] w-[90%] sm:w-[230px]"
                 >
                   {/* Use a wrapper to force the specific wrap if the text matches */}
                   <span className="whitespace-pre-line">
@@ -112,15 +112,15 @@ export default async function Footer() {
           </div>
 
           {/* Column 2: Menu 1 */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h4 className="text-white font-serif uppercase tracking-wide text-[18px] md:text-[20px] font-normal mb-6 md:mb-8 mt-2">
+          <div className="col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
+            <h4 className="text-white font-serif uppercase tracking-wide text-[15px] sm:text-[18px] md:text-[20px] font-normal mb-6 md:mb-8 mt-2 break-words max-w-full">
               {footerData?.column2?.title || "DIGITALE LÖSUNGEN"}
             </h4>
             <ul className="space-y-4">
               {footerData?.column2?.links.map((link, i) => (
                 <li key={i}>
-                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center justify-center md:justify-start gap-3 md:gap-4 text-[15px] font-sans transition-colors group">
-                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
+                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center justify-center md:justify-start gap-2 md:gap-4 text-[13px] md:text-[15px] font-sans transition-colors group">
+                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[12px] md:text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
                     {link.label}
                   </Link>
                 </li>
@@ -129,15 +129,15 @@ export default async function Footer() {
           </div>
 
           {/* Column 3: Menu 2 */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h4 className="text-white font-serif uppercase tracking-wide text-[18px] md:text-[20px] font-normal mb-6 md:mb-8 mt-2">
+          <div className="col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
+            <h4 className="text-white font-serif uppercase tracking-wide text-[15px] sm:text-[18px] md:text-[20px] font-normal mb-6 md:mb-8 mt-2 break-words max-w-full">
               {footerData?.column3?.title || "2H WEBSOLUTIONS"}
             </h4>
             <ul className="space-y-4">
               {footerData?.column3?.links.map((link, i) => (
                 <li key={i}>
-                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center justify-center md:justify-start gap-3 md:gap-4 text-[15px] font-sans transition-colors group">
-                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
+                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center justify-center md:justify-start gap-2 md:gap-4 text-[13px] md:text-[15px] font-sans transition-colors group">
+                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[12px] md:text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
                     {link.label}
                   </Link>
                 </li>
@@ -146,7 +146,7 @@ export default async function Footer() {
           </div>
 
           {/* Column 4: Dino Game */}
-          <div className="flex justify-center md:justify-start lg:justify-center mt-4 md:mt-0">
+          <div className="col-span-2 md:col-span-1 lg:col-span-1 flex justify-center md:justify-start lg:justify-center mt-4 md:mt-0">
             <DinoGame title={footerData?.gameTitle || "Lass uns ein Spiel spielen"} />
           </div>
 
