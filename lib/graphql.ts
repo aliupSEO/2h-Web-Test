@@ -355,19 +355,20 @@ export interface AboutSectionData {
 export function extractAboutSectionData(html: string): AboutSectionData | null {
   if (!html?.includes('about-section')) return null;
   
-  const extract = (regex: RegExp) => (html.match(regex)?.[1] || "").trim();
+  const sectionHtml = html.split('<div class="about-section">')[1] || html;
+  const extract = (regex: RegExp) => (sectionHtml.match(regex)?.[1] || "").trim();
   
   return {
     subtitle: decodeHtmlEntities(extract(/<div class="section-subtitle">(.*?)<\/div>/)),
     titleLine1: decodeHtmlEntities(extract(/<div class="section-title">\s*(?:<span>)?(.*?)(?:<\/span>)?\s*<br/i)),
     titleLine2: decodeHtmlEntities(extract(/<div class="section-title">.*?<br\s*\/?>\s*(.*?)<\/div>/i)),
-    description: decodeHtmlEntities(extract(/<p class="description">(.*?)<\/p>/)),
-    motto: decodeHtmlEntities(extract(/<h5 class="motto">(.*?)<\/h5>/)),
-    btnText: decodeHtmlEntities(extract(/<a class="button-link" href=".*?">(.*?)<\/a>/)),
-    btnLink: extract(/<a class="button-link" href="(.*?)">/),
-    phoneText: decodeHtmlEntities(extract(/<a class="phone-link" href=".*?">(.*?)<\/a>/)),
-    phoneLink: extract(/<a class="phone-link" href="(.*?)">/),
-    imageUrl: extract(/<img[^>]*class="about-image"[^>]*src="(.*?)"/),
+    description: decodeHtmlEntities(extract(/<p class="description">(.*?)<\/p>/) || extract(/<p>(.*?)<\/p>/)),
+    motto: decodeHtmlEntities(extract(/<h5 class="motto">(.*?)<\/h5>/) || extract(/<h5>(.*?)<\/h5>/)),
+    btnText: decodeHtmlEntities(extract(/<a class="button-link"[^>]*>(.*?)<\/a>/) || extract(/<a class="button-1"[^>]*>(.*?)<\/a>/)),
+    btnLink: extract(/<a class="button-link"[^>]*href="(.*?)"/) || extract(/<a class="button-1"[^>]*href="(.*?)"/),
+    phoneText: decodeHtmlEntities(extract(/<a class="phone-link"[^>]*>(.*?)<\/a>/) || extract(/<a href="tel:[^>]*>(.*?)<\/a>/)),
+    phoneLink: extract(/<a class="phone-link"[^>]*href="(.*?)"/) || extract(/<a href="(tel:.*?)"/),
+    imageUrl: extract(/<img[^>]*class="about-image"[^>]*src="(.*?)"/) || extract(/<img[^>]*src="(.*?)"/),
   };
 }
 
@@ -498,17 +499,30 @@ export interface NextStepSectionData {
 export function extractNextStepSectionData(html: string): NextStepSectionData | null {
   if (!html?.includes('next-step-section')) return null;
 
-  const titleMatch = html.match(/<div class="next-step-section">[\s\S]*?<h2 class="section-title">(.*?)<\/h2>/);
-  const descMatch = html.match(/<p class="description">(.*?)<\/p>/);
-  const btnMatch = html.match(/<a class="button-link" href="(.*?)">(.*?)<\/a>/);
-  const imgMatch = html.match(/<div class="next-step-section">[\s\S]*?<img[^>]*class="next-step-image"[^>]*src="(.*?)"/);
+  const sectionHtml = html.split('<div class="next-step-section">')[1] || html;
+
+  const titleMatch = sectionHtml.match(/<h2 class="section-title">([\s\S]*?)<\/h2>/);
+  const descMatch = sectionHtml.match(/<p class="description">([\s\S]*?)<\/p>/);
+  const btnMatch = sectionHtml.match(/<a class="button-link" href="(.*?)">(.*?)<\/a>/);
+  
+  // Try to find an image inside next-step-section with the specific class first
+  let imgMatch = sectionHtml.match(/<div class="next-step-section">[\s\S]*?<img[^>]*class="next-step-image"[^>]*src="(.*?)"/);
+  
+  // Fallback: Find any image that appears in the section HTML
+  if (!imgMatch) {
+    imgMatch = sectionHtml.match(/<img[^>]*src="(.*?)"/);
+  }
 
   const features: string[] = [];
   const itemRegex = /<div class="feature-item">(.*?)<\/div>/g;
   
   let match;
-  while ((match = itemRegex.exec(html)) !== null) {
-    features.push(decodeHtmlEntities(match[1]));
+  while ((match = itemRegex.exec(sectionHtml)) !== null) {
+    // Strip any HTML tags that might have accidentally been placed inside the feature item (e.g. images)
+    const rawText = match[1].replace(/<[^>]*>?/gm, '').trim();
+    if (rawText) {
+      features.push(decodeHtmlEntities(rawText));
+    }
   }
 
   return {

@@ -88,12 +88,12 @@ export default function HeroSection({
       <div className="relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-10 md:px-16 mt-24">
         {/* Subtitle badge */}
         {subtitle && (
-          <div className="mb-6 flex items-center gap-2 text-sm sm:text-[14px] font-medium tracking-[2.5px] uppercase animate-fade-slide-up">
+          <div className="mb-4 flex items-center gap-2 text-sm sm:text-[14px] font-medium tracking-[2.5px] uppercase animate-fade-slide-up">
             <span
               className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-              style={{ background: "var(--color-brand-primary, #22c55e)" }}
+              style={{ background: "var(--color-brand-primary, #b6ef00)" }}
             />
-            <span className="font-sans" style={{ color: "var(--color-text-light, #ffffff)" }}>
+            <span className="font-sans uppercase" style={{ color: "var(--color-text-light, #ffffff)" }}>
               {subtitle}
             </span>
           </div>
@@ -101,7 +101,7 @@ export default function HeroSection({
 
         {/* Main Heading */}
         <h1
-          className="animate-fade-slide-up animation-delay-200 text-5xl sm:text-6xl lg:text-[85px] leading-[1.1] mb-10 max-w-[850px] uppercase font-sans font-normal tracking-wide"
+          className="animate-fade-slide-up animation-delay-200 text-4xl sm:text-6xl lg:text-[80px] leading-[1.1] mb-10 max-w-[720px] uppercase font-sans font-normal tracking-wide"
           style={{ color: "var(--color-text-light, #ffffff)" }}
         >
           {title}

@@ -45,21 +45,21 @@ export default function ServicesSection({ data }: ServicesSectionProps) {
   };
 
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-24 bg-white" id="services">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col items-center text-center mb-16 animate-fade-slide-up">
+    <section className="py-16 px-6 md:px-12 lg:px-24 bg-white" id="services">
+      <div className="max-w-[1100px] mx-auto">
+        <div className="flex flex-col items-center text-center mb-6 animate-fade-slide-up">
           <SectionBadge label={data.subtitle} variant="light" />
           <SectionTitle text={data.title} variant="light" as="h2" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {data.services.map((service, index) => (
             <div 
               key={index}
-              className="group relative p-10 pb-[100px] flex flex-col justify-start items-start rounded-[24px] bg-[#f4f5f5] animate-fade-slide-up overflow-hidden"
+              className="group relative p-8 pb-[90px] min-h-[460px] flex flex-col justify-start items-start rounded-[20px] bg-[#f4f5f5] animate-fade-slide-up overflow-hidden"
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <h3 className="text-xl sm:text-[22px] font-serif text-zinc-900 mb-6 uppercase tracking-wider relative z-10">
+              <h3 className="text-[18px] sm:text-[20px] font-serif text-zinc-900 mb-6 uppercase tracking-wider relative z-10">
                 {service.title}
               </h3>
               <p className="text-[15px] leading-[1.8] text-zinc-600 font-sans relative z-10">

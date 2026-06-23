@@ -27,7 +27,7 @@ export default function SectionTitle({
 
   return (
     <Tag
-      className={`text-3xl sm:text-[48px] lg:text-[54px] font-serif uppercase tracking-[1.5px] leading-[1.1] ${textColor} mb-4`}
+      className={`text-3xl sm:text-[40px] lg:text-[42px] font-serif uppercase tracking-[1.5px] leading-[1.1] ${textColor} mb-4`}
     >
       {text}
     </Tag>
