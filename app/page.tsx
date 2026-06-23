@@ -68,8 +68,6 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen text-foreground relative overflow-hidden" style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>
-      {/* Header — self-fetching server component */}
-      <Header />
 
       {/* Hero Section */}
       <HeroSection
@@ -94,10 +92,6 @@ export default async function HomePage() {
       {/* Next Step Section */}
       <NextStepSection data={nextStepData} />
 
-
-
-      {/* Footer — self-fetching server component */}
-      <Footer />
     </main>
   );
 }
