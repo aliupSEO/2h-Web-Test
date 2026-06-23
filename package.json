@@ -1,10 +1,10 @@
 {
-  "name": "website-template",
+  "name": "2h-web-test",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
@@ -22,5 +22,9 @@
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.2.9",
+    "lightningcss-win32-x64-msvc": "^1.32.0"
   }
 }
