@@ -17,7 +17,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getMenuItems } from "@/lib/graphql";
 import { getDesignSystemSettings } from "@/lib/design-system";
-import HeaderNav from "./HeaderNav";
+import HeaderClient from "./HeaderClient";
 
 export default async function Header() {
   const [menuItems, dsSettings] = await Promise.all([
@@ -25,57 +25,16 @@ export default async function Header() {
     getDesignSystemSettings(),
   ]);
 
-  const logoUrl = dsSettings?.branding?.logo_primary || null;
+  const logoLight = dsSettings?.branding?.logo_primary || null;
+  const logoDark = dsSettings?.branding?.logo_dark || logoLight;
   const siteTitle = dsSettings?.branding?.site_title || null;
 
   return (
-    <header className="absolute top-0 left-0 w-full z-20 bg-transparent py-8">
-      <div className="max-w-7xl mx-auto w-full px-6 sm:px-10 md:px-16 flex items-center justify-between">
-      {/* Logo */}
-      <Link href="/" className="flex-shrink-0 relative h-[42px] w-[170px] flex items-center">
-        {logoUrl ? (
-          <Image
-            src={logoUrl}
-            alt={siteTitle || "Logo"}
-            fill
-            priority
-            sizes="192px"
-            className="object-contain object-left"
-          />
-        ) : (
-          <span
-            className="text-xl font-bold tracking-wider opacity-50"
-            style={{ color: "var(--color-text-light, #ffffff)" }}
-          >
-            {siteTitle || "LOGO"}
-          </span>
-        )}
-      </Link>
-
-      {/* Desktop Navigation */}
-      {menuItems && menuItems.length > 0 ? (
-        <HeaderNav items={menuItems} />
-      ) : (
-        /* Fallback nav items when WP menus not configured */
-        <HeaderNav items={[
-          { id: "fallback-1", label: "Startseite", uri: "/" },
-          { id: "fallback-2", label: "Digitale Lösungen", uri: "/digitale-losungen" },
-          { id: "fallback-3", label: "Referenzen", uri: "/referenzen" },
-          { id: "fallback-4", label: "Über 2H", uri: "/uber-2h" },
-          { id: "fallback-5", label: "Kontakt", uri: "/kontakt" }
-        ]} />
-      )}
-
-      {/* Mobile hamburger */}
-      <button
-        className="lg:hidden p-2"
-        aria-label="Open menu"
-      >
-        <span className="block w-5 h-0.5 rounded mb-1.5" style={{ background: "var(--color-text-light, #ffffff)" }} />
-        <span className="block w-5 h-0.5 rounded mb-1.5" style={{ background: "var(--color-text-light, #ffffff)" }} />
-        <span className="block w-5 h-0.5 rounded" style={{ background: "var(--color-text-light, #ffffff)" }} />
-      </button>
-      </div>
-    </header>
+    <HeaderClient 
+      menuItems={menuItems} 
+      logoLight={logoLight} 
+      logoDark={logoDark} 
+      siteTitle={siteTitle} 
+    />
   );
 }

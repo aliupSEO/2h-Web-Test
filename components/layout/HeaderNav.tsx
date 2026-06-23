@@ -12,7 +12,7 @@ interface MenuItem {
   };
 }
 
-export default function HeaderNav({ items }: { items: MenuItem[] }) {
+export default function HeaderNav({ items, isScrolled = false }: { items: MenuItem[], isScrolled?: boolean }) {
   const pathname = usePathname();
 
   // Helper to check if a link is active
@@ -38,8 +38,8 @@ export default function HeaderNav({ items }: { items: MenuItem[] }) {
           <div key={item.id} className="relative group">
             <Link
               href={item.uri}
-              className={`flex items-center gap-1 transition-opacity duration-200 hover:opacity-80 uppercase tracking-[1px] text-[15px] font-medium`}
-              style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : "var(--color-text-light, #ffffff)" }}
+              className={`flex items-center gap-1.5 transition-colors duration-200 hover:opacity-80 uppercase tracking-[1.5px] text-[13px] font-medium`}
+              style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : (isScrolled ? "#111111" : "var(--color-text-light, #ffffff)") }}
             >
               {item.label}
               {showChevron && (

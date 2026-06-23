@@ -17,6 +17,7 @@ import Image from "next/image";
 import { getDesignSystemSettings } from "@/lib/design-system";
 import { getFooterData } from "@/lib/graphql";
 import ScrollToTop from "@/components/ui/ScrollToTop";
+import DinoGame from "@/components/ui/DinoGame";
 
 export default async function Footer() {
   const dsSettings = await getDesignSystemSettings();
@@ -54,8 +55,8 @@ export default async function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 xl:gap-12 mb-20">
           
           {/* Column 1: Brand & Social */}
-          <div className="flex flex-col gap-6">
-            <Link href="/" className="block">
+          <div className="flex flex-col items-start">
+            <Link href="/" className="block mb-4">
               {logoUrl ? (
                 <div className="relative h-[60px] w-[180px]">
                   <Image
@@ -76,11 +77,11 @@ export default async function Footer() {
               )}
             </Link>
             
-            <p className="text-sm text-zinc-400">
-              {tagline || "Hier entsteht Ihr digitales Ökosystem"}
+            <p className="text-[13px] text-zinc-300 mb-6 font-sans tracking-wide">
+              {tagline || "Hier entsteht ihr digitales Ökosystem"}
             </p>
             
-            <div className="flex items-center gap-4 mt-2">
+            <div className="flex items-center gap-5 mb-10">
               {socialLinks.map((s) => (
                 <a
                   key={s.name}
@@ -88,7 +89,7 @@ export default async function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.name}
-                  className="text-zinc-400 hover:text-[var(--color-brand-primary,#b6ef00)] transition-colors"
+                  className="text-zinc-400 hover:text-[var(--color-brand-primary,#b6ef00)] transition-colors scale-110"
                 >
                   {s.icon}
                 </a>
@@ -96,12 +97,15 @@ export default async function Footer() {
             </div>
 
             {footerData?.btnText && (
-              <div className="mt-4">
+              <div className="w-full">
                 <Link 
                   href={footerData.btnLink}
-                  className="inline-block border border-[var(--color-brand-primary,#b6ef00)] text-white hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black rounded-[24px] px-6 py-3 text-xs tracking-wider uppercase transition-all duration-300"
+                  className="flex border border-[var(--color-brand-primary,#b6ef00)] text-white hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black rounded-full px-4 py-3.5 text-[11px] font-medium tracking-[1.5px] uppercase transition-all duration-300 text-center justify-center items-center leading-[1.3] w-[230px]"
                 >
-                  {footerData.btnText}
+                  {/* Use a wrapper to force the specific wrap if the text matches */}
+                  <span className="whitespace-pre-line">
+                    {footerData.btnText.replace("KOSTENLOSES ", "KOSTENLOSES\n")}
+                  </span>
                 </Link>
               </div>
             )}
@@ -109,14 +113,14 @@ export default async function Footer() {
 
           {/* Column 2: Menu 1 */}
           <div>
-            <h4 className="text-white font-serif uppercase tracking-widest text-sm mb-6 mt-2">
+            <h4 className="text-white font-serif uppercase tracking-wide text-[18px] md:text-[20px] font-normal mb-8 mt-2">
               {footerData?.column2?.title || "DIGITALE LÖSUNGEN"}
             </h4>
             <ul className="space-y-4">
               {footerData?.column2?.links.map((link, i) => (
                 <li key={i}>
-                  <Link href={link.url} className="text-zinc-400 hover:text-white flex items-center gap-3 text-[14px] transition-colors group">
-                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-xs transition-transform group-hover:translate-x-1">&gt;</span> 
+                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center gap-4 text-[15px] font-sans transition-colors group">
+                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
                     {link.label}
                   </Link>
                 </li>
@@ -126,14 +130,14 @@ export default async function Footer() {
 
           {/* Column 3: Menu 2 */}
           <div>
-            <h4 className="text-white font-serif uppercase tracking-widest text-sm mb-6 mt-2">
+            <h4 className="text-white font-serif uppercase tracking-wide text-[18px] md:text-[20px] font-normal mb-8 mt-2">
               {footerData?.column3?.title || "2H WEBSOLUTIONS"}
             </h4>
             <ul className="space-y-4">
               {footerData?.column3?.links.map((link, i) => (
                 <li key={i}>
-                  <Link href={link.url} className="text-zinc-400 hover:text-white flex items-center gap-3 text-[14px] transition-colors group">
-                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-xs transition-transform group-hover:translate-x-1">&gt;</span> 
+                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center gap-4 text-[15px] font-sans transition-colors group">
+                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
                     {link.label}
                   </Link>
                 </li>
@@ -142,33 +146,7 @@ export default async function Footer() {
           </div>
 
           {/* Column 4: Dino Game */}
-          <div className="flex flex-col items-start lg:items-center">
-            <h4 className="text-zinc-500 font-serif text-[28px] leading-tight text-center mb-8 w-full max-w-[200px]">
-              {footerData?.gameTitle || "Lass uns ein Spiel spielen"}
-            </h4>
-            
-            <div className="relative w-full max-w-[220px] h-[100px] border-b border-zinc-600 flex items-end justify-between px-2 pb-[2px]">
-               {/* Background text */}
-               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
-                 <div className="flex justify-end w-full px-2 mb-2">
-                    <span className="text-zinc-600 text-[10px] font-mono tracking-widest uppercase">HI 0</span>
-                 </div>
-                 <span className="text-zinc-500 font-mono tracking-[0.2em] text-xs mt-2">GAME OVER</span>
-                 <span className="text-zinc-600 text-[9px] mt-4 tracking-wider uppercase">Tippen für Neustart</span>
-               </div>
-               
-               {/* Dino (Simplified pixel art using CSS polygon for T-Rex shape) */}
-               <div className="w-[20px] h-[22px] relative z-10" style={{ backgroundColor: 'var(--color-brand-primary, #b6ef00)', clipPath: 'polygon(50% 0%, 100% 0%, 100% 40%, 80% 40%, 80% 60%, 60% 60%, 60% 80%, 40% 80%, 40% 100%, 20% 100%, 20% 80%, 0% 80%, 0% 60%, 20% 60%, 20% 40%, 50% 40%)' }}>
-               </div>
-               
-               {/* Cactus */}
-               <div className="flex gap-1 items-end relative z-10">
-                  <div className="w-[5px] h-[16px] bg-zinc-600 rounded-t-sm"></div>
-                  <div className="w-[7px] h-[22px] bg-zinc-600 rounded-t-sm"></div>
-                  <div className="w-[5px] h-[14px] bg-zinc-600 rounded-t-sm"></div>
-               </div>
-            </div>
-          </div>
+          <DinoGame title={footerData?.gameTitle || "Lass uns ein Spiel spielen"} />
 
         </div>
 
