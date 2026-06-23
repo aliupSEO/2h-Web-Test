@@ -251,19 +251,30 @@ export function getDesignSystemCSS(settings: DesignSystemSettings): string {
   // ── Button Variants ────────────────────────────────────────────
   const buttonVariants = ["primary", "secondary", "outline", "text_only"] as const;
   for (const v of buttonVariants) {
-    const btn = ui.buttons[v];
+    const btn = ui?.buttons?.[v] || ({} as any);
     const prefix = `--btn-${v.replace("_", "-")}`;
     lines.push(`  /* Button: ${v} */`);
-    lines.push(`  ${prefix}-bg: ${btn.bg};`);
-    lines.push(`  ${prefix}-text: ${btn.text};`);
-    lines.push(`  ${prefix}-border-color: ${btn.border_color};`);
-    lines.push(`  ${prefix}-border-width: ${btn.border_width};`);
-    lines.push(`  ${prefix}-border-radius: ${btn.border_radius};`);
-    lines.push(`  ${prefix}-padding-x: ${btn.padding_x};`);
-    lines.push(`  ${prefix}-padding-y: ${btn.padding_y};`);
-    lines.push(`  ${prefix}-hover-bg: ${btn.hover_bg};`);
-    lines.push(`  ${prefix}-hover-text: ${btn.hover_text};`);
-    lines.push(`  ${prefix}-hover-border: ${btn.hover_border};`);
+    
+    // If the plugin lacks a Buttons UI, it might send garbage defaults.
+    // For primary buttons, force the background to brand primary.
+    if (v === "primary") {
+      lines.push(`  ${prefix}-bg: ${colors.brand.primary};`);
+      lines.push(`  ${prefix}-text: #000000;`);
+      lines.push(`  ${prefix}-border-radius: 9999px;`);
+      lines.push(`  ${prefix}-hover-bg: ${colors.brand.accent || colors.brand.primary};`);
+    } else {
+      lines.push(`  ${prefix}-bg: ${btn.bg || "transparent"};`);
+      lines.push(`  ${prefix}-text: ${btn.text || "inherit"};`);
+      lines.push(`  ${prefix}-border-radius: ${btn.border_radius || "9999px"};`);
+      lines.push(`  ${prefix}-hover-bg: ${btn.hover_bg || "transparent"};`);
+    }
+    
+    lines.push(`  ${prefix}-border-color: ${btn.border_color || "transparent"};`);
+    lines.push(`  ${prefix}-border-width: ${btn.border_width || "0px"};`);
+    lines.push(`  ${prefix}-padding-x: ${btn.padding_x || "24px"};`);
+    lines.push(`  ${prefix}-padding-y: ${btn.padding_y || "10px"};`);
+    lines.push(`  ${prefix}-hover-text: ${btn.hover_text || "inherit"};`);
+    lines.push(`  ${prefix}-hover-border: ${btn.hover_border || "transparent"};`);
   }
 
   // ── Forms ──────────────────────────────────────────────────────

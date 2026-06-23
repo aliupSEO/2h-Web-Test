@@ -12,9 +12,24 @@
  */
 
 import { Metadata } from "next";
-import { getHomePage } from "@/lib/graphql";
+import { 
+  getHomePage, 
+  extractHeroSectionData,
+  extractAboutSectionData, 
+  extractServicesSectionData,
+  extractProjectsSectionData,
+  extractTestimonialsSectionData,
+  extractNextStepSectionData,
+  getProjects,
+  getTestimonials
+} from "@/lib/graphql";
 import Header from "@/components/layout/Header";
 import HeroSection from "@/components/sections/HeroSection";
+import AboutSection from "@/components/sections/AboutSection";
+import ServicesSection from "@/components/sections/ServicesSection";
+import ProjectsSection from "@/components/sections/ProjectsSection";
+import TestimonialsSection from "@/components/sections/TestimonialsSection";
+import NextStepSection from "@/components/sections/NextStepSection";
 import CTASection from "@/components/sections/CTASection";
 import Footer from "@/components/layout/Footer";
 
@@ -31,6 +46,25 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const page = await getHomePage();
+  const heroData = page?.content ? extractHeroSectionData(page.content) : null;
+  const aboutData = page?.content ? extractAboutSectionData(page.content) : null;
+  const servicesData = page?.content ? extractServicesSectionData(page.content) : null;
+  const projectsData = page?.content ? extractProjectsSectionData(page.content) : null;
+  const testimonialsData = page?.content ? extractTestimonialsSectionData(page.content) : null;
+  const nextStepData = page?.content ? extractNextStepSectionData(page.content) : null;
+
+  // Fetch dynamic posts from WordPress categories
+  const dynamicProjects = await getProjects();
+  const dynamicTestimonials = await getTestimonials();
+
+  // Merge dynamic posts with parsed section data
+  if (projectsData && dynamicProjects.length > 0) {
+    projectsData.projects = dynamicProjects;
+  }
+  
+  if (testimonialsData && dynamicTestimonials.length > 0) {
+    testimonialsData.testimonials = dynamicTestimonials;
+  }
 
   return (
     <main className="min-h-screen text-foreground relative overflow-hidden" style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>
@@ -39,34 +73,28 @@ export default async function HomePage() {
 
       {/* Hero Section */}
       <HeroSection
-        title={page?.title}
-        subtitle={page?.seo?.description}
+        title={heroData?.title || page?.title}
+        subtitle={heroData?.subtitle || page?.seo?.description}
         backgroundImage={page?.featuredImage?.node?.sourceUrl}
+        cta={heroData ? { text: heroData.btnText, href: heroData.btnLink } : undefined}
       />
 
-      {/* 
-        Add more sections here as you build:
-        
-        <AboutSection ... />
-        <ServicesSection ... />
-        <ProjectsSection ... />
-        <TestimonialsSection ... />
-      */}
+      {/* About Section */}
+      <AboutSection data={aboutData} />
 
-      {/* CTA Section */}
-      <CTASection
-        title={page ? "Ready to Start?" : "CTA Section Preview"}
-        description={
-          page
-            ? undefined
-            : "This section will show your call-to-action content from WordPress."
-        }
-        cta={
-          page
-            ? { text: "Get in Touch", href: "/contact" }
-            : undefined
-        }
-      />
+      {/* Services Section */}
+      <ServicesSection data={servicesData} />
+
+      {/* Projects Section */}
+      <ProjectsSection data={projectsData} />
+
+      {/* Testimonials Section */}
+      <TestimonialsSection data={testimonialsData} />
+
+      {/* Next Step Section */}
+      <NextStepSection data={nextStepData} />
+
+
 
       {/* Footer — self-fetching server component */}
       <Footer />

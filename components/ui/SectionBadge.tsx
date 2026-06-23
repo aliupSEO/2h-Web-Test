@@ -21,9 +21,9 @@ export default function SectionBadge({ label, variant = "dark" }: SectionBadgePr
 
   return (
     <div className="flex items-center gap-2 mb-6">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand-green flex-shrink-0" />
+      <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }} />
       <span
-        className={`${textColor} text-xs sm:text-sm uppercase tracking-[2.5px] font-medium`}
+        className={`${textColor} text-xs sm:text-sm uppercase tracking-[2.5px] font-medium font-sans`}
       >
         {label}
       </span>

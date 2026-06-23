@@ -210,7 +210,7 @@ export async function getFormSettings() {
 export async function getMenuItems() {
   const data = await fetchGraphQL(`
     query {
-      menuItems(first: 10) {
+      menuItems(first: 50, where: { parentDatabaseId: 0 }) {
         nodes {
           id
           label
@@ -221,29 +221,76 @@ export async function getMenuItems() {
   `);
 
   if (data?.menuItems?.nodes && data.menuItems.nodes.length > 0) {
-    return data.menuItems.nodes;
+    const uniqueItems: { id: string; label: string; uri: string }[] = [];
+    const seen = new Set();
+    
+    for (const item of data.menuItems.nodes) {
+      if (!seen.has(item.label)) {
+        seen.add(item.label);
+        uniqueItems.push(item);
+      }
+    }
+    
+    // WordPress returns them in reverse order when multiple menus are fetched without a location.
+    // Reversing them restores the correct order: Startseite, Digitale Lösungen...
+    return uniqueItems.reverse();
   }
 
-  // Fallback: top-level pages as nav items
-  const pagesData = await fetchGraphQL(`
+  return [];
+}
+
+/**
+ * Fetches projects from WordPress posts in the "projects" category.
+ */
+export async function getProjects() {
+  const data = await fetchGraphQL(`
     query {
-      pages(first: 5) {
+      posts(where: { categoryName: "projects" }) {
         nodes {
-          id
           title
-          uri
+          slug
+          excerpt
+          featuredImage { node { sourceUrl } }
         }
       }
     }
   `);
+  
+  if (!data?.posts?.nodes) return [];
+  
+  return data.posts.nodes.map((post: any) => ({
+    title: decodeHtmlEntities(post.title),
+    tags: decodeHtmlEntities(post.excerpt?.replace(/<[^>]*>?/gm, '') || "").trim(),
+    link: `/projects/${post.slug}`,
+    imageUrl: post.featuredImage?.node?.sourceUrl || ""
+  }));
+}
 
-  return (
-    pagesData?.pages?.nodes?.map((page: { id: string; title: string; uri: string }) => ({
-      id: page.id,
-      label: page.title,
-      uri: page.uri,
-    })) ?? []
-  );
+/**
+ * Fetches testimonials from WordPress posts in the "testimonials" category.
+ */
+export async function getTestimonials() {
+  const data = await fetchGraphQL(`
+    query {
+      posts(where: { categoryName: "testimonials" }) {
+        nodes {
+          title
+          content
+          excerpt
+          featuredImage { node { sourceUrl } }
+        }
+      }
+    }
+  `);
+  
+  if (!data?.posts?.nodes) return [];
+  
+  return data.posts.nodes.map((post: any) => ({
+    author: decodeHtmlEntities(post.title),
+    role: decodeHtmlEntities(post.excerpt?.replace(/<[^>]*>?/gm, '') || "").trim(),
+    text: decodeHtmlEntities(post.content?.replace(/<[^>]*>?/gm, '') || "").trim(),
+    imageUrl: post.featuredImage?.node?.sourceUrl || ""
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -268,4 +315,285 @@ export function decodeHtmlEntities(str: string): string {
     .replace(/&lt;/g,    "<")
     .replace(/&gt;/g,    ">")
     .replace(/&quot;/g,  '"');
+}
+
+export interface HeroSectionData {
+  subtitle: string;
+  title: string;
+  btnText: string;
+  btnLink: string;
+}
+
+export function extractHeroSectionData(html: string): HeroSectionData | null {
+  if (!html?.includes('hero-section')) return null;
+
+  const subtitleMatch = html.match(/<div class="hero-subtitle">([\s\S]*?)<\/div>/);
+  const titleMatch = html.match(/<div class="hero-title">([\s\S]*?)<\/div>/);
+  const btnMatch = html.match(/<a class="hero-button" href="([\s\S]*?)">([\s\S]*?)<\/a>/);
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2] || ""),
+  };
+}
+
+export interface AboutSectionData {
+  subtitle: string;
+  titleLine1: string;
+  titleLine2: string;
+  description: string;
+  motto: string;
+  btnText: string;
+  btnLink: string;
+  phoneText: string;
+  phoneLink: string;
+  imageUrl: string;
+}
+
+export function extractAboutSectionData(html: string): AboutSectionData | null {
+  if (!html?.includes('about-section')) return null;
+  
+  const extract = (regex: RegExp) => (html.match(regex)?.[1] || "").trim();
+  
+  return {
+    subtitle: decodeHtmlEntities(extract(/<div class="section-subtitle">(.*?)<\/div>/)),
+    titleLine1: decodeHtmlEntities(extract(/<div class="section-title">\s*(?:<span>)?(.*?)(?:<\/span>)?\s*<br/i)),
+    titleLine2: decodeHtmlEntities(extract(/<div class="section-title">.*?<br\s*\/?>\s*(.*?)<\/div>/i)),
+    description: decodeHtmlEntities(extract(/<p class="description">(.*?)<\/p>/)),
+    motto: decodeHtmlEntities(extract(/<h5 class="motto">(.*?)<\/h5>/)),
+    btnText: decodeHtmlEntities(extract(/<a class="button-link" href=".*?">(.*?)<\/a>/)),
+    btnLink: extract(/<a class="button-link" href="(.*?)">/),
+    phoneText: decodeHtmlEntities(extract(/<a class="phone-link" href=".*?">(.*?)<\/a>/)),
+    phoneLink: extract(/<a class="phone-link" href="(.*?)">/),
+    imageUrl: extract(/<img[^>]*class="about-image"[^>]*src="(.*?)"/),
+  };
+}
+
+export interface ServiceItemData {
+  title: string;
+  description: string;
+  link: string;
+}
+
+export interface ServicesSectionData {
+  subtitle: string;
+  title: string;
+  services: ServiceItemData[];
+}
+
+export function extractServicesSectionData(html: string): ServicesSectionData | null {
+  if (!html?.includes('services-section')) return null;
+
+  const subtitleMatch = html.match(/<div class="services-section">[\s\S]*?<div class="section-subtitle">(.*?)<\/div>/);
+  const titleMatch = html.match(/<div class="services-section">[\s\S]*?<div class="section-title">(.*?)<\/div>/);
+
+  const services: ServiceItemData[] = [];
+  const itemRegex = /<div class="service-item">[\s\S]*?<h5 class="service-title">(.*?)<\/h5>[\s\S]*?<p class="service-desc">(.*?)<\/p>[\s\S]*?<a class="service-link" href="(.*?)">/g;
+  
+  let match;
+  while ((match = itemRegex.exec(html)) !== null) {
+    services.push({
+      title: decodeHtmlEntities(match[1]),
+      description: decodeHtmlEntities(match[2]),
+      link: match[3]
+    });
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    services
+  };
+}
+
+export interface ProjectItemData {
+  tags: string;
+  title: string;
+  link: string;
+  imageUrl: string;
+}
+
+export interface ProjectsSectionData {
+  subtitle: string;
+  title: string;
+  projects: ProjectItemData[];
+}
+
+export function extractProjectsSectionData(html: string): ProjectsSectionData | null {
+  if (!html?.includes('projects-section')) return null;
+
+  const subtitleMatch = html.match(/<div class="projects-section">[\s\S]*?<div class="section-subtitle">(.*?)<\/div>/);
+  const titleMatch = html.match(/<div class="projects-section">[\s\S]*?<div class="section-title">(.*?)<\/div>/);
+
+  const projects: ProjectItemData[] = [];
+  const itemRegex = /<div class="project-item">[\s\S]*?<h6 class="project-tags">(.*?)<\/h6>[\s\S]*?<h3 class="project-title">(.*?)<\/h3>[\s\S]*?<a class="project-link" href="(.*?)">[\s\S]*?<img[^>]*class="project-image"[^>]*src="(.*?)"/g;
+  
+  let match;
+  while ((match = itemRegex.exec(html)) !== null) {
+    projects.push({
+      tags: decodeHtmlEntities(match[1]),
+      title: decodeHtmlEntities(match[2]),
+      link: match[3],
+      imageUrl: match[4]
+    });
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    projects
+  };
+}
+
+export interface TestimonialItemData {
+  text: string;
+  author: string;
+  role: string;
+  imageUrl: string;
+}
+
+export interface TestimonialsSectionData {
+  subtitle: string;
+  title: string;
+  testimonials: TestimonialItemData[];
+}
+
+export function extractTestimonialsSectionData(html: string): TestimonialsSectionData | null {
+  if (!html?.includes('testimonials-section')) return null;
+
+  const subtitleMatch = html.match(/<div class="testimonials-section">[\s\S]*?<div class="section-subtitle">(.*?)<\/div>/);
+  const titleMatch = html.match(/<div class="testimonials-section">[\s\S]*?<div class="section-title">(.*?)<\/div>/);
+
+  const testimonials: TestimonialItemData[] = [];
+  const itemRegex = /<div class="testimonial-item">[\s\S]*?<p class="testimonial-text">(.*?)<\/p>[\s\S]*?<h6 class="testimonial-author">(.*?)<\/h6>[\s\S]*?<p class="testimonial-role">(.*?)<\/p>[\s\S]*?<img[^>]*class="testimonial-image"[^>]*src="(.*?)"/g;
+  
+  let match;
+  while ((match = itemRegex.exec(html)) !== null) {
+    testimonials.push({
+      text: decodeHtmlEntities(match[1]),
+      author: decodeHtmlEntities(match[2]),
+      role: decodeHtmlEntities(match[3]),
+      imageUrl: match[4]
+    });
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    testimonials
+  };
+}
+
+export interface NextStepSectionData {
+  title: string;
+  description: string;
+  btnText: string;
+  btnLink: string;
+  features: string[];
+  imageUrl: string;
+}
+
+export function extractNextStepSectionData(html: string): NextStepSectionData | null {
+  if (!html?.includes('next-step-section')) return null;
+
+  const titleMatch = html.match(/<div class="next-step-section">[\s\S]*?<h2 class="section-title">(.*?)<\/h2>/);
+  const descMatch = html.match(/<p class="description">(.*?)<\/p>/);
+  const btnMatch = html.match(/<a class="button-link" href="(.*?)">(.*?)<\/a>/);
+  const imgMatch = html.match(/<div class="next-step-section">[\s\S]*?<img[^>]*class="next-step-image"[^>]*src="(.*?)"/);
+
+  const features: string[] = [];
+  const itemRegex = /<div class="feature-item">(.*?)<\/div>/g;
+  
+  let match;
+  while ((match = itemRegex.exec(html)) !== null) {
+    features.push(decodeHtmlEntities(match[1]));
+  }
+
+  return {
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    description: decodeHtmlEntities(descMatch?.[1] || ""),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2] || ""),
+    features,
+    imageUrl: imgMatch?.[1] || "",
+  };
+}
+
+export interface FooterColumnLink {
+  label: string;
+  url: string;
+}
+
+export interface FooterColumnData {
+  title: string;
+  links: FooterColumnLink[];
+}
+
+export interface FooterSectionData {
+  btnText: string;
+  btnLink: string;
+  column2: FooterColumnData;
+  column3: FooterColumnData;
+  gameTitle: string;
+}
+
+export function extractFooterSectionData(html: string): FooterSectionData | null {
+  if (!html?.includes('footer-section')) return null;
+
+  const btnMatch = html.match(/<a class="footer-btn" href="(.*?)">(.*?)<\/a>/);
+  
+  const col2Title = html.match(/<div class="footer-col-2">[\s\S]*?<h4 class="footer-heading">(.*?)<\/h4>/);
+  const col2Links: FooterColumnLink[] = [];
+  const col2HtmlMatch = html.match(/<div class="footer-col-2">([\s\S]*?)<\/div>/);
+  if (col2HtmlMatch) {
+    const linkRegex = /<a class="footer-link" href="(.*?)">(.*?)<\/a>/g;
+    let match;
+    while ((match = linkRegex.exec(col2HtmlMatch[1])) !== null) {
+      col2Links.push({ url: match[1], label: decodeHtmlEntities(match[2]) });
+    }
+  }
+
+  const col3Title = html.match(/<div class="footer-col-3">[\s\S]*?<h4 class="footer-heading">(.*?)<\/h4>/);
+  const col3Links: FooterColumnLink[] = [];
+  const col3HtmlMatch = html.match(/<div class="footer-col-3">([\s\S]*?)<\/div>/);
+  if (col3HtmlMatch) {
+    const linkRegex = /<a class="footer-link" href="(.*?)">(.*?)<\/a>/g;
+    let match;
+    while ((match = linkRegex.exec(col3HtmlMatch[1])) !== null) {
+      col3Links.push({ url: match[1], label: decodeHtmlEntities(match[2]) });
+    }
+  }
+
+  const gameTitle = html.match(/<div class="footer-col-4">[\s\S]*?<h4 class="footer-heading">(.*?)<\/h4>/);
+
+  return {
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2] || ""),
+    column2: {
+      title: decodeHtmlEntities(col2Title?.[1] || ""),
+      links: col2Links
+    },
+    column3: {
+      title: decodeHtmlEntities(col3Title?.[1] || ""),
+      links: col3Links
+    },
+    gameTitle: decodeHtmlEntities(gameTitle?.[1] || "")
+  };
+}
+
+export async function getFooterData() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "footer" }) {
+        nodes {
+          content
+        }
+      }
+    }
+  `);
+  const html = data?.pages?.nodes?.[0]?.content;
+  if (!html) return null;
+  return extractFooterSectionData(html);
 }

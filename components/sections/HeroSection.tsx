@@ -103,7 +103,7 @@ export default function HeroSection({
               className="h-1.5 w-1.5 rounded-full flex-shrink-0"
               style={{ background: "var(--color-brand-primary, #22c55e)" }}
             />
-            <span style={{ color: "var(--color-text-light, #ffffff)" }}>
+            <span className="font-sans" style={{ color: "var(--color-text-light, #ffffff)" }}>
               {subtitle}
             </span>
           </div>
@@ -111,7 +111,7 @@ export default function HeroSection({
 
         {/* Main Heading */}
         <h1
-          className="animate-fade-slide-up animation-delay-200 text-5xl sm:text-7xl lg:text-[76px] uppercase tracking-[4px] sm:tracking-[7.8px] leading-[1.3] mb-10 drop-shadow-lg max-w-4xl font-bold"
+          className="animate-fade-slide-up animation-delay-200 text-4xl sm:text-6xl lg:text-[70px] leading-[1.15] mb-10 max-w-4xl font-serif"
           style={{ color: "var(--color-text-light, #ffffff)" }}
         >
           {title}
@@ -122,31 +122,13 @@ export default function HeroSection({
           {cta ? (
             <Link
               href={cta.href}
-              className="group inline-flex items-center gap-3 shadow-xl hover:gap-5 hover:shadow-lg active:scale-95 btn-primary"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[13px] hover:bg-[#b6ef00] hover:text-black transition-colors"
             >
               {cta.text}
-              {/* Arrow */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-[18px] h-[18px] flex-shrink-0 transition-transform duration-300 group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.2}
-                aria-hidden="true"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
             </Link>
           ) : (
-            <span
-              className="inline-block px-10 py-4 border text-[13px] font-semibold uppercase tracking-[1.5px] rounded-full italic"
-              style={{
-                borderColor: "var(--input-border-color, #1f2937)",
-                color: "var(--color-brand-muted, #6b7280)",
-              }}
-            >
-              CTA Button — Set in WordPress
+            <span className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[13px] hover:bg-[#b6ef00] hover:text-black transition-colors cursor-pointer">
+              DIGITALE LÖSUNGEN
             </span>
           )}
         </div>

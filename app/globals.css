@@ -19,6 +19,7 @@
   --color-bg-primary:    #0a0a0a;
   --color-bg-alternate:  #111111;
   --color-bg-dark:       #000000;
+  --color-footer-bg:     #3a3a3a;
 
   /* ── Text Colors (defaults) ─────────────────────────── */
   --color-text-primary:   #f4f4f5;
@@ -55,7 +56,8 @@
 
 @theme inline {
   /* Typography */
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-barlow);
+  --font-serif: var(--font-federo);
 
   /* Surface — use CSS vars so WP Design System can override */
   --color-background: var(--background);

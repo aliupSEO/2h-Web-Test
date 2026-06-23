@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Federo, Barlow } from "next/font/google";
 import { getDesignSystemSettings, getDesignSystemCSS } from "@/lib/design-system";
 import "./globals.css";
 
@@ -13,8 +13,16 @@ import "./globals.css";
  *   in globals.css are used instead.
  */
 
-const inter = Inter({
-  variable: "--font-inter",
+const federo = Federo({
+  variable: "--font-federo",
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const barlow = Barlow({
+  variable: "--font-barlow",
+  weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -43,7 +51,7 @@ export default async function RootLayout({
   const dsCSS = dsSettings ? getDesignSystemCSS(dsSettings) : "";
 
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${federo.variable} ${barlow.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {/* Design system tokens from WordPress — injected at top of body.
             CSS custom properties on :root work regardless of <style> placement. */}

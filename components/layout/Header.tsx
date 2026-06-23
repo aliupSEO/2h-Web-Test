@@ -17,6 +17,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getMenuItems } from "@/lib/graphql";
 import { getDesignSystemSettings } from "@/lib/design-system";
+import HeaderNav from "./HeaderNav";
 
 export default async function Header() {
   const [menuItems, dsSettings] = await Promise.all([
@@ -52,42 +53,18 @@ export default async function Header() {
       </Link>
 
       {/* Desktop Navigation */}
-      <nav className="hidden lg:flex items-center gap-8 text-[11px] sm:text-xs tracking-[2px] font-semibold">
-        {menuItems && menuItems.length > 0 ? (
-          menuItems.map((item: { id: string; label: string; uri: string }) => (
-            <Link
-              key={item.id}
-              href={item.uri}
-              className="transition-opacity duration-200 hover:opacity-60"
-              style={{ color: "var(--color-text-light, #ffffff)" }}
-            >
-              {item.label.toUpperCase()}
-            </Link>
-          ))
-        ) : (
-          /* Fallback nav items when WP menus not configured */
-          <>
-            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>HOME</span>
-            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>ABOUT</span>
-            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>SERVICES</span>
-            <span className="cursor-default opacity-40" style={{ color: "var(--color-text-light, #ffffff)" }}>CONTACT</span>
-          </>
-        )}
-      </nav>
-
-      {/* CTA Button */}
-      <div className="hidden lg:block">
-        <Link
-          href="/contact"
-          className="inline-block transition-all duration-300 active:scale-95 hover:scale-105 btn-primary"
-        >
-          {dsSettings?.branding?.tagline
-            ? dsSettings.branding.tagline.length > 30
-              ? "Contact"
-              : dsSettings.branding.tagline
-            : "Get in Touch"}
-        </Link>
-      </div>
+      {menuItems && menuItems.length > 0 ? (
+        <HeaderNav items={menuItems} />
+      ) : (
+        /* Fallback nav items when WP menus not configured */
+        <HeaderNav items={[
+          { id: "fallback-1", label: "Startseite", uri: "/" },
+          { id: "fallback-2", label: "Digitale Lösungen", uri: "/digitale-losungen" },
+          { id: "fallback-3", label: "Referenzen", uri: "/referenzen" },
+          { id: "fallback-4", label: "Über 2H", uri: "/uber-2h" },
+          { id: "fallback-5", label: "Kontakt", uri: "/kontakt" }
+        ]} />
+      )}
 
       {/* Mobile hamburger */}
       <button
