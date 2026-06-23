@@ -103,7 +103,7 @@ export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle
               </Link>
               {item.childItems?.nodes && item.childItems.nodes.length > 0 && (
                 <ul className="mt-4 flex flex-col gap-3 pl-4">
-                  {item.childItems.nodes.map(child => (
+                  {item.childItems.nodes.map((child: any) => (
                     <li key={child.id}>
                       <Link 
                         href={child.uri}
