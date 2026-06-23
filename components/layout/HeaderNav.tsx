@@ -23,7 +23,7 @@ export default function HeaderNav({ items }: { items: MenuItem[] }) {
   };
 
   return (
-    <nav className="hidden lg:flex items-center gap-8 text-[14px] font-sans font-medium ml-auto">
+    <nav className="hidden lg:flex items-center gap-8 text-[16px] font-sans font-medium ml-auto">
       {items.map((item) => {
         const active = isActive(item.uri);
         // Simple check if it has children or if the label contains something indicating a dropdown
@@ -38,7 +38,7 @@ export default function HeaderNav({ items }: { items: MenuItem[] }) {
           <div key={item.id} className="relative group">
             <Link
               href={item.uri}
-              className={`flex items-center gap-1 transition-opacity duration-200 hover:opacity-80 uppercase tracking-[1px] text-[13px] font-medium`}
+              className={`flex items-center gap-1 transition-opacity duration-200 hover:opacity-80 uppercase tracking-[1px] text-[15px] font-medium`}
               style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : "var(--color-text-light, #ffffff)" }}
             >
               {item.label}

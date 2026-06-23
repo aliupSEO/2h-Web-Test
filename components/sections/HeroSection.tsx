@@ -67,7 +67,7 @@ export default function HeroSection({
 
   return (
     <section
-      className="relative min-h-screen flex flex-col justify-center items-start px-6 md:px-16 lg:px-32 py-20 overflow-hidden"
+      className="relative min-h-screen flex flex-col justify-center items-center py-20 overflow-hidden"
       style={{ background: "var(--color-bg-dark, #0a0a0a)" }}
     >
       {/* Background Image */}
@@ -84,21 +84,11 @@ export default function HeroSection({
         </div>
       )}
 
-      {/* Radial Glow */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none z-[1]"
-        style={{
-          background:
-            `radial-gradient(ellipse 60% 60% at 20% 50%, color-mix(in srgb, var(--color-brand-primary, #22c55e) 12%, transparent) 0%, transparent 80%)`,
-        }}
-      />
-
       {/* Content */}
-      <div className="relative z-10 max-w-5xl w-full mt-24">
+      <div className="relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-10 md:px-16 mt-24">
         {/* Subtitle badge */}
         {subtitle && (
-          <div className="mb-6 flex items-center gap-2 text-xs sm:text-sm font-medium tracking-[2.5px] uppercase animate-fade-slide-up">
+          <div className="mb-6 flex items-center gap-2 text-sm sm:text-[14px] font-medium tracking-[2.5px] uppercase animate-fade-slide-up">
             <span
               className="h-1.5 w-1.5 rounded-full flex-shrink-0"
               style={{ background: "var(--color-brand-primary, #22c55e)" }}
@@ -111,23 +101,23 @@ export default function HeroSection({
 
         {/* Main Heading */}
         <h1
-          className="animate-fade-slide-up animation-delay-200 text-4xl sm:text-6xl lg:text-[70px] leading-[1.15] mb-10 max-w-4xl font-serif"
+          className="animate-fade-slide-up animation-delay-200 text-5xl sm:text-6xl lg:text-[85px] leading-[1.1] mb-10 max-w-[850px] uppercase font-sans font-normal tracking-wide"
           style={{ color: "var(--color-text-light, #ffffff)" }}
         >
           {title}
         </h1>
 
         {/* CTA Button */}
-        <div className="flex flex-wrap gap-4 mt-6 animate-fade-slide-up animation-delay-300">
+        <div className="flex flex-wrap gap-4 mt-8 animate-fade-slide-up animation-delay-300">
           {cta ? (
             <Link
               href={cta.href}
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[13px] hover:bg-[#b6ef00] hover:text-black transition-colors"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[#b6ef00] hover:text-black transition-colors"
             >
               {cta.text}
             </Link>
           ) : (
-            <span className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[13px] hover:bg-[#b6ef00] hover:text-black transition-colors cursor-pointer">
+            <span className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[#b6ef00] hover:text-black transition-colors cursor-pointer">
               DIGITALE LÖSUNGEN
             </span>
           )}
