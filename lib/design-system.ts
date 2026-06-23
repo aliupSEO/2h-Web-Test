@@ -30,6 +30,9 @@ export interface DesignSystemBranding {
     youtube: string;
     facebook: string;
     tiktok: string;
+    whatsapp?: string;
+    phone?: string;
+    email?: string;
   };
 }
 
