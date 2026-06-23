@@ -174,6 +174,26 @@ export async function getAboutPage() {
   return data?.pages?.nodes?.[0] ?? null;
 }
 
+/** Digitale Lösungen page */
+export async function getDigitaleLosungenPage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "digitale-losungen-2" }) {
+        nodes {
+          id
+          title
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // WordPress REST API helpers (non-GraphQL)
 // ---------------------------------------------------------------------------
@@ -215,13 +235,20 @@ export async function getMenuItems() {
           id
           label
           uri
+          childItems {
+            nodes {
+              id
+              label
+              uri
+            }
+          }
         }
       }
     }
   `);
 
   if (data?.menuItems?.nodes && data.menuItems.nodes.length > 0) {
-    const uniqueItems: { id: string; label: string; uri: string }[] = [];
+    const uniqueItems: { id: string; label: string; uri: string; childItems?: any }[] = [];
     const seen = new Set();
     
     for (const item of data.menuItems.nodes) {
@@ -336,6 +363,77 @@ export function extractHeroSectionData(html: string): HeroSectionData | null {
     title: decodeHtmlEntities(titleMatch?.[1] || ""),
     btnLink: btnMatch?.[1] || "",
     btnText: decodeHtmlEntities(btnMatch?.[2] || ""),
+  };
+}
+
+export interface DigitaleHeroSectionData {
+  subtitle: string;
+  title: string;
+  description: string;
+  btnText: string;
+  btnLink: string;
+  imageUrl: string;
+}
+
+export function extractDigitaleHeroSectionData(html: string): DigitaleHeroSectionData | null {
+  // Try to isolate the hero section (everything before the first <h3> or <h2>)
+  const heroHtml = html.split(/<h[23]/i)[0] || html;
+
+  // Subtitle can be an <h6> or the first <li> in a list
+  const subtitleMatch = heroHtml.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || heroHtml.match(/<li[^>]*>([\s\S]*?)<\/li>/i);
+  const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  
+  // Find paragraphs that DO NOT contain links for the description
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(heroHtml)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      description = pMatch[1];
+      break;
+    }
+  }
+
+  const btnMatch = heroHtml.match(/<a[^>]*href="(.*?)"[^>]*>([\s\S]*?)<\/a>/i);
+  const imgMatch = heroHtml.match(/<img[^>]*src="(.*?)"/i);
+
+  if (!titleMatch) return null;
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || "DIGITALE"),
+    title: decodeHtmlEntities(titleMatch?.[1] || "LÖSUNGEN"),
+    description: decodeHtmlEntities(description),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2].replace(/<[^>]*>?/gm, '').trim() || ""),
+    imageUrl: imgMatch?.[1] || "",
+  };
+}
+
+export function extractDigitaleNextStepSectionData(html: string): NextStepSectionData | null {
+  const sections = html.split('<hr');
+  const sectionHtml = sections.length > 1 ? sections[1] : html;
+
+  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  const descMatch = sectionHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+  const btnMatch = sectionHtml.match(/<a[^>]*href="(.*?)"[^>]*>([\s\S]*?)<\/a>/i);
+  const imgMatch = sectionHtml.match(/<img[^>]*src="(.*?)"/i);
+
+  const features: string[] = [];
+  const listRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+  let match;
+  while ((match = listRegex.exec(sectionHtml)) !== null) {
+    features.push(decodeHtmlEntities(match[1].replace(/<[^>]*>?/gm, '').trim()));
+  }
+
+  if (!titleMatch) return null;
+
+  return {
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    description: decodeHtmlEntities(descMatch?.[1] || ""),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2] || ""),
+    features,
+    imageUrl: imgMatch?.[1] || "",
   };
 }
 
@@ -543,6 +641,43 @@ export interface FooterColumnLink {
 export interface FooterColumnData {
   title: string;
   links: FooterColumnLink[];
+}
+
+export interface DigitaleServiceData {
+  title: string;
+  link: string;
+  imageUrl: string;
+}
+
+export function extractDigitaleServicesData(html: string): DigitaleServiceData[] {
+  const parts = html.split(/Kostenloses Erstgespräch vereinbaren.*?<\/p>/i);
+  const servicesHtml = parts.length > 1 ? parts[1].split(/<h2[^>]*>Kein großer Aufwand/i)[0] : "";
+
+  const services: DigitaleServiceData[] = [];
+  
+  // Look for an optional image, followed by a heading/paragraph containing an <a> tag
+  const regex = /(?:<figure[^>]*>[\s\S]*?<img[^>]*src="([^"]+)"[\s\S]*?<\/figure>\s*)?(?:<h3[^>]*>|<p[^>]*>)([\s\S]*?)(?:<\/h3>|<\/p>)/gi;
+
+  let match;
+  while ((match = regex.exec(servicesHtml)) !== null) {
+    const imageUrl = match[1] || "";
+    const innerHtml = match[2];
+    
+    if (!innerHtml.includes('<a')) continue;
+    
+    const linkMatch = innerHtml.match(/href="([^"]+)"/i);
+    const link = linkMatch ? linkMatch[1] : "";
+    
+    let title = innerHtml.replace(/<a[^>]*><\/a>/g, '');
+    title = title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    title = title.replace(/&amp;/g, '&');
+    
+    if (title) {
+      services.push({ title, link, imageUrl });
+    }
+  }
+
+  return services;
 }
 
 export interface FooterSectionData {

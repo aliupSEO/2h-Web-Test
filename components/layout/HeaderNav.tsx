@@ -38,7 +38,7 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
           <div key={item.id} className="relative group">
             <Link
               href={item.uri}
-              className={`flex items-center gap-1.5 transition-colors duration-200 hover:opacity-80 uppercase tracking-[1.5px] text-[13px] font-medium`}
+              className={`flex items-center gap-1.5 transition-colors duration-200 uppercase tracking-[1.5px] text-[13px] font-medium group-hover:!text-[var(--color-brand-primary,#b6ef00)]`}
               style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : (isScrolled ? "#111111" : "var(--color-text-light, #ffffff)") }}
             >
               {item.label}
@@ -53,14 +53,31 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="opacity-70 mt-[-2px]"
+                  className="opacity-70 mt-[-2px] transition-transform duration-200 group-hover:rotate-180"
                 >
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               )}
             </Link>
-            
-            {/* Optional dropdown menu could go here */}
+            {/* Dropdown Menu */}
+            {hasChildren && (
+              <div className="absolute top-full left-[-10px] pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
+                <div className="min-w-[160px] bg-white rounded-xl shadow-xl py-3 border border-zinc-100">
+                  <ul className="flex flex-col">
+                    {item.childItems?.nodes.map((child) => (
+                      <li key={child.id}>
+                        <Link
+                          href={child.uri}
+                          className="block px-5 py-2.5 text-[14px] font-sans text-black hover:text-[var(--color-brand-primary,#b6ef00)] hover:bg-zinc-50 transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
         );
       })}

@@ -42,6 +42,9 @@ export const metadata: Metadata = {
   },
 };
 
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -61,7 +64,11 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: dsCSS }}
           />
         )}
-        {children}
+        <Header />
+        <main className="flex-1 w-full">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );
