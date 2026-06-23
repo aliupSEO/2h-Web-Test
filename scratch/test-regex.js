@@ -1,32 +1,38 @@
-const username = 'hartleb@2hws.at';
-const password = '9dzk Jyhh RdZ2 DMLs UzFf AvF6';
-const baseUrl = 'https://silvioh23.sg-host.com';
+// No import
 
-const authString = Buffer.from(`${username}:${password}`).toString("base64");
+// Need to mock or compile since it's TS... let's just write a quick script to test the regex
+const html = `
+<ul class="wp-block-list">
+<li>Digitale</li>
+</ul>
+<h1 class="wp-block-heading">Lösungen</h1>
+<p class="wp-block-paragraph">Maßgeschneiderte Lösungen, abgestimmt auf individuelle Geschäftsziele – von der Analyse bis zur erfolgreichen Umsetzung.</p>
+<p class="wp-block-paragraph"><a href="https://2hws-termin-buchen.vercel.app/" target="_blank" rel="noreferrer noopener">Kostenloses Erstgespräch vereinbaren</a></p>
+<figure class="wp-block-image size-large is-resized"><img loading="lazy" decoding="async" width="684" height="1024" src="http://silvioh23.sg-host.com/wp-content/uploads/2026/06/ztrh-684x1024.jpg" alt="" class="wp-image-244" style="aspect-ratio:0.6679719736565317;width:226px;height:auto" srcset="https://silvioh23.sg-host.com/wp-content/uploads/2026/06/ztrh-684x1024.jpg 684w, https://silvioh23.sg-host.com/wp-content/uploads/2026/06/ztrh-200x300.jpg 200w, https://silvioh23.sg-host.com/wp-content/uploads/2026/06/ztrh-768x1150.jpg 768w, https://silvioh23.sg-host.com/wp-content/uploads/2026/06/ztrh.jpg 844w" sizes="auto, (max-width: 684px) 100vw, 684px" /></figure>
+`;
 
-async function testRegex() {
-  const pagesRes = await fetch(`${baseUrl}/wp-json/wp/v2/pages?slug=home`, {
-    headers: { 'Authorization': `Basic ${authString}` }
+  const heroHtml = html.split(/<h[23]/i)[0] || html;
+  const subtitleMatch = heroHtml.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || heroHtml.match(/<li[^>]*>([\s\S]*?)<\/li>/i);
+  const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(heroHtml)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      description = pMatch[1];
+      break;
+    }
+  }
+
+  const btnMatch = heroHtml.match(/<a[^>]*href="(.*?)"[^>]*>([\s\S]*?)<\/a>/i);
+  const imgMatch = heroHtml.match(/<img[^>]*src="(.*?)"/i);
+
+console.log({
+    subtitle: subtitleMatch?.[1] || "DIGITALE",
+    title: titleMatch?.[1] || "LÖSUNGEN",
+    description: description,
+    btnLink: btnMatch?.[1] || "",
+    btnText: btnMatch?.[2].replace(/<[^>]*>?/gm, '').trim() || "",
+    imageUrl: imgMatch?.[1] || "",
   });
-  const pages = await pagesRes.json();
-  const html = pages[0].content.rendered;
-  
-  const itemRegex = /<div class="project-item">[\s\S]*?<h6 class="project-tags">(.*?)<\/h6>[\s\S]*?<h3 class="project-title">(.*?)<\/h3>[\s\S]*?<a class="project-link" href="(.*?)">[\s\S]*?<img[^>]*class="project-image"[^>]*src="(.*?)"/g;
-  
-  let match;
-  const projects = [];
-  while ((match = itemRegex.exec(html)) !== null) {
-    projects.push(match[2]);
-  }
-  
-  console.log("Projects found:", projects);
-  console.log("Projects section HTML snippet:");
-  const projMatch = html.match(/<div class="projects-section">[\s\S]*?<\/div>\s*?<\/div>/);
-  if (projMatch) {
-    console.log(projMatch[0].substring(0, 500));
-  } else {
-    console.log(html.substring(0, 500));
-  }
-}
-
-testRegex();

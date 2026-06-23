@@ -36,7 +36,7 @@ export default function DigitaleHeroSection({ data }: DigitaleHeroSectionProps) 
           </span>
         </div>
 
-        <h1 className="text-5xl sm:text-[70px] lg:text-[90px] font-serif text-white uppercase tracking-[1px] md:tracking-[2px] leading-[1.1] mb-6">
+        <h1 className="text-4xl sm:text-5xl md:text-[70px] lg:text-[90px] font-serif text-white uppercase tracking-[1px] md:tracking-[2px] leading-[1.1] mb-6">
           {data.title}
         </h1>
 

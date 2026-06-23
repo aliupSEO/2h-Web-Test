@@ -15,7 +15,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
     <section className="py-24 px-6 md:px-12 lg:px-24 bg-white">
       <div className="max-w-[1150px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
         {/* Text Content */}
-        <div className="flex flex-col items-start animate-fade-slide-up">
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left animate-fade-slide-up">
           <SectionBadge label={data.subtitle} variant="light" />
           
           <h2 className="text-4xl sm:text-[45px] lg:text-[50px] leading-[1.15] font-sans font-normal mb-6 tracking-wide text-zinc-900 uppercase">
@@ -28,11 +28,11 @@ export default function AboutSection({ data }: AboutSectionProps) {
             {data.description}
           </p>
 
-          <h5 className="text-[14px] font-sans mb-8 text-zinc-900 leading-[1.6] uppercase tracking-[1px] max-w-lg">
+          <h5 className="text-[14px] font-sans mb-8 text-zinc-900 leading-[1.6] uppercase tracking-[1px] max-w-lg mx-auto lg:mx-0">
             {data.motto}
           </h5>
 
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6">
             <Link 
               href={data.btnLink} 
               className="btn-primary font-sans font-medium uppercase tracking-[1px] text-[13px] px-8 py-3 hover:!bg-[#111111] hover:!text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
