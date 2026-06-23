@@ -41,7 +41,7 @@ export default function HeaderNav({ items }: { items: MenuItem[] }) {
               className={`flex items-center gap-1 transition-opacity duration-200 hover:opacity-80 uppercase tracking-[1px] text-[13px] ${
                 active ? "font-semibold" : "font-medium"
               }`}
-              style={{ color: active ? "#b6ef00" : "var(--color-text-light, #ffffff)" }}
+              style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : "var(--color-text-light, #ffffff)" }}
             >
               {item.label}
               {showChevron && (
