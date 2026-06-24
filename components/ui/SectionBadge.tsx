@@ -17,13 +17,13 @@ interface SectionBadgeProps {
 }
 
 export default function SectionBadge({ label, variant = "dark" }: SectionBadgeProps) {
-  const textColor = variant === "dark" ? "text-white" : "text-zinc-500";
+  const textColor = variant === "dark" ? "text-white" : "text-[rgb(16,16,16)]";
 
   return (
-    <div className="flex items-center gap-2 mb-6">
+    <div className="flex items-center gap-2 mb-2">
       <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }} />
       <span
-        className={`${textColor} text-xs sm:text-sm uppercase tracking-[2.5px] font-medium font-sans`}
+        className={`${textColor} text-[17px] leading-[30px] uppercase tracking-[2.5px] font-normal font-serif`}
       >
         {label}
       </span>

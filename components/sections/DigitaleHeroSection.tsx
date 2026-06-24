@@ -36,11 +36,11 @@ export default function DigitaleHeroSection({ data }: DigitaleHeroSectionProps) 
           </span>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-[70px] lg:text-[90px] font-serif text-white uppercase tracking-[1px] md:tracking-[2px] leading-[1.1] mb-6">
+        <h1 className="text-4xl sm:text-5xl md:text-[60px] lg:text-[76px] font-serif font-normal text-white uppercase tracking-[1px] md:tracking-[2px] leading-[1.1] lg:leading-[99px] mb-6">
           {data.title}
         </h1>
 
-        <p className="text-[15px] md:text-[18px] lg:text-[20px] font-serif leading-relaxed mb-10 max-w-[650px] text-left text-white" style={{ color: "var(--color-text-light, #e4e4e7)" }}>
+        <p className="text-[15px] md:text-[16px] lg:text-[17px] font-serif font-normal leading-relaxed lg:leading-[30px] mb-10 max-w-[650px] text-left text-white" style={{ color: "var(--color-text-light, #e4e4e7)" }}>
           {data.description}
         </p>
 

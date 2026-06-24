@@ -27,7 +27,7 @@ export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle
   }, []);
 
   const logoUrl = isScrolled || isMobileMenuOpen ? (logoDark || logoLight) : logoLight;
-  const textColor = isScrolled || isMobileMenuOpen ? "#111111" : "var(--color-text-light, #ffffff)";
+  const textColor = isScrolled || isMobileMenuOpen ? "rgb(16, 16, 16)" : "var(--color-text-light, #ffffff)";
 
   const navItems = menuItems && menuItems.length > 0 ? menuItems : [
     { id: "fallback-1", label: "STARTSEITE", uri: "/" },
@@ -99,7 +99,7 @@ export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle
                 className="text-xl font-medium tracking-wide uppercase text-black hover:text-[var(--color-brand-primary)]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                {item.label}
+                <span suppressHydrationWarning>{item.label}</span>
               </Link>
               {item.childItems?.nodes && item.childItems.nodes.length > 0 && (
                 <ul className="mt-4 flex flex-col gap-3 pl-4">
@@ -110,7 +110,7 @@ export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle
                         className="text-base text-zinc-600 hover:text-[var(--color-brand-primary)]"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        {child.label}
+                        <span suppressHydrationWarning>{child.label}</span>
                       </Link>
                     </li>
                   ))}

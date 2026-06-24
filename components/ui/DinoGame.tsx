@@ -11,7 +11,7 @@ const JUMP_VELOCITY = -9;
 const GAME_SPEED = 4;
 const DINO_WIDTH = 20;
 const DINO_HEIGHT = 22;
-const CONTAINER_WIDTH = 220;
+const CONTAINER_WIDTH = 350;
 const CONTAINER_HEIGHT = 100;
 
 export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoGameProps) {
@@ -167,13 +167,16 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
 
   return (
     <div className="flex flex-col items-start lg:items-center">
-      <h4 className="text-zinc-500 font-serif text-[28px] leading-tight text-center mb-8 w-full max-w-[200px]">
+      <h4 
+        className="text-zinc-500 font-normal text-[40px] leading-[50px] text-center mb-4 w-full max-w-[350px]"
+        style={{ fontFamily: "var(--font-barlow)" }}
+      >
         {title}
       </h4>
       
       <div 
         ref={containerRef}
-        className="relative w-full max-w-[220px] h-[100px] border-b border-zinc-600 flex items-end px-2 pb-[2px] cursor-pointer overflow-hidden group"
+        className="relative w-full max-w-[350px] h-[100px] border-b border-zinc-600 flex items-end px-2 pb-[2px] cursor-pointer overflow-hidden group"
         onClick={jump}
       >
          {/* Background text */}

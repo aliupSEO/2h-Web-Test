@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+        "my-wordpress": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@automattic/mcp-wordpress-remote@latest"
+            ],
+            "env": {
+                "WP_API_URL": "https://silvioh23.sg-host.com",
+                "JWT_TOKEN": "3Lvu1FaqphC1emcf5HqFRhQy"
+            }
+        }
+    }
+}

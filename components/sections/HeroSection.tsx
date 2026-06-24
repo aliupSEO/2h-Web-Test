@@ -93,7 +93,7 @@ export default function HeroSection({
               className="h-1.5 w-1.5 rounded-full flex-shrink-0"
               style={{ background: "var(--color-brand-primary, #b6ef00)" }}
             />
-            <span className="font-sans uppercase" style={{ color: "var(--color-text-light, #ffffff)" }}>
+            <span className="font-sans uppercase" style={{ color: "var(--color-text-light, #ffffff)" }} suppressHydrationWarning>
               {subtitle}
             </span>
           </div>

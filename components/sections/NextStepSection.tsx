@@ -31,24 +31,24 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
         
         <div className="mb-4 flex items-center justify-center gap-2">
           <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-          <span className="text-[10px] md:text-[12px] uppercase tracking-[3px] font-medium" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>
+          <span className="text-[17px] leading-[30px] font-serif font-normal uppercase tracking-[3px]" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>
             Nächster Schritt
           </span>
         </div>
 
-        <h2 className="text-3xl sm:text-[40px] lg:text-[50px] font-serif text-white uppercase tracking-[1px] md:tracking-[2px] leading-[1.1] mb-5">
+        <h2 className="text-[50px] leading-[65px] font-serif font-medium text-white uppercase tracking-[1px] md:tracking-[2px] mb-5">
           {data.title}
         </h2>
 
-        <p className="text-[14px] md:text-[16px] lg:text-[18px] font-serif leading-relaxed mb-8 max-w-[680px] mx-auto text-center text-white" style={{ color: "var(--color-text-light, #e4e4e7)" }}>
+        <p className="text-[17px] leading-[30px] font-normal text-[#d3d3d3] mb-8 max-w-[680px] mx-auto text-center whitespace-pre-line" style={{ fontFamily: "var(--font-barlow)" }}>
           {data.description}
         </p>
 
         <Link 
           href={data.btnLink} 
-          className="inline-flex items-center justify-center border text-white rounded-full px-8 md:px-10 py-3 md:py-3.5 text-[10px] md:text-[12px] tracking-[2px] md:tracking-[3px] uppercase transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl backdrop-blur-sm mb-10 hover:bg-[#b6ef00] hover:text-black hover:border-[#b6ef00]"
+          className="inline-flex items-center justify-center rounded-full px-8 md:px-12 py-5 md:py-6 text-[15px] leading-[15px] font-serif font-medium text-white uppercase tracking-[2px] md:tracking-[3px] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl backdrop-blur-sm mb-10 border border-[#b6ef00] hover:bg-[#b6ef00] hover:text-black"
           style={{ 
-            borderColor: "#b6ef00",
+            borderColor: "var(--color-brand-primary, #b6ef00)",
           }}
         >
           {data.btnText}
@@ -59,7 +59,7 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
           {data.features.map((feature, index) => (
             <div key={index} className="flex items-center gap-2">
               <span className="font-bold text-lg md:text-xl leading-none mt-1" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>*</span>
-              <span className="font-medium text-[#d4d4d8] tracking-[1.5px] md:tracking-[2px] uppercase text-[9px] md:text-[11px]">
+              <span className="font-serif font-medium text-white tracking-[1.5px] md:tracking-[2px] uppercase text-[22px] leading-[26px]">
                 {feature}
               </span>
             </div>

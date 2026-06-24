@@ -56,13 +56,19 @@ export default function ServicesSection({ data }: ServicesSectionProps) {
           {data.services.map((service, index) => (
             <div 
               key={index}
-              className="group relative p-8 pb-[90px] min-h-[460px] flex flex-col justify-start items-start rounded-[20px] bg-[#f4f5f5] animate-fade-slide-up overflow-hidden"
+              className="group relative p-8 pb-[90px] min-h-[320px] md:min-h-[460px] flex flex-col justify-start items-start rounded-[20px] bg-[#f4f5f5] animate-fade-slide-up overflow-hidden"
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <h3 className="text-[18px] sm:text-[20px] font-serif text-zinc-900 mb-6 uppercase tracking-wider relative z-10">
+              <h3 
+                className="text-[20px] leading-[30px] font-normal text-[rgb(16,16,16)] group-hover:text-[rgb(137,180,3)] transition-colors duration-300 mb-6 uppercase tracking-wider relative z-10"
+                style={{ fontFamily: "var(--font-barlow)" }}
+              >
                 {service.title}
               </h3>
-              <p className="text-[15px] leading-[1.8] text-zinc-600 font-sans relative z-10">
+              <p 
+                className="text-[17px] leading-[30px] text-[#727272] font-normal relative z-10 whitespace-pre-line"
+                style={{ fontFamily: "var(--font-barlow)" }}
+              >
                 {service.description}
               </p>
               
@@ -87,25 +93,24 @@ export default function ServicesSection({ data }: ServicesSectionProps) {
                   className="relative z-10 w-[64px] h-[64px] rounded-full flex items-center justify-center overflow-hidden"
                   aria-label={`Mehr erfahren über ${service.title}`}
                 >
-                  {/* Default Background */}
+                  {/* Default Background (Black on desktop, hidden on mobile/hover) */}
                   <div 
-                    className="absolute inset-0 transition-opacity duration-300 opacity-100 group-hover:opacity-0"
-                    style={{ background: "var(--color-bg-dark, #000)" }}
+                    className="absolute inset-0 transition-opacity duration-300 hidden md:block opacity-100 group-hover:opacity-0 bg-[#111111]"
                   ></div>
                   
-                  {/* Hover Background */}
+                  {/* Hover/Mobile Background (Green on mobile and desktop hover) */}
                   <div 
-                    className="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                    className="absolute inset-0 transition-opacity duration-300 opacity-100 md:opacity-0 group-hover:opacity-100"
                     style={{ background: "var(--color-brand-primary, #b6ef00)" }}
                   ></div>
 
-                  {/* Default Icon */}
-                  <div className="relative z-10 block group-hover:hidden">
+                  {/* Default Icon (hidden on mobile and desktop hover) */}
+                  <div className="relative z-10 hidden md:block group-hover:hidden">
                     {getIcon(index)}
                   </div>
                   
-                  {/* Hover Arrow Icon */}
-                  <div className="relative z-10 hidden group-hover:block">
+                  {/* Hover/Mobile Arrow Icon */}
+                  <div className="relative z-10 block md:hidden group-hover:block">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="7" y1="17" x2="17" y2="7"></line>
                       <polyline points="7 7 17 7 17 17"></polyline>

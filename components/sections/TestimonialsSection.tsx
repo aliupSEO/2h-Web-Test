@@ -45,7 +45,7 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
 
   return (
     <section className="py-24 bg-white overflow-hidden" id="testimonials">
-      <div className="flex flex-col items-center text-center mb-16 animate-fade-slide-up px-6 md:px-12 lg:px-24">
+      <div className="flex flex-col items-center text-center mb-8 animate-fade-slide-up px-6 md:px-12 lg:px-24">
         <SectionBadge label={data.subtitle} variant="light" />
         <SectionTitle text={data.title} variant="light" as="h2" />
       </div>
@@ -73,16 +73,22 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
                     </div>
                     
                     {/* Testimonial Text */}
-                    <p className="text-[14px] leading-[1.8] text-zinc-500 font-sans relative z-10 flex-grow">
+                    <p 
+                      className="text-[17px] leading-[30px] text-[#727272] font-normal relative z-10 flex-grow"
+                      style={{ fontFamily: "var(--font-barlow)" }}
+                    >
                       {testimonial.text}
                     </p>
 
                     {/* Author Text (Positioned to the right of the cutout) */}
                     <div className="absolute bottom-6 left-[96px] right-6 z-10 flex flex-col justify-center">
-                      <h6 className="font-serif font-medium text-[13px] text-zinc-900 uppercase tracking-widest leading-snug">
+                      <h6 className="font-serif font-normal text-[17px] leading-[26px] text-[rgb(16,16,16)]">
                         {testimonial.author}
                       </h6>
-                      <p className="font-sans text-[12px] text-zinc-500 mt-1 leading-snug">
+                      <p 
+                        className="font-normal text-[15px] leading-[23px] text-[#727272] mt-1"
+                        style={{ fontFamily: "var(--font-barlow)" }}
+                      >
                         {testimonial.role}
                       </p>
                     </div>

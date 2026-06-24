@@ -54,8 +54,8 @@ export default async function RootLayout({
   const dsCSS = dsSettings ? getDesignSystemCSS(dsSettings) : "";
 
   return (
-    <html lang="en" className={`${federo.variable} ${barlow.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className={`${federo.variable} ${barlow.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         {/* Design system tokens from WordPress — injected at top of body.
             CSS custom properties on :root work regardless of <style> placement. */}
         {dsCSS && (

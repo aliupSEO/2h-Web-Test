@@ -55,7 +55,7 @@ export default async function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-12 mb-12 md:mb-20">
           
           {/* Column 1: Brand & Social */}
-          <div className="col-span-2 md:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
+          <div className="col-span-2 md:col-span-1 flex flex-col items-start text-left">
             <Link href="/" className="block mb-6 md:mb-4">
               {logoUrl ? (
                 <div className="relative h-[60px] w-[180px]">
@@ -77,11 +77,14 @@ export default async function Footer() {
               )}
             </Link>
             
-            <p className="text-[13px] text-zinc-300 mb-8 md:mb-6 font-sans tracking-wide max-w-[280px] md:max-w-none">
+            <p 
+              className="text-[14px] leading-[14px] font-normal text-white/80 mb-8 md:mb-6 max-w-[280px] md:max-w-none"
+              style={{ fontFamily: "var(--font-barlow)" }}
+            >
               {tagline || "Hier entsteht ihr digitales Ökosystem"}
             </p>
             
-            <div className="flex items-center justify-center md:justify-start gap-6 md:gap-5 mb-10 md:mb-10 w-full">
+            <div className="flex items-center justify-start gap-6 md:gap-5 mb-10 md:mb-10 w-full">
               {socialLinks.map((s) => (
                 <a
                   key={s.name}
@@ -97,7 +100,7 @@ export default async function Footer() {
             </div>
 
             {footerData?.btnText && (
-              <div className="w-full flex justify-center md:justify-start">
+              <div className="w-full flex justify-start">
                 <Link 
                   href={footerData.btnLink}
                   className="flex border border-[var(--color-brand-primary,#b6ef00)] text-white hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black rounded-full px-4 py-2.5 md:py-3.5 text-[10px] md:text-[11px] font-medium tracking-[1.5px] uppercase transition-all duration-300 text-center justify-center items-center leading-[1.3] w-[90%] sm:w-[230px]"
@@ -112,15 +115,22 @@ export default async function Footer() {
           </div>
 
           {/* Column 2: Menu 1 */}
-          <div className="col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-            <h4 className="text-white font-serif uppercase tracking-wide text-[15px] sm:text-[18px] md:text-[20px] font-normal mb-6 md:mb-8 mt-2 break-words max-w-full">
+          <div className="col-span-2 md:col-span-1 flex flex-col items-start text-left">
+            <h4 className="text-white font-serif uppercase tracking-wide text-[22px] leading-[22px] font-medium mb-6 md:mb-8 mt-2 break-words max-w-full">
               {footerData?.column2?.title || "DIGITALE LÖSUNGEN"}
             </h4>
             <ul className="space-y-4">
               {footerData?.column2?.links.map((link, i) => (
                 <li key={i}>
-                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center justify-center md:justify-start gap-2 md:gap-4 text-[13px] md:text-[15px] font-sans transition-colors group">
-                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[12px] md:text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
+                  <Link 
+                    href={link.url} 
+                    className="flex items-center justify-start gap-2 md:gap-4 text-[17px] leading-[30px] font-normal text-white transition-colors group hover:opacity-80"
+                    style={{ fontFamily: "var(--font-barlow)" }}
+                  >
+                    <span 
+                      className="font-bold text-[17px] transition-transform group-hover:translate-x-1"
+                      style={{ color: "var(--color-brand-primary, #b6ef00)" }}
+                    >&gt;</span> 
                     {link.label}
                   </Link>
                 </li>
@@ -129,15 +139,22 @@ export default async function Footer() {
           </div>
 
           {/* Column 3: Menu 2 */}
-          <div className="col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-            <h4 className="text-white font-serif uppercase tracking-wide text-[15px] sm:text-[18px] md:text-[20px] font-normal mb-6 md:mb-8 mt-2 break-words max-w-full">
+          <div className="col-span-2 md:col-span-1 flex flex-col items-start text-left">
+            <h4 className="text-white font-serif uppercase tracking-wide text-[22px] leading-[22px] font-medium mb-6 md:mb-8 mt-2 break-words max-w-full">
               {footerData?.column3?.title || "2H WEBSOLUTIONS"}
             </h4>
             <ul className="space-y-4">
               {footerData?.column3?.links.map((link, i) => (
                 <li key={i}>
-                  <Link href={link.url} className="text-zinc-300 hover:text-white flex items-center justify-center md:justify-start gap-2 md:gap-4 text-[13px] md:text-[15px] font-sans transition-colors group">
-                    <span className="text-[var(--color-brand-primary,#b6ef00)] font-bold text-[12px] md:text-[14px] transition-transform group-hover:translate-x-1">&gt;</span> 
+                  <Link 
+                    href={link.url} 
+                    className="flex items-center justify-start gap-2 md:gap-4 text-[17px] leading-[30px] font-normal text-white transition-colors group hover:opacity-80"
+                    style={{ fontFamily: "var(--font-barlow)" }}
+                  >
+                    <span 
+                      className="font-bold text-[17px] transition-transform group-hover:translate-x-1"
+                      style={{ color: "var(--color-brand-primary, #b6ef00)" }}
+                    >&gt;</span> 
                     {link.label}
                   </Link>
                 </li>
@@ -152,21 +169,25 @@ export default async function Footer() {
 
         </div>
 
-        {/* Divider & Bottom Bar (Flex container for divider and items) */}
-          <div className="pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-6 relative">
-            <nav className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[13px] text-zinc-400 order-2 md:order-1">
-              <Link href="/impressum" className="transition-colors hover:text-white">Impressum</Link>
-              <Link href="/datenschutz" className="transition-colors hover:text-white">Datenschutz</Link>
-            </nav>
-  
-            <p className="text-[13px] text-zinc-400 text-center md:absolute md:left-1/2 md:-translate-x-1/2 order-3 md:order-2">
-              {copyright || `© Copyright ${currentYear} ${siteTitle || "2H Web Solutions"}`}
-            </p>
-  
-            <div className="flex items-center order-1 md:order-3">
+        {/* Divider & Bottom Bar */}
+        <div className="pt-8 w-full">
+          <div className="relative w-full flex flex-col md:flex-row items-center justify-center min-h-[50px]">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-32 w-full text-[17px] leading-[30px] font-normal text-[#d3d3d3] pr-[60px] md:pr-0" style={{ fontFamily: "var(--font-barlow)" }}>
+              <nav className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
+                <Link href="/impressum" className="transition-colors hover:text-[var(--color-brand-primary,#b6ef00)]">Impressum</Link>
+                <Link href="/datenschutz" className="transition-colors hover:text-[var(--color-brand-primary,#b6ef00)]">Datenschutz</Link>
+              </nav>
+    
+              <p className="text-center text-[15px] md:text-[17px]">
+                {copyright || `© Copyright ${currentYear} ${siteTitle || "2H Web Solutions"}`}
+              </p>
+            </div>
+    
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
               <ScrollToTop />
             </div>
           </div>
+        </div>
       </div>
     </footer>
   );

@@ -23,11 +23,11 @@ export default function SectionTitle({
   variant = "light",
   as: Tag = "h2",
 }: SectionTitleProps) {
-  const textColor = variant === "dark" ? "text-white" : "text-zinc-900";
+  const textColor = variant === "dark" ? "text-white" : "text-[rgb(16,16,16)]";
 
   return (
     <Tag
-      className={`text-3xl sm:text-[40px] lg:text-[42px] font-serif uppercase tracking-[1.5px] leading-[1.1] ${textColor} mb-4`}
+      className={`text-3xl sm:text-[40px] lg:text-[45px] font-serif font-normal uppercase tracking-[1.5px] leading-[1.1] lg:leading-[54px] ${textColor} mb-4`}
     >
       {text}
     </Tag>

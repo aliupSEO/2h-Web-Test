@@ -746,3 +746,85 @@ export async function getFooterData() {
   if (!html) return null;
   return extractFooterSectionData(html);
 }
+
+// ---------------------------------------------------------------------------
+// Wir Page specific helpers
+// ---------------------------------------------------------------------------
+
+/** Wir page (WordPress page with slug "wir") */
+export async function getWirPage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "wir" }) {
+        nodes {
+          id
+          title
+          slug
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+export interface TeamMemberData {
+  name: string;
+  role: string;
+  bio: string;
+  imageUrl: string;
+}
+
+export interface TeamSectionData {
+  title: string;
+  members: TeamMemberData[];
+}
+
+export function extractTeamSectionData(html: string): TeamSectionData | null {
+  if (!html?.includes('team-section')) return null;
+
+  const titleMatch = html.match(/<div class="team-section">[\s\S]*?<h2 class="section-title">(.*?)<\/h2>/);
+  const members: TeamMemberData[] = [];
+  const memberRegex = /<div class="team-member">[\s\S]*?<h5 class="member-name">(.*?)<\/h5>[\s\S]*?<p class="member-role">(.*?)<\/p>[\s\S]*?<p class="member-bio">(.*?)<\/p>[\s\S]*?<img[^>]*class="member-image"[^>]*src="(.*?)"/g;
+
+  let match;
+  while ((match = memberRegex.exec(html)) !== null) {
+    members.push({
+      name: decodeHtmlEntities(match[1]),
+      role: decodeHtmlEntities(match[2]),
+      bio: decodeHtmlEntities(match[3]),
+      imageUrl: match[4]
+    });
+  }
+
+  return {
+    title: decodeHtmlEntities(titleMatch?.[1] || "Starke Partner"),
+    members
+  };
+}
+
+export interface OfficeSectionData {
+  title: string;
+  description: string;
+  imageUrl: string;
+}
+
+export function extractOfficeSectionData(html: string): OfficeSectionData | null {
+  if (!html?.includes('office-section')) return null;
+
+  const sectionHtml = html.split('<div class="office-section">')[1] || html;
+  const titleMatch = sectionHtml.match(/<h2 class="section-title">([\s\S]*?)<\/h2>/);
+  const descMatch = sectionHtml.match(/<p class="description">([\s\S]*?)<\/p>/);
+  const imgMatch = sectionHtml.match(/<img[^>]*class="office-image"[^>]*src="(.*?)"/);
+
+  return {
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    description: decodeHtmlEntities(descMatch?.[1] || ""),
+    imageUrl: imgMatch?.[1] || ""
+  };
+}
+

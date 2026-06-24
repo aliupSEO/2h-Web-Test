@@ -38,10 +38,10 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
           <div key={item.id} className="relative group">
             <Link
               href={item.uri}
-              className={`flex items-center gap-1.5 transition-colors duration-200 uppercase tracking-[1.5px] text-[13px] font-medium group-hover:!text-[var(--color-brand-primary,#b6ef00)]`}
-              style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : (isScrolled ? "#111111" : "var(--color-text-light, #ffffff)") }}
+              className={`flex items-center gap-1.5 transition-colors duration-200 uppercase tracking-[1.5px] text-[15px] leading-[15px] font-medium font-serif group-hover:!text-[var(--color-brand-primary,#b6ef00)]`}
+              style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : (isScrolled ? "rgb(16, 16, 16)" : "var(--color-text-light, #ffffff)") }}
             >
-              {item.label}
+              <span suppressHydrationWarning>{item.label}</span>
               {showChevron && (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -70,7 +70,7 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
                           href={child.uri}
                           className="block px-5 py-2.5 text-[14px] font-sans text-black hover:text-[var(--color-brand-primary,#b6ef00)] hover:bg-zinc-50 transition-colors"
                         >
-                          {child.label}
+                          <span suppressHydrationWarning>{child.label}</span>
                         </Link>
                       </li>
                     ))}

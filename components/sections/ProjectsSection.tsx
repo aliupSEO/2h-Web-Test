@@ -64,10 +64,10 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
             return (
               <div 
                 key={index}
-                className="pl-4 md:pl-8 flex-[0_0_85vw] md:flex-[0_0_700px] lg:flex-[0_0_900px] xl:flex-[0_0_1000px] min-w-0"
+                className="px-4 md:px-0 md:pl-8 flex-[0_0_100vw] md:flex-[0_0_700px] lg:flex-[0_0_900px] xl:flex-[0_0_1000px] min-w-0"
               >
                 <div 
-                  className={`group relative rounded-[32px] overflow-hidden bg-zinc-900 h-[500px] md:h-[600px] lg:h-[700px] w-full`}
+                  className={`group relative rounded-[32px] overflow-hidden bg-zinc-900 h-[350px] md:h-[600px] lg:h-[700px] w-full`}
                 >
                   {/* Background Image */}
                   <Image
@@ -124,8 +124,10 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
                     </div>
 
                     {/* Bottom Box (Title) */}
-                    <div className="bg-[#cfd1d2] pl-3 md:pl-4 pr-6 md:pr-10 py-2.5 md:py-3 rounded-bl-[12px] rounded-tr-[12px] rounded-br-[12px] min-w-[200px] max-w-[340px]">
-                      <h3 className="text-[16px] md:text-[20px] font-serif uppercase text-zinc-900 tracking-[2px] md:tracking-[3px] leading-[1.1]">
+                    <div className="bg-[#cfd1d2]/90 backdrop-blur-sm pl-3 md:pl-4 pr-6 md:pr-10 py-2.5 md:py-3 rounded-bl-[12px] rounded-tr-[12px] rounded-br-[12px] min-w-[200px] max-w-[340px]">
+                      <h3 
+                        className="text-[16px] md:text-[20px] font-serif uppercase text-zinc-900 tracking-[2px] md:tracking-[3px] leading-[1.1]"
+                      >
                         {project.title}
                       </h3>
                     </div>
@@ -144,17 +146,17 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
                           <div className="absolute top-[-24px] left-[-24px] w-[48px] h-[48px] rounded-full shadow-[0_0_0_24px_white]"></div>
                         </div>
 
-                        {/* The Button (Neon Green) */}
+                        {/* The Button (Black) */}
                         <Link 
                           href={project.link} 
-                          className="relative w-[58px] h-[58px] rounded-full flex items-center justify-center overflow-hidden hover:scale-110 transition-transform shadow-lg"
+                          className="relative w-[64px] h-[64px] rounded-full flex items-center justify-center overflow-hidden hover:scale-110 transition-transform shadow-lg"
                           aria-label={`Projekt ansehen: ${project.title}`}
                         >
-                          <div className="absolute inset-0 transition-opacity duration-300" style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }}></div>
+                          <div className="absolute inset-0 transition-opacity duration-300 bg-[#111111] hover:bg-[#222222]"></div>
                           
-                          {/* Black Arrow */}
+                          {/* White Arrow */}
                           <div className="relative z-10">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <line x1="7" y1="17" x2="17" y2="7"></line>
                               <polyline points="7 7 17 7 17 17"></polyline>
                             </svg>
