@@ -75,7 +75,7 @@ export default function CTASection({
         )}
 
         <h2
-          className="text-3xl sm:text-[48px] lg:text-[60px] font-serif uppercase tracking-[4px] md:tracking-[6px] leading-[1.1] mb-6 md:mb-8"
+          className="text-3xl sm:text-[48px] lg:text-[60px] font-sans uppercase tracking-[4px] md:tracking-[6px] leading-[1.1] mb-6 md:mb-8"
           style={{ color: "var(--color-text-light, #ffffff)" }}
         >
           {title}

@@ -27,7 +27,8 @@ export default function SectionTitle({
 
   return (
     <Tag
-      className={`text-3xl sm:text-[40px] lg:text-[45px] font-serif font-normal uppercase tracking-[1.5px] leading-[1.1] lg:leading-[54px] ${textColor} mb-4`}
+      className={`text-3xl sm:text-[40px] lg:text-[45px] font-sans font-normal uppercase tracking-[1.5px] leading-[1.1] lg:leading-[54px] ${textColor} mb-4`}
+      suppressHydrationWarning
     >
       {text}
     </Tag>

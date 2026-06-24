@@ -79,6 +79,7 @@ export default function HeroSection({
             fill
             priority
             className="object-cover object-center filter grayscale"
+            suppressHydrationWarning
           />
           <div className="absolute inset-0 bg-black/45" />
         </div>
@@ -103,6 +104,7 @@ export default function HeroSection({
         <h1
           className="animate-fade-slide-up animation-delay-200 text-4xl sm:text-6xl lg:text-[80px] leading-[1.1] mb-10 max-w-[720px] uppercase font-sans font-normal tracking-wide"
           style={{ color: "var(--color-text-light, #ffffff)" }}
+          suppressHydrationWarning
         >
           {title}
         </h1>
@@ -113,11 +115,15 @@ export default function HeroSection({
             <Link
               href={cta.href}
               className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[#b6ef00] hover:text-black transition-colors"
+              suppressHydrationWarning
             >
               {cta.text}
             </Link>
           ) : (
-            <span className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[#b6ef00] hover:text-black transition-colors cursor-pointer">
+            <span 
+              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[#b6ef00] hover:text-black transition-colors cursor-pointer"
+              suppressHydrationWarning
+            >
               DIGITALE LÖSUNGEN
             </span>
           )}

@@ -76,6 +76,7 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 800px"
+                    suppressHydrationWarning
                   />
                   
                   {/* We render the active elements on EVERY slide, but hide them with CSS 
@@ -113,7 +114,7 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
                         <polyline points="2 17 12 22 22 17"></polyline>
                         <polyline points="2 12 12 17 22 12"></polyline>
                       </svg>
-                      <span className="text-[10px] md:text-[11px] text-zinc-800 font-medium tracking-wide">
+                      <span className="text-[10px] md:text-[11px] text-zinc-800 font-medium tracking-wide" suppressHydrationWarning>
                         {project.tags || "Automation, SEA, Webdesign & UX"}
                       </span>
                       
@@ -126,7 +127,8 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
                     {/* Bottom Box (Title) */}
                     <div className="bg-[#cfd1d2]/90 backdrop-blur-sm pl-3 md:pl-4 pr-6 md:pr-10 py-2.5 md:py-3 rounded-bl-[12px] rounded-tr-[12px] rounded-br-[12px] min-w-[200px] max-w-[340px]">
                       <h3 
-                        className="text-[16px] md:text-[20px] font-serif uppercase text-zinc-900 tracking-[2px] md:tracking-[3px] leading-[1.1]"
+                        className="text-[16px] md:text-[20px] font-sans uppercase text-zinc-900 tracking-[2px] md:tracking-[3px] leading-[1.1]"
+                        suppressHydrationWarning
                       >
                         {project.title}
                       </h3>

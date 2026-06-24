@@ -61,13 +61,11 @@ export default function ServicesSection({ data }: ServicesSectionProps) {
             >
               <h3 
                 className="text-[20px] leading-[30px] font-normal text-[rgb(16,16,16)] group-hover:text-[rgb(137,180,3)] transition-colors duration-300 mb-6 uppercase tracking-wider relative z-10"
-                style={{ fontFamily: "var(--font-barlow)" }}
               >
                 {service.title}
               </h3>
               <p 
-                className="text-[17px] leading-[30px] text-[#727272] font-normal relative z-10 whitespace-pre-line"
-                style={{ fontFamily: "var(--font-barlow)" }}
+                className="text-[17px] leading-[30px] text-[#727272] font-serif font-normal relative z-10 whitespace-pre-line"
               >
                 {service.description}
               </p>

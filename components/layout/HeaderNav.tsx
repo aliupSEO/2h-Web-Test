@@ -38,7 +38,7 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
           <div key={item.id} className="relative group">
             <Link
               href={item.uri}
-              className={`flex items-center gap-1.5 transition-colors duration-200 uppercase tracking-[1.5px] text-[15px] leading-[15px] font-medium font-serif group-hover:!text-[var(--color-brand-primary,#b6ef00)]`}
+              className={`flex items-center gap-1.5 transition-colors duration-200 uppercase tracking-[1.5px] text-[15px] leading-[15px] font-medium font-sans group-hover:!text-[var(--color-brand-primary,#b6ef00)]`}
               style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : (isScrolled ? "rgb(16, 16, 16)" : "var(--color-text-light, #ffffff)") }}
             >
               <span suppressHydrationWarning>{item.label}</span>

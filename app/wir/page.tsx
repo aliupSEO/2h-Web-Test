@@ -35,53 +35,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function WirPage() {
-  const page = await getWirPage();
-
-  if (!page) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-black text-white pt-24">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>WordPress Connection Needed</h1>
-          <p className="text-zinc-400">
-            Set your WordPress endpoint in <code>.env.local</code> and ensure a page
-            with slug <code>"wir"</code> exists in WordPress.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  const heroData = page.content ? extractHeroSectionData(page.content) : null;
-  const aboutData = page.content ? extractAboutSectionData(page.content) : null;
-  const servicesData = page.content ? extractServicesSectionData(page.content) : null;
-  const teamData = page.content ? extractTeamSectionData(page.content) : null;
-  const officeData = page.content ? extractOfficeSectionData(page.content) : null;
-  const nextStepData = page.content ? extractNextStepSectionData(page.content) : null;
-
   return (
-    <main className="min-h-screen text-foreground relative overflow-hidden" style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>
-      {/* Hero Section */}
-      <HeroSection
-        title={heroData?.title || page.title}
-        subtitle={heroData?.subtitle || page.seo?.description}
-        backgroundImage={page.featuredImage?.node?.sourceUrl}
-        cta={heroData?.btnText ? { text: heroData.btnText, href: heroData.btnLink } : undefined}
-      />
-
-      {/* About Section (Gründer Christian Haas) */}
-      <AboutSection data={aboutData} />
-
-      {/* Services Section (Was 2H aufbaut) */}
-      <ServicesSection data={servicesData} />
-
-      {/* Team/Partner Section (Silvio Hartleb & Ali Haider) */}
-      <TeamSection data={teamData} />
-
-      {/* Office Section (Standort Windmühlgasse Wien) */}
-      <OfficeSection data={officeData} />
-
-      {/* Next Step Section (Größter Hebel) */}
-      <NextStepSection data={nextStepData} />
+    <main className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4" style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>
+      <div className="mb-8 flex items-center justify-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
+        <span className="text-[14px] md:text-[17px] font-sans uppercase tracking-[2px] md:tracking-[3px]" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>
+          Temporär
+        </span>
+      </div>
+      <h1 className="text-3xl md:text-5xl font-bold mb-6 text-white uppercase tracking-wider font-sans">
+        Seite im Aufbau
+      </h1>
+      <p className="text-lg md:text-xl text-zinc-400 max-w-md mx-auto font-sans">
+        Diese Seite ist vorübergehend nicht verfügbar. Bitte schauen Sie später wieder vorbei.
+      </p>
     </main>
   );
 }

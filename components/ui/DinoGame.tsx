@@ -169,7 +169,6 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
     <div className="flex flex-col items-start lg:items-center">
       <h4 
         className="text-zinc-500 font-normal text-[40px] leading-[50px] text-center mb-4 w-full max-w-[350px]"
-        style={{ fontFamily: "var(--font-barlow)" }}
       >
         {title}
       </h4>

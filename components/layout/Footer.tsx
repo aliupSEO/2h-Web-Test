@@ -79,7 +79,6 @@ export default async function Footer() {
             
             <p 
               className="text-[14px] leading-[14px] font-normal text-white/80 mb-8 md:mb-6 max-w-[280px] md:max-w-none"
-              style={{ fontFamily: "var(--font-barlow)" }}
             >
               {tagline || "Hier entsteht ihr digitales Ökosystem"}
             </p>
@@ -116,7 +115,7 @@ export default async function Footer() {
 
           {/* Column 2: Menu 1 */}
           <div className="col-span-2 md:col-span-1 flex flex-col items-start text-left">
-            <h4 className="text-white font-serif uppercase tracking-wide text-[22px] leading-[22px] font-medium mb-6 md:mb-8 mt-2 break-words max-w-full">
+            <h4 className="text-white font-sans uppercase tracking-wide text-[22px] leading-[22px] font-medium mb-6 md:mb-8 mt-2 break-words max-w-full">
               {footerData?.column2?.title || "DIGITALE LÖSUNGEN"}
             </h4>
             <ul className="space-y-4">
@@ -125,7 +124,6 @@ export default async function Footer() {
                   <Link 
                     href={link.url} 
                     className="flex items-center justify-start gap-2 md:gap-4 text-[17px] leading-[30px] font-normal text-white transition-colors group hover:opacity-80"
-                    style={{ fontFamily: "var(--font-barlow)" }}
                   >
                     <span 
                       className="font-bold text-[17px] transition-transform group-hover:translate-x-1"
@@ -140,7 +138,7 @@ export default async function Footer() {
 
           {/* Column 3: Menu 2 */}
           <div className="col-span-2 md:col-span-1 flex flex-col items-start text-left">
-            <h4 className="text-white font-serif uppercase tracking-wide text-[22px] leading-[22px] font-medium mb-6 md:mb-8 mt-2 break-words max-w-full">
+            <h4 className="text-white font-sans uppercase tracking-wide text-[22px] leading-[22px] font-medium mb-6 md:mb-8 mt-2 break-words max-w-full">
               {footerData?.column3?.title || "2H WEBSOLUTIONS"}
             </h4>
             <ul className="space-y-4">
@@ -149,7 +147,6 @@ export default async function Footer() {
                   <Link 
                     href={link.url} 
                     className="flex items-center justify-start gap-2 md:gap-4 text-[17px] leading-[30px] font-normal text-white transition-colors group hover:opacity-80"
-                    style={{ fontFamily: "var(--font-barlow)" }}
                   >
                     <span 
                       className="font-bold text-[17px] transition-transform group-hover:translate-x-1"
@@ -172,7 +169,7 @@ export default async function Footer() {
         {/* Divider & Bottom Bar */}
         <div className="pt-8 w-full">
           <div className="relative w-full flex flex-col md:flex-row items-center justify-center min-h-[50px]">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-32 w-full text-[17px] leading-[30px] font-normal text-[#d3d3d3] pr-[60px] md:pr-0" style={{ fontFamily: "var(--font-barlow)" }}>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-32 w-full text-[17px] leading-[30px] font-normal text-[#d3d3d3] pr-[60px] md:pr-0">
               <nav className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
                 <Link href="/impressum" className="transition-colors hover:text-[var(--color-brand-primary,#b6ef00)]">Impressum</Link>
                 <Link href="/datenschutz" className="transition-colors hover:text-[var(--color-brand-primary,#b6ef00)]">Datenschutz</Link>

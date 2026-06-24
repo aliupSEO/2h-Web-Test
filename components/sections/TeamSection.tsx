@@ -20,7 +20,7 @@ export default function TeamSection({ data }: TeamSectionProps) {
               Partner Netzwerk
             </span>
           </div>
-          <h2 className="text-3xl sm:text-[40px] lg:text-[48px] font-serif text-white uppercase tracking-[1px] md:tracking-[2px] leading-tight max-w-2xl">
+          <h2 className="text-3xl sm:text-[40px] lg:text-[48px] font-sans text-white uppercase tracking-[1px] md:tracking-[2px] leading-tight max-w-2xl">
             {data.title}
           </h2>
         </div>
@@ -48,7 +48,7 @@ export default function TeamSection({ data }: TeamSectionProps) {
 
               {/* Member Details */}
               <div className="flex flex-col justify-start">
-                <h3 className="text-xl sm:text-2xl font-serif text-white mb-1">
+                <h3 className="text-xl sm:text-2xl font-sans text-white mb-1">
                   {member.name}
                 </h3>
                 <p 

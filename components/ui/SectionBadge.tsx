@@ -23,7 +23,8 @@ export default function SectionBadge({ label, variant = "dark" }: SectionBadgePr
     <div className="flex items-center gap-2 mb-2">
       <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }} />
       <span
-        className={`${textColor} text-[17px] leading-[30px] uppercase tracking-[2.5px] font-normal font-serif`}
+        className={`${textColor} text-[17px] leading-[30px] uppercase tracking-[2.5px] font-normal font-sans`}
+        suppressHydrationWarning
       >
         {label}
       </span>

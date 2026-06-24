@@ -18,27 +18,34 @@ export default function AboutSection({ data }: AboutSectionProps) {
         <div className="flex flex-col items-start text-left animate-fade-slide-up">
           <SectionBadge label={data.subtitle} variant="light" />
           
-          <h2 className="text-4xl sm:text-[45px] lg:text-[45px] leading-[1.15] lg:leading-[54px] font-serif font-normal mb-6 tracking-wide text-zinc-900 uppercase">
-            <span style={{ color: "var(--color-brand-primary, #b6ef00)" }}>{data.titleLine1}</span>
+          <h2 
+            className="text-4xl sm:text-[45px] lg:text-[45px] leading-[1.15] lg:leading-[54px] font-sans font-normal mb-6 tracking-wide text-zinc-900 uppercase"
+            suppressHydrationWarning
+          >
+            <span style={{ color: "var(--color-brand-primary, #b6ef00)" }} suppressHydrationWarning>{data.titleLine1}</span>
             <br />
             {data.titleLine2}
           </h2>
 
           <p 
             className="text-[17px] leading-[30px] mb-6 text-[#727272] max-w-full lg:max-w-lg font-normal"
-            style={{ fontFamily: "var(--font-barlow)" }}
+            suppressHydrationWarning
           >
             {data.description}
           </p>
   
-          <h5 className="text-[20px] font-serif font-normal mb-8 text-[rgb(16,16,16)] leading-[30px] uppercase tracking-[1px] max-w-full lg:max-w-lg">
+          <h5 
+            className="text-[20px] font-sans font-normal mb-8 text-[rgb(16,16,16)] leading-[30px] uppercase tracking-[1px] max-w-full lg:max-w-lg"
+            suppressHydrationWarning
+          >
             {data.motto}
           </h5>
   
           <div className="flex flex-wrap items-center justify-start gap-6">
             <Link 
               href={data.btnLink} 
-              className="btn-primary font-serif font-normal uppercase tracking-[1px] text-[15px] leading-[30px] !text-black px-8 py-3 hover:!bg-[#111111] hover:!text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              className="btn-primary font-sans font-normal uppercase tracking-[1px] text-[15px] leading-[30px] !text-black px-8 py-3 hover:!bg-[#111111] hover:!text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              suppressHydrationWarning
             >
               {data.btnText}
             </Link>
@@ -46,7 +53,8 @@ export default function AboutSection({ data }: AboutSectionProps) {
             {data.phoneText && (
               <a 
                 href={data.phoneLink} 
-                className="flex items-center gap-3 text-[rgb(16,16,16)] hover:opacity-80 transition-opacity font-serif font-normal text-[20px] leading-[30px] tracking-wide"
+                className="flex items-center gap-3 text-[rgb(16,16,16)] hover:opacity-80 transition-opacity font-sans font-normal text-[20px] leading-[30px] tracking-wide"
+                suppressHydrationWarning
               >
                 <span className="flex items-center justify-center w-[40px] h-[40px] rounded-full bg-[#111111]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -70,6 +78,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
                 className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
+                suppressHydrationWarning
               />
             )}
           </div>

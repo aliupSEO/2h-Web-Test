@@ -247,8 +247,8 @@ export function getDesignSystemCSS(settings: DesignSystemSettings): string {
 
   // ── Typography ─────────────────────────────────────────────────
   lines.push("  /* Typography */");
-  lines.push(`  --font-family-primary: '${typography.font_primary}', system-ui, sans-serif;`);
-  lines.push(`  --font-family-secondary: '${typography.font_secondary}', system-ui, sans-serif;`);
+  lines.push(`  --font-family-primary: ${typography.font_primary}, system-ui, sans-serif;`);
+  lines.push(`  --font-family-secondary: ${typography.font_secondary}, system-ui, sans-serif;`);
   lines.push(`  --body-font-size: ${typography.body.font_size};`);
   lines.push(`  --body-line-height: ${typography.body.line_height};`);
   lines.push(`  --body-paragraph-spacing: ${typography.body.paragraph_spacing};`);

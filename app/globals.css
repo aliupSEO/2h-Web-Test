@@ -56,8 +56,8 @@
 
 @theme inline {
   /* Typography */
-  --font-sans: var(--font-federo);
-  --font-serif: var(--font-federo);
+  --font-sans: var(--font-family-primary, var(--font-federo));
+  --font-serif: var(--font-family-secondary, var(--font-federo));
 
   /* Surface — use CSS vars so WP Design System can override */
   --color-background: var(--background);

@@ -74,20 +74,19 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
                     
                     {/* Testimonial Text */}
                     <p 
-                      className="text-[17px] leading-[30px] text-[#727272] font-normal relative z-10 flex-grow"
-                      style={{ fontFamily: "var(--font-barlow)" }}
+                      className="text-[17px] leading-[30px] text-[#727272] font-serif font-normal relative z-10 flex-grow"
                     >
                       {testimonial.text}
                     </p>
 
                     {/* Author Text (Positioned to the right of the cutout) */}
                     <div className="absolute bottom-6 left-[96px] right-6 z-10 flex flex-col justify-center">
-                      <h6 className="font-serif font-normal text-[17px] leading-[26px] text-[rgb(16,16,16)]">
+                      <h6 className="font-sans font-normal text-[17px] leading-[26px] text-[rgb(16,16,16)]">
                         {testimonial.author}
                       </h6>
                       <p 
-                        className="font-normal text-[15px] leading-[23px] text-[#727272] mt-1"
-                        style={{ fontFamily: "var(--font-barlow)" }}
+                        className="font-serif font-normal text-[15px] leading-[23px] text-[#727272] mt-1"
+                        suppressHydrationWarning
                       >
                         {testimonial.role}
                       </p>

@@ -341,7 +341,8 @@ export function decodeHtmlEntities(str: string): string {
     .replace(/&amp;/g,   "&")
     .replace(/&lt;/g,    "<")
     .replace(/&gt;/g,    ">")
-    .replace(/&quot;/g,  '"');
+    .replace(/&quot;/g,  '"')
+    .replace(/&nbsp;/gi, " ");
 }
 
 export interface HeroSectionData {
@@ -410,28 +411,61 @@ export function extractDigitaleHeroSectionData(html: string): DigitaleHeroSectio
 }
 
 export function extractDigitaleNextStepSectionData(html: string): NextStepSectionData | null {
-  const sections = html.split('<hr');
-  const sectionHtml = sections.length > 1 ? sections[1] : html;
+  const h2Index = html.search(/<h2[^>]*>/i);
+  if (h2Index === -1) return null;
 
-  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-  const descMatch = sectionHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-  const btnMatch = sectionHtml.match(/<a[^>]*href="(.*?)"[^>]*>([\s\S]*?)<\/a>/i);
-  const imgMatch = sectionHtml.match(/<img[^>]*src="(.*?)"/i);
+  const beforeH2 = html.substring(0, h2Index);
+  const afterH2 = html.substring(h2Index);
+
+  const titleMatch = afterH2.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  if (!titleMatch) return null;
+
+  // Subtitle is usually the last <h6> or .section-subtitle before the <h2>
+  let subtitleText = "";
+  const h6Matches = [...beforeH2.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)];
+  const divMatches = [...beforeH2.matchAll(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/gi)];
+  const pMatches = [...beforeH2.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+  const liMatches = [...beforeH2.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)];
+  
+  if (h6Matches.length > 0) {
+    subtitleText = h6Matches[h6Matches.length - 1][1];
+  } else if (divMatches.length > 0) {
+    subtitleText = divMatches[divMatches.length - 1][1];
+  } else if (liMatches.length > 0) {
+    subtitleText = liMatches[liMatches.length - 1][1];
+  } else if (pMatches.length > 0) {
+    subtitleText = pMatches[pMatches.length - 1][1];
+  }
+  
+  // Description is the first paragraph after the <h2>
+  const descMatch = afterH2.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+  
+  // Button is the first link after the <h2>
+  const btnMatch = afterH2.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+  
+  // Image could be right before <h2> (Cover block) or after. 
+  // Check after <h2> first, if not found, get the last image before <h2>.
+  let imgMatch = afterH2.match(/<img[^>]*src=["'](.*?)["']/i);
+  if (!imgMatch) {
+    const beforeImages = [...beforeH2.matchAll(/<img[^>]*src=["'](.*?)["']/gi)];
+    if (beforeImages.length > 0) {
+      imgMatch = beforeImages[beforeImages.length - 1];
+    }
+  }
 
   const features: string[] = [];
   const listRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
   let match;
-  while ((match = listRegex.exec(sectionHtml)) !== null) {
+  while ((match = listRegex.exec(afterH2)) !== null) {
     features.push(decodeHtmlEntities(match[1].replace(/<[^>]*>?/gm, '').trim()));
   }
 
-  if (!titleMatch) return null;
-
   return {
-    title: decodeHtmlEntities(titleMatch?.[1] || ""),
-    description: decodeHtmlEntities(descMatch?.[1] || ""),
+    subtitle: decodeHtmlEntities(subtitleText?.replace(/<[^>]*>?/gm, '') || "Nächster Schritt"),
+    title: decodeHtmlEntities(titleMatch?.[1]?.replace(/<[^>]*>?/gm, '') || ""),
+    description: decodeHtmlEntities(descMatch?.[1]?.replace(/<[^>]*>?/gm, '') || ""),
     btnLink: btnMatch?.[1] || "",
-    btnText: decodeHtmlEntities(btnMatch?.[2] || ""),
+    btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '') || ""),
     features,
     imageUrl: imgMatch?.[1] || "",
   };
@@ -586,6 +620,7 @@ export function extractTestimonialsSectionData(html: string): TestimonialsSectio
 }
 
 export interface NextStepSectionData {
+  subtitle: string;
   title: string;
   description: string;
   btnText: string;
@@ -599,16 +634,29 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
 
   const sectionHtml = html.split('<div class="next-step-section">')[1] || html;
 
+  let subtitleText = "";
+  const h6Matches = [...sectionHtml.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)];
+  const divMatches = [...sectionHtml.matchAll(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/gi)];
+  const liMatches = [...sectionHtml.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)];
+  
+  if (h6Matches.length > 0) {
+    subtitleText = h6Matches[0][1];
+  } else if (divMatches.length > 0) {
+    subtitleText = divMatches[0][1];
+  } else if (liMatches.length > 0) {
+    subtitleText = liMatches[0][1];
+  }
+  
   const titleMatch = sectionHtml.match(/<h2 class="section-title">([\s\S]*?)<\/h2>/);
   const descMatch = sectionHtml.match(/<p class="description">([\s\S]*?)<\/p>/);
   const btnMatch = sectionHtml.match(/<a class="button-link" href="(.*?)">(.*?)<\/a>/);
   
   // Try to find an image inside next-step-section with the specific class first
-  let imgMatch = sectionHtml.match(/<div class="next-step-section">[\s\S]*?<img[^>]*class="next-step-image"[^>]*src="(.*?)"/);
+  let imgMatch = sectionHtml.match(/<div class="next-step-section">[\s\S]*?<img[^>]*class="next-step-image"[^>]*src=["'](.*?)["']/);
   
   // Fallback: Find any image that appears in the section HTML
   if (!imgMatch) {
-    imgMatch = sectionHtml.match(/<img[^>]*src="(.*?)"/);
+    imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/);
   }
 
   const features: string[] = [];
@@ -618,12 +666,14 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
   while ((match = itemRegex.exec(sectionHtml)) !== null) {
     // Strip any HTML tags that might have accidentally been placed inside the feature item (e.g. images)
     const rawText = match[1].replace(/<[^>]*>?/gm, '').trim();
-    if (rawText) {
-      features.push(decodeHtmlEntities(rawText));
+    const decoded = decodeHtmlEntities(rawText).trim();
+    if (decoded && decoded !== '') {
+      features.push(decoded);
     }
   }
 
   return {
+    subtitle: decodeHtmlEntities(subtitleText || "Nächster Schritt"),
     title: decodeHtmlEntities(titleMatch?.[1] || ""),
     description: decodeHtmlEntities(descMatch?.[1] || ""),
     btnLink: btnMatch?.[1] || "",
