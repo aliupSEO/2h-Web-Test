@@ -62,7 +62,7 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
                 {page.map((testimonial, index) => (
                   <div 
                     key={index}
-                    className="group relative bg-[#f4f5f5] rounded-[24px] p-8 md:p-10 pb-[140px] h-full min-h-[500px] flex flex-col justify-start animate-fade-slide-up"
+                    className="group relative bg-[#f4f5f5] rounded-[24px] px-8 pt-8 md:px-10 md:pt-10 pb-[140px] h-full min-h-[500px] flex flex-col justify-start animate-fade-slide-up"
                     style={{ animationDelay: `${index * 150}ms` }}
                   >
                     {/* Green Quotes */}

@@ -56,7 +56,7 @@ export default function ServicesSection({ data }: ServicesSectionProps) {
           {data.services.map((service, index) => (
             <div 
               key={index}
-              className="group relative p-8 pb-[90px] min-h-[320px] md:min-h-[460px] flex flex-col justify-start items-start rounded-[20px] bg-[#f4f5f5] animate-fade-slide-up overflow-hidden"
+              className="group relative p-8 pb-[140px] min-h-[320px] md:min-h-[460px] flex flex-col justify-start items-start rounded-[20px] bg-[#f4f5f5] animate-fade-slide-up overflow-hidden"
               style={{ animationDelay: `${index * 150}ms` }}
             >
               <h3 
