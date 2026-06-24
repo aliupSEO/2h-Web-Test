@@ -183,9 +183,8 @@ export default async function Footer() {
               </p>
             </div>
     
-            <div className="absolute right-0 top-1/2 -translate-y-1/2">
-              <ScrollToTop />
-            </div>
+            {/* ScrollToTop is now globally fixed */}
+            <ScrollToTop />
           </div>
         </div>
       </div>
