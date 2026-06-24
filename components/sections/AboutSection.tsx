@@ -25,16 +25,16 @@ export default function AboutSection({ data }: AboutSectionProps) {
           </h2>
 
           <p 
-            className="text-[17px] leading-[30px] mb-6 text-[#727272] max-w-lg font-normal"
+            className="text-[17px] leading-[30px] mb-6 text-[#727272] max-w-full lg:max-w-lg font-normal"
             style={{ fontFamily: "var(--font-barlow)" }}
           >
             {data.description}
           </p>
-
-          <h5 className="text-[20px] font-serif font-normal mb-8 text-[rgb(16,16,16)] leading-[30px] uppercase tracking-[1px] max-w-lg">
+  
+          <h5 className="text-[20px] font-serif font-normal mb-8 text-[rgb(16,16,16)] leading-[30px] uppercase tracking-[1px] max-w-full lg:max-w-lg">
             {data.motto}
           </h5>
-
+  
           <div className="flex flex-wrap items-center justify-start gap-6">
             <Link 
               href={data.btnLink} 
@@ -58,10 +58,10 @@ export default function AboutSection({ data }: AboutSectionProps) {
             )}
           </div>
         </div>
-
+  
         {/* Image */}
-        <div className="flex justify-center lg:justify-end animate-fade-slide-up animation-delay-200">
-          <div className="relative w-full max-w-[480px] aspect-[16/10] rounded-[1rem] overflow-hidden shadow-xl group cursor-pointer">
+        <div className="flex justify-center lg:justify-end animate-fade-slide-up animation-delay-200 mt-4 lg:mt-0">
+          <div className="relative w-full max-w-[800px] lg:max-w-[480px] aspect-[4/3] lg:aspect-[16/10] rounded-[1rem] overflow-hidden shadow-xl group cursor-pointer">
             {data.imageUrl && (
               <Image
                 src={data.imageUrl}
