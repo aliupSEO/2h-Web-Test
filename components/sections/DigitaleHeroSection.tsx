@@ -31,26 +31,22 @@ export default function DigitaleHeroSection({ data }: DigitaleHeroSectionProps) 
         
         <div className="mb-2 flex items-center justify-start gap-2">
           <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-          <span className="text-[10px] md:text-[12px] uppercase tracking-[3px] font-medium" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>
+          <span className="text-[15px] md:text-[17px] leading-[30px] font-serif font-normal text-white uppercase tracking-[1px]">
             {data.subtitle}
           </span>
         </div>
-
+  
         <h1 className="text-4xl sm:text-5xl md:text-[60px] lg:text-[76px] font-serif font-normal text-white uppercase tracking-[1px] md:tracking-[2px] leading-[1.1] lg:leading-[99px] mb-6">
           {data.title}
         </h1>
-
-        <p className="text-[15px] md:text-[16px] lg:text-[17px] font-serif font-normal leading-relaxed lg:leading-[30px] mb-10 max-w-[650px] text-left text-white" style={{ color: "var(--color-text-light, #e4e4e7)" }}>
+  
+        <p className="text-[18px] md:text-[22px] font-serif font-medium leading-[1.5] lg:leading-[31px] mb-10 max-w-[800px] text-left text-white">
           {data.description}
         </p>
-
+  
         <Link 
           href={data.btnLink} 
-          className="inline-flex items-center justify-center border text-white rounded-full px-8 md:px-12 py-3 md:py-3.5 text-[10px] md:text-[11px] tracking-[2px] md:tracking-[3px] uppercase transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl backdrop-blur-sm hover:bg-[#b6ef00] hover:text-black hover:border-[#b6ef00]"
-          style={{ 
-            borderColor: "#b6ef00",
-            borderWidth: "1px"
-          }}
+          className="inline-flex items-center justify-center rounded-full px-8 md:px-12 py-4 md:py-5 text-[14px] md:text-[15px] leading-[15px] font-serif font-medium uppercase tracking-[1px] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl bg-[#b6ef00] hover:bg-white text-[#101010]"
         >
           {data.btnText}
         </Link>

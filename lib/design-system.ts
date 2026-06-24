@@ -187,6 +187,28 @@ export function getDesignSystemCSS(settings: DesignSystemSettings): string {
 
   const lines: string[] = [];
 
+  // Generate Google Fonts @import if valid fonts are specified
+  const extractFont = (fontString: string) => {
+    if (!fontString) return null;
+    const font = fontString.split(',')[0].replace(/['"]/g, '').trim();
+    if (font && !['sans-serif', 'serif', 'monospace', 'system-ui'].includes(font.toLowerCase())) {
+      return font.replace(/ /g, '+');
+    }
+    return null;
+  };
+  
+  const primaryFont = extractFont(typography.font_primary);
+  const secondaryFont = extractFont(typography.font_secondary);
+  const fontsToLoad = new Set<string>();
+  
+  if (primaryFont) fontsToLoad.add(`${primaryFont}:300,400,500,600,700`);
+  if (secondaryFont) fontsToLoad.add(`${secondaryFont}:300,400,500,600,700`);
+  
+  if (fontsToLoad.size > 0) {
+    const families = Array.from(fontsToLoad).join('|');
+    lines.push(`@import url('https://fonts.googleapis.com/css?family=${families}&display=swap');\n`);
+  }
+
   lines.push(":root {");
 
   // ── Brand Colors ────────────────────────────────────────────────
