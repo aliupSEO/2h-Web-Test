@@ -63,7 +63,7 @@ export default async function WirPage() {
   return (
     <>
       <HeroSection 
-        title={heroData?.titleLine1 ? `${heroData.titleLine1} ${heroData.titleLine2 || ""}` : page.title}
+        title={heroData?.title || page.title}
         subtitle={heroData?.subtitle}
         description={heroData?.description}
         backgroundImage={page.featuredImage?.node?.sourceUrl}
