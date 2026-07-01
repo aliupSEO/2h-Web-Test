@@ -50,7 +50,8 @@ export default function ContactForm({
   submitLabel = "Send Message",
   recaptchaEnabled,
   recaptchaSiteKey,
-}: ContactFormProps) {
+  theme = "dark",
+}: ContactFormProps & { theme?: "dark" | "light" }) {
   // Fallback static form state
   const [fallbackData, setFallbackData] = useState({ name: "", email: "", message: "" });
 
@@ -230,13 +231,21 @@ export default function ContactForm({
     </div>
   );
 
-  const inputClass =
-    "w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-sm";
+  const inputClass = theme === "light"
+    ? "w-full px-6 py-4 bg-[#f4f4f5] border-none rounded-[24px] text-text-primary placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary,#b6ef00)] transition-all text-[18px]"
+    : "w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-sm";
 
-  const submitClass =
-    "w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+  const textareaClass = theme === "light"
+    ? "w-full px-6 py-4 bg-[#f4f4f5] border-none rounded-[24px] text-text-primary placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary,#b6ef00)] transition-all text-[18px] resize-y min-h-[150px]"
+    : `${inputClass} resize-y min-h-[150px]`;
 
-  const labelClass = "block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1";
+  const submitClass = theme === "light"
+    ? "w-fit bg-[var(--color-brand-primary,#b6ef00)] hover:opacity-90 text-[#101010] font-normal py-4 px-10 rounded-full transition-all duration-200 text-[18px] cursor-pointer disabled:opacity-50"
+    : "w-full bg-green-600 hover:bg-green-500 text-text-light font-semibold py-3 px-6 rounded-lg transition-colors duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+
+  const labelClass = theme === "light" 
+    ? "sr-only" 
+    : "block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1";
 
   // ── Render MODE 1 ───────────────────────────────────────────────────────
   if (finalFields.length > 0) {
@@ -244,7 +253,7 @@ export default function ContactForm({
     const btnText = submitField?.label || submitLabel;
 
     return (
-      <form onSubmit={handleDynamicSubmit} className="space-y-4 w-full">
+      <form onSubmit={handleDynamicSubmit} className="space-y-4 w-full" style={{ fontFamily: 'Federo, sans-serif' }}>
         {finalFields.map((field) => {
           if (field.type === "custom_submit") return null;
 
@@ -260,14 +269,24 @@ export default function ContactForm({
           return (
             <div key={field.id} className="space-y-1">
               <label className={labelClass}>{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
-              <input
-                type={field.type}
-                placeholder={field.placeholder || ""}
-                value={dynamicData[field.id] || ""}
-                onChange={(e) => setDynamicData((p) => ({ ...p, [field.id]: e.target.value }))}
-                className={inputClass}
-                required={field.required}
-              />
+              {field.type === "textarea" ? (
+                <textarea
+                  placeholder={`${field.placeholder || ""}${field.required ? " *" : ""}`}
+                  value={dynamicData[field.id] || ""}
+                  onChange={(e) => setDynamicData((p) => ({ ...p, [field.id]: e.target.value }))}
+                  className={textareaClass}
+                  required={field.required}
+                />
+              ) : (
+                <input
+                  type={field.type}
+                  placeholder={`${field.placeholder || ""}${field.required ? " *" : ""}`}
+                  value={dynamicData[field.id] || ""}
+                  onChange={(e) => setDynamicData((p) => ({ ...p, [field.id]: e.target.value }))}
+                  className={inputClass}
+                  required={field.required}
+                />
+              )}
             </div>
           );
         })}
@@ -320,21 +339,29 @@ export default function ContactForm({
     <form onSubmit={handleFallbackSubmit} className="space-y-4 w-full">
       <div className="space-y-1">
         <label className={labelClass}>Name</label>
-        <input type="text" placeholder="Your name" value={fallbackData.name}
+        <input type="text" placeholder={theme === "light" ? "Name *" : "Your name"} value={fallbackData.name}
           onChange={(e) => setFallbackData((p) => ({ ...p, name: e.target.value }))}
           className={inputClass} required />
       </div>
       <div className="space-y-1">
         <label className={labelClass}>Email</label>
-        <input type="email" placeholder="your@email.com" value={fallbackData.email}
+        <input type="email" placeholder={theme === "light" ? "Email *" : "your@email.com"} value={fallbackData.email}
           onChange={(e) => setFallbackData((p) => ({ ...p, email: e.target.value }))}
           className={inputClass} required />
       </div>
+      {theme === "light" && (
+        <div className="space-y-1">
+          <label className={labelClass}>Company/Website</label>
+          <input type="text" placeholder="Company/Website" value={(fallbackData as any).company || ""}
+            onChange={(e) => setFallbackData((p) => ({ ...p, company: e.target.value }))}
+            className={inputClass} />
+        </div>
+      )}
       <div className="space-y-1">
         <label className={labelClass}>Message</label>
-        <textarea placeholder="How can we help?" value={fallbackData.message}
+        <textarea placeholder={theme === "light" ? "News" : "How can we help?"} value={fallbackData.message}
           onChange={(e) => setFallbackData((p) => ({ ...p, message: e.target.value }))}
-          className={`${inputClass} resize-none`} rows={4} required />
+          className={textareaClass} rows={theme === "light" ? 6 : 4} required />
       </div>
       <button type="submit" disabled={status === "loading"} className={submitClass}>
         {status === "loading" ? "Sending…" : submitLabel}

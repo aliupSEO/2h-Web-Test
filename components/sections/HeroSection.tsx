@@ -30,6 +30,12 @@ interface HeroSectionProps {
     text: string;
     href: string;
   };
+  /** Optional description text under the title */
+  description?: string;
+  /** Text alignment */
+  align?: "left" | "center";
+  /** Optional bullet points below the CTA */
+  bulletPoints?: string[];
 }
 
 export default function HeroSection({
@@ -37,6 +43,9 @@ export default function HeroSection({
   subtitle,
   backgroundImage,
   cta,
+  description,
+  align = "left",
+  bulletPoints,
 }: HeroSectionProps) {
   const hasData = !!title;
 
@@ -86,10 +95,10 @@ export default function HeroSection({
       )}
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-10 md:px-16 mt-24">
+      <div className={`relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-10 md:px-16 mt-24 ${align === "center" ? "flex flex-col items-center text-center" : ""}`}>
         {/* Subtitle badge */}
         {subtitle && (
-          <div className="mb-4 flex items-center gap-2 text-sm sm:text-[14px] font-medium tracking-[2.5px] uppercase animate-fade-slide-up">
+          <div className={`mb-4 flex items-center gap-2 text-sm sm:text-[14px] font-medium tracking-[2.5px] uppercase animate-fade-slide-up ${align === "center" ? "justify-center" : ""}`}>
             <span
               className="h-1.5 w-1.5 rounded-full flex-shrink-0"
               style={{ background: "var(--color-brand-primary, #b6ef00)" }}
@@ -102,32 +111,59 @@ export default function HeroSection({
 
         {/* Main Heading */}
         <h1
-          className="animate-fade-slide-up animation-delay-200 text-4xl sm:text-6xl lg:text-[80px] leading-[1.1] mb-10 max-w-[720px] uppercase font-sans font-normal tracking-wide"
+          className={`animate-fade-slide-up animation-delay-200 text-4xl sm:text-6xl lg:text-[80px] leading-[1.1] ${description ? "mb-4" : "mb-10"} max-w-[720px] uppercase font-sans font-normal tracking-wide ${align === "center" ? "mx-auto" : ""}`}
           style={{ color: "var(--color-text-light, #ffffff)" }}
           suppressHydrationWarning
         >
           {title}
         </h1>
 
+        {/* Description */}
+        {description && (
+          <p
+            className={`animate-fade-slide-up animation-delay-300 text-base md:text-lg font-sans mb-8 max-w-[640px] leading-relaxed whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
+            style={{ color: "var(--color-text-light, #ffffff)" }}
+            suppressHydrationWarning
+          >
+            {description}
+          </p>
+        )}
+
         {/* CTA Button */}
-        <div className="flex flex-wrap gap-4 mt-8 animate-fade-slide-up animation-delay-300">
+        <div className={`flex flex-wrap gap-4 mt-8 animate-fade-slide-up animation-delay-300 ${align === "center" ? "justify-center" : ""}`}>
           {cta ? (
             <Link
               href={cta.href}
-              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[#b6ef00] hover:text-black transition-colors"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[var(--color-brand-primary,#b6ef00)] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black transition-colors"
               suppressHydrationWarning
             >
               {cta.text}
             </Link>
           ) : (
             <span 
-              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[#b6ef00] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[#b6ef00] hover:text-black transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[var(--color-brand-primary,#b6ef00)] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black transition-colors cursor-pointer"
               suppressHydrationWarning
             >
               DIGITALE LÖSUNGEN
             </span>
           )}
         </div>
+
+        {/* Bullet Points */}
+        {bulletPoints && bulletPoints.length > 0 && (
+          <div className={`mt-6 flex flex-wrap items-center gap-6 animate-fade-slide-up animation-delay-[500ms] ${align === "center" ? "justify-center" : ""}`}>
+            {bulletPoints.map((point, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+                  <path d="M10 3L4.5 8.5L2 6" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="text-sm font-sans tracking-wide" style={{ color: "var(--color-text-light, #ffffff)" }} suppressHydrationWarning>
+                  {point}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

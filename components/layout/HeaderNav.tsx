@@ -39,7 +39,7 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
             <Link
               href={item.uri}
               className={`flex items-center gap-1.5 transition-colors duration-200 uppercase tracking-[1.5px] text-[15px] leading-[15px] font-medium font-sans group-hover:!text-[var(--color-brand-primary,#b6ef00)]`}
-              style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : (isScrolled ? "rgb(16, 16, 16)" : "var(--color-text-light, #ffffff)") }}
+              style={{ color: active ? "var(--color-brand-primary, #b6ef00)" : (isScrolled ? "var(--color-text-primary, #101010)" : "var(--color-text-light, #ffffff)") }}
             >
               <span suppressHydrationWarning>{item.label}</span>
               {showChevron && (
@@ -62,13 +62,20 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
             {/* Dropdown Menu */}
             {hasChildren && (
               <div className="absolute top-full left-[-10px] pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
-                <div className="min-w-[160px] bg-white rounded-xl shadow-xl py-3 border border-zinc-100">
+                <div 
+                  className="min-w-[160px] rounded-xl shadow-xl py-3 border"
+                  style={{ 
+                    background: "var(--color-bg-primary, #ffffff)", 
+                    borderColor: "var(--color-brand-border, #e4e4e7)" 
+                  }}
+                >
                   <ul className="flex flex-col">
                     {item.childItems?.nodes.map((child) => (
                       <li key={child.id}>
                         <Link
                           href={child.uri}
-                          className="block px-5 py-2.5 text-[14px] font-sans text-black hover:text-[var(--color-brand-primary,#b6ef00)] hover:bg-zinc-50 transition-colors"
+                          className="block px-5 py-2.5 text-[14px] font-sans hover:text-[var(--color-brand-primary,#b6ef00)] transition-colors hover:bg-black/5"
+                          style={{ color: "var(--color-text-primary, #000000)" }}
                         >
                           <span suppressHydrationWarning>{child.label}</span>
                         </Link>

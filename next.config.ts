@@ -14,6 +14,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/service/google-ads-agentur-wien",
+        destination: "/google-ads",
+      },
+      {
+        source: "/service/google-ads-agentur-wien/",
+        destination: "/google-ads",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

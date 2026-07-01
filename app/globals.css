@@ -76,6 +76,8 @@
   --color-bg-primary:    var(--color-bg-primary);
   --color-bg-alternate:  var(--color-bg-alternate);
   --color-text-primary:  var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-light:    var(--color-text-light);
   --color-brand-primary: var(--color-brand-primary);
 }
 

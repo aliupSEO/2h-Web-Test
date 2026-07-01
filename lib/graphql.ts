@@ -43,24 +43,22 @@ export async function fetchGraphQL(query: string, variables: Record<string, unkn
       next: { revalidate: 1 },
     });
 
-    const contentType = res.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
-      const text = await res.text();
-      console.warn("Non-JSON response from WPGraphQL:", text.substring(0, 200));
-      return null;
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("GraphQL Error:", errorText);
+      throw new Error(`GraphQL Error: ${res.status} ${res.statusText}`);
     }
 
     const json = await res.json();
-
     if (json.errors) {
-      console.error("GraphQL errors:", json.errors);
-      return null;
+      console.error("GraphQL JSON Errors:", json.errors);
+      throw new Error("GraphQL JSON Errors");
     }
 
     return json.data;
   } catch (error) {
-    console.error("Failed to fetch from WPGraphQL:", error);
-    return null;
+    console.error("Fetch error:", error);
+    throw error;
   }
 }
 
@@ -260,7 +258,13 @@ export async function getMenuItems() {
     
     // WordPress returns them in reverse order when multiple menus are fetched without a location.
     // Reversing them restores the correct order: Startseite, Digitale Lösungen...
-    return uniqueItems.reverse();
+    const reversedItems = uniqueItems.reverse();
+    for (const item of reversedItems) {
+      if (item.childItems?.nodes) {
+        item.childItems.nodes.reverse();
+      }
+    }
+    return reversedItems;
   }
 
   return [];
@@ -348,6 +352,8 @@ export function decodeHtmlEntities(str: string): string {
 export interface HeroSectionData {
   subtitle: string;
   title: string;
+  descriptionHtml?: string;
+  description?: string;
   btnText: string;
   btnLink: string;
 }
@@ -477,6 +483,7 @@ export interface AboutSectionData {
   titleLine1: string;
   titleLine2: string;
   description: string;
+  contentHtml?: string;
   motto: string;
   btnText: string;
   btnLink: string;
@@ -563,6 +570,7 @@ export interface ServicesSectionData {
   subtitle: string;
   title: string;
   services: ServiceItemData[];
+  imageUrl?: string;
 }
 
 export function extractServicesSectionData(html: string): ServicesSectionData | null {
@@ -699,6 +707,71 @@ export function extractProjectsSectionData(html: string): ProjectsSectionData | 
   };
 }
 
+export interface PortfolioItemData {
+  imageUrl: string;
+  title: string;
+  link?: string;
+}
+
+export interface PortfolioPageData {
+  subtitle: string;
+  title: string;
+  description: string;
+  items: PortfolioItemData[];
+  imageUrl?: string;
+}
+
+export function extractPortfolioPageData(html: string): PortfolioPageData | null {
+  const h2Index = html.search(/<h2[^>]*>/i);
+  if (h2Index === -1) return null;
+
+  const beforeH2 = html.substring(0, h2Index);
+  const afterH2 = html.substring(h2Index);
+
+  const titleMatch = afterH2.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  if (!titleMatch) return null;
+
+  let subtitleText = "";
+  const h6Matches = [...beforeH2.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)];
+  const divMatches = [...beforeH2.matchAll(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/gi)];
+  if (h6Matches.length > 0) {
+    subtitleText = h6Matches[h6Matches.length - 1][1];
+  } else if (divMatches.length > 0) {
+    subtitleText = divMatches[divMatches.length - 1][1];
+  }
+
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(afterH2)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      description = pMatch[1];
+      break;
+    }
+  }
+
+  const items: PortfolioItemData[] = [];
+  const itemRegex = /<div class="portfolio-item">[\s\S]*?<img.*?src=["'](.*?)["'].*?alt=["'](.*?)["'] \/>[\s\S]*?<h4>(.*?)<\/h4>([\s\S]*?)<\/div>/g;
+  let match;
+  while ((match = itemRegex.exec(html)) !== null) {
+    const blockAfterTitle = match[4];
+    const linkMatch = blockAfterTitle.match(/<a[^>]*href=["'](.*?)["']/i);
+    
+    items.push({
+      imageUrl: match[1],
+      title: decodeHtmlEntities(match[3]),
+      link: linkMatch ? linkMatch[1] : undefined
+    });
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleText?.replace(/<[^>]*>?/gm, '') || ""),
+    title: decodeHtmlEntities(titleMatch?.[1]?.replace(/<[^>]*>?/gm, '') || ""),
+    description: decodeHtmlEntities(description),
+    items
+  };
+}
+
 export interface TestimonialItemData {
   text: string;
   author: string;
@@ -718,6 +791,11 @@ export function extractTestimonialsSectionData(html: string): TestimonialsSectio
     sectionHtml = html.split('<!-- TESTIMONIALS SECTION -->')[1].split('<!--')[0];
   } else if (html.includes('testimonials-section')) {
     sectionHtml = html.split('<div class="testimonials-section">')[1] || html;
+  } else if (html.match(/KUNDENSTIMMEN/i)) {
+    const match = html.match(/KUNDENSTIMMEN/i);
+    sectionHtml = html.substring(Math.max(0, match!.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 10);
+    if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
   } else {
     return null;
   }
@@ -733,7 +811,7 @@ export function extractTestimonialsSectionData(html: string): TestimonialsSectio
   const afterH2Str = titleMatch && titleMatch.index !== undefined ? sectionHtml.substring(titleMatch.index + titleMatch[0].length) : sectionHtml;
   const h6Matches = [...afterH2Str.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)]; 
   
-  if (h6Matches.length > 0 && html.includes('<!-- TESTIMONIALS SECTION -->')) {
+  if (h6Matches.length > 0) {
       for (let i = 0; i < h6Matches.length; i++) {
           const author = h6Matches[i][1];
           const prevIndex = i > 0 ? h6Matches[i-1].index! + h6Matches[i-1][0].length : 0;
@@ -797,6 +875,16 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
     sectionHtml = html.split('<!-- NEXT STEP SECTION -->')[1].split('<!--')[0];
   } else if (html.includes('next-step-section')) {
     sectionHtml = html.split('<div class="next-step-section">')[1] || html;
+  } else if (html.match(/Wie viele Anfragen/i)) {
+    const match = html.match(/Wie viele Anfragen/i);
+    sectionHtml = html.substring(Math.max(0, match!.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 10);
+    if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
+  } else if (html.match(/Was ist bei Ihnen/i)) {
+    const match = html.match(/Was ist bei Ihnen/i);
+    sectionHtml = html.substring(Math.max(0, match!.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 10);
+    if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
   } else {
     return null;
   }
@@ -829,6 +917,12 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
     if (!pMatch[1].includes('<a')) {
       description = pMatch[1];
       break;
+    }
+  }
+  if (!description) {
+    const divMatch = afterH2.match(/<div class="elementor-widget-container">([^<]+)<\/div>/i);
+    if (divMatch && divMatch[1].trim().length > 10) {
+      description = divMatch[1].trim();
     }
   }
   if (!description) {
@@ -1069,3 +1163,289 @@ export function extractOfficeSectionData(html: string): OfficeSectionData | null
   };
 }
 
+
+export interface ContactPageData {
+  imageUrl?: string;
+  subtitle: string;
+  title: string;
+  description: string;
+  emailTitle?: string;
+  email: string;
+  phoneTitle?: string;
+  phone: string;
+  addressTitle?: string;
+  address: string;
+  locationTitle?: string;
+  location?: string;
+  formTitle?: string;
+  mapTitle?: string;
+  submitLabel?: string;
+  fields?: { id: string; label: string; type: string; required?: boolean; placeholder?: string; }[];
+}
+
+export function extractKontaktPageData(html: string): ContactPageData {
+  const fields: { id: string; label: string; type: string; required?: boolean; placeholder?: string; }[] = [];
+  
+  // Extract fields from fluent forms structure or similar
+  const groupRegex = /<div class="ff-form-group">([\s\S]*?)<\/div>/gi;
+  let submitLabel = "Send Message";
+  let match;
+  while ((match = groupRegex.exec(html)) !== null) {
+    const groupHtml = match[1];
+    if (groupHtml.includes('type="submit"')) {
+      const btnMatch = groupHtml.match(/<button[^>]*type=["']submit["'][^>]*>([\s\S]*?)<\/button>/i);
+      if (btnMatch) submitLabel = btnMatch[1].trim();
+      continue;
+    }
+    
+    const labelMatch = groupHtml.match(/<label[^>]*>([\s\S]*?)<\/label>/i);
+    let label = labelMatch ? labelMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+    label = label.replace(/\*$/, '').trim(); 
+    const required = groupHtml.includes('required');
+    
+    let type = "text";
+    let id = label.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    let placeholder = label;
+    
+    if (groupHtml.includes('<textarea')) {
+      type = "textarea";
+      const nameMatch = groupHtml.match(/<textarea[^>]*name=["'](.*?)["']/i);
+      if (nameMatch) id = nameMatch[1];
+      const placeholderMatch = groupHtml.match(/<textarea[^>]*placeholder=["'](.*?)["']/i);
+      if (placeholderMatch) placeholder = placeholderMatch[1];
+    } else {
+      const inputMatch = groupHtml.match(/<input[^>]*type=["'](.*?)["'][^>]*name=["'](.*?)["']/i);
+      if (inputMatch) {
+        type = inputMatch[1];
+        id = inputMatch[2];
+      }
+      const placeholderMatch = groupHtml.match(/<input[^>]*placeholder=["'](.*?)["']/i);
+      if (placeholderMatch) placeholder = placeholderMatch[1];
+    }
+    
+    if (label || placeholder) {
+      fields.push({ id, label: label || placeholder, type, required, placeholder });
+    }
+  }
+
+  // Parse structured data from WP HTML
+  const getMatch = (regex: RegExp) => {
+    const m = html.match(regex);
+    return m ? decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()) : undefined;
+  };
+
+  const subtitle = getMatch(/<div class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/i) || "Kontakt";
+  const title = getMatch(/<h1 class="section-title"[^>]*>([\s\S]*?)<\/h1>/i) || "Lass uns über dein Projekt sprechen";
+  const description = getMatch(/<p class="section-desc"[^>]*>([\s\S]*?)<\/p>/i) || "Wir freuen uns auf deine Nachricht.";
+  
+  const imgMatch = html.match(/<div class="contact-image"[^>]*>[\s\S]*?<img[^>]*src=["'](.*?)["']/i) || html.match(/<img[^>]*src=["'](.*?)["']/i);
+  const imageUrl = imgMatch ? imgMatch[1] : undefined;
+
+  const emailTitle = getMatch(/<div class="contact-method email"[^>]*>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/i) || "e-Mail";
+  const email = getMatch(/<div class="contact-method email"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i) || "office@2h-websolutions.at";
+
+  let locationTitle = getMatch(/<div class="contact-method location"[^>]*>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/i);
+  const address = getMatch(/<div class="contact-method location"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i) || "Wien, Österreich";
+
+  const phoneTitle = getMatch(/<div class="contact-method phone"[^>]*>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/i) || "Einfach anrufen";
+  const phone = getMatch(/<div class="contact-method phone"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i) || "+43 676 450 85 79";
+
+  let formTitle = getMatch(/<div class="contact-form"[^>]*>[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  let mapTitle = undefined;
+
+  // Fallback for unstructured text added via Gutenberg paragraphs at the end of the content
+  const allParagraphs = Array.from(html.matchAll(/<p class="wp-block-paragraph">([\s\S]*?)<\/p>/gi))
+    .map(m => decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()))
+    .filter(Boolean);
+    
+  if (allParagraphs.length >= 2) {
+    if (!formTitle) formTitle = allParagraphs[allParagraphs.length - 2];
+    mapTitle = allParagraphs[allParagraphs.length - 1];
+  }
+  
+  // Set defaults if still empty
+  locationTitle = locationTitle || "Der Standort";
+
+  return {
+    subtitle,
+    title,
+    description,
+    emailTitle,
+    email,
+    locationTitle,
+    address,
+    location: address,
+    phoneTitle,
+    phone,
+    formTitle,
+    mapTitle,
+    submitLabel,
+    imageUrl,
+    fields: fields.length > 0 ? fields : undefined
+  };
+}
+
+export interface SeoHeroData {
+  subtitle: string;
+  title: string;
+  description: string;
+  ctaText?: string;
+  ctaLink?: string;
+  bulletPoints?: string[];
+  tickerText?: string;
+}
+
+export interface SeoSectionData {
+  type: string;
+  data?: any;
+  html?: string;
+}
+
+
+
+export interface SeoPageData {
+  heroData: SeoHeroData;
+  sections: SeoSectionData[];
+}
+
+export function extractSeoPageData(html: string): SeoPageData {
+  let content = html;
+  
+  if (html.includes('class="next-step-section"')) {
+    const parts = html.split(/<div[^>]*class="next-step-section"[^>]*>/);
+    content = parts[0];
+  }
+
+  let heroData: SeoHeroData = {} as any;
+  const sections: SeoSectionData[] = [];
+  
+  const h2Split = content.split(/(?=<h2)/i);
+  if (h2Split.length > 0) {
+    const heroHtml = h2Split[0];
+    content = content.substring(heroHtml.length);
+
+    const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    const pMatch = heroHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const btnMatch = heroHtml.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+    
+    const allParagraphs: string[] = [];
+    const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let pMatchItem;
+    while ((pMatchItem = pRegex.exec(heroHtml)) !== null) {
+      allParagraphs.push(pMatchItem[1]);
+    }
+    const tickerTextRaw = allParagraphs.length >= 3 ? allParagraphs[allParagraphs.length - 1] : "";
+    const tickerText = tickerTextRaw.replace(/<[^>]*>?/gm, '').trim();
+    
+    const bulletPoints: string[] = [];
+    const ulMatch = heroHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+    if (ulMatch) {
+      const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+      let match;
+      while ((match = liRegex.exec(ulMatch[1])) !== null) {
+        bulletPoints.push(match[1].trim().replace(/&amp;/g, '&').replace(/<[^>]*>?/gm, ''));
+      }
+    }
+    
+    heroData = {
+      subtitle: "Service",
+      title: titleMatch ? titleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaText: btnMatch ? btnMatch[2].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaLink: btnMatch ? btnMatch[1].trim() : "",
+      bulletPoints,
+      tickerText
+    };
+  }
+
+  const blocksSplit = content.split(/(?=<h2)/i).filter(Boolean);
+  
+  for (const blockHtml of blocksSplit) {
+    const h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+    const title = h2Match ? h2Match[1].replace(/<[^>]*>?/gm, '').trim() : "";
+    
+    const hasImg = /<img/i.test(blockHtml);
+    const h3Matches = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+    
+    if (h3Matches.length > 1) {
+      if (/faq|fragen/i.test(title)) {
+        sections.push({
+          type: "faq",
+          data: {
+            title: title,
+            subtitle: "FAQ",
+            faqs: h3Matches.map(m => ({ question: m[1].replace(/<[^>]*>?/gm, '').trim(), answer: m[2].replace(/<[^>]*>?/gm, '').trim() }))
+          }
+        });
+      } else if (/warum|vorteil/i.test(title)) {
+        sections.push({
+          type: "benefits",
+          data: {
+            title: title,
+            subtitle: "Deine Vorteile",
+            items: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
+          }
+        });
+      } else if (/baustein/i.test(title)) {
+         sections.push({
+          type: "buildingBlocks",
+          data: {
+            title: title,
+            subtitle: "Deine Bausteine",
+            blocks: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
+          }
+        });
+      } else {
+         sections.push({ type: "generic", html: blockHtml });
+      }
+    } else if (/weitere leistungen/i.test(title)) {
+       const imgMatch = blockHtml.match(/<img[^>]*src=["'](.*?)["']/i);
+       const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+       const items: string[] = [];
+       if (ulMatch) {
+         const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+         let match;
+         while ((match = liRegex.exec(ulMatch[1])) !== null) {
+           items.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+         }
+       }
+       const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+       
+       sections.push({
+         type: "weitereLeistungen",
+         data: {
+           title: title,
+           description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+           imageUrl: imgMatch ? imgMatch[1] : "",
+           items: items
+         }
+       });
+    } else if (hasImg) {
+      const imgMatch = blockHtml.match(/<img[^>]*src=["'](.*?)["']/i);
+      const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+      const items: string[] = [];
+      if (ulMatch) {
+        const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let match;
+        while ((match = liRegex.exec(ulMatch[1])) !== null) {
+          items.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+      }
+      const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+      
+      sections.push({
+         type: "about",
+         data: {
+           title: title,
+           description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+           imageUrl: imgMatch ? imgMatch[1] : "",
+           items: items
+         }
+      });
+    } else {
+       sections.push({ type: "generic", html: blockHtml });
+    }
+  }
+
+  return { heroData, sections };
+}

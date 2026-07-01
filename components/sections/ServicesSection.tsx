@@ -5,9 +5,10 @@ import { ServicesSectionData } from "@/lib/graphql";
 
 interface ServicesSectionProps {
   data: ServicesSectionData | null;
+  variant?: "light" | "dark";
 }
 
-export default function ServicesSection({ data }: ServicesSectionProps) {
+export default function ServicesSection({ data, variant = "light" }: ServicesSectionProps) {
   if (!data || !data.services || data.services.length === 0) return null;
 
   const getIcon = (index: number) => {
@@ -34,15 +35,93 @@ export default function ServicesSection({ data }: ServicesSectionProps) {
     }
     // Line Chart for SEA
     return (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="3 17 9 11 13 15 21 7"></polyline>
-        <circle cx="3" cy="17" r="1.5" fill="white"></circle>
-        <circle cx="9" cy="11" r="1.5" fill="white"></circle>
-        <circle cx="13" cy="15" r="1.5" fill="white"></circle>
-        <circle cx="21" cy="7" r="1.5" fill="white"></circle>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
       </svg>
     );
   };
+
+  const getDarkIcon = (index: number) => {
+    if (index === 0) {
+      // Monitor with paintbrush (Webdesign & Ecommerce)
+      return (
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+          <rect x="2" y="4" width="20" height="12" rx="2" ry="2"></rect>
+          <line x1="8" y1="20" x2="16" y2="20"></line>
+          <line x1="12" y1="16" x2="12" y2="20"></line>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      );
+    }
+    if (index === 1) {
+      // Magnifying glass with chart (SEO, GEO & AEO)
+      return (
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <polyline points="7 13 10 10 13 13 16 9"></polyline>
+        </svg>
+      );
+    }
+    // Megaphone (SEA)
+    return (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>
+    );
+  };
+
+  if (variant === "dark") {
+    return (
+      <section 
+        className="relative py-24 px-6 md:px-12 lg:px-24 flex items-center min-h-[600px]"
+        id="services-dark"
+      >
+        {/* Background Image with Dark Overlay */}
+        {data.imageUrl && (
+          <div className="absolute inset-0 z-0">
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${data.imageUrl})` }}
+            ></div>
+            {/* Dark overlay: solid dark color with 85% opacity */}
+            <div className="absolute inset-0 bg-black opacity-85"></div>
+          </div>
+        )}
+
+        <div className="relative z-10 max-w-[1200px] mx-auto w-full">
+          <div className="flex flex-col items-center text-center mb-16 animate-fade-slide-up">
+            <h2 className="text-3xl md:text-5xl font-sans font-normal text-white uppercase tracking-wider mb-4 leading-tight whitespace-pre-line">
+              {data.title}
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl font-serif">
+              {data.subtitle}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {data.services.map((service, index) => (
+              <div 
+                key={index}
+                className="flex flex-col items-center text-center animate-fade-slide-up"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                {getDarkIcon(index)}
+                <h3 className="text-xl font-sans font-normal text-white mb-4 uppercase tracking-wider">
+                  {service.title}
+                </h3>
+                <p className="text-gray-400 font-serif leading-relaxed">
+                  {service.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 px-6 md:px-12 lg:px-24 bg-white" id="services">

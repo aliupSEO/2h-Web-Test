@@ -42,13 +42,15 @@ export default function AboutSection({ data }: AboutSectionProps) {
           </h5>
   
           <div className="flex flex-wrap items-center justify-start gap-6">
-            <Link 
-              href={data.btnLink} 
-              className="btn-primary font-sans font-normal uppercase tracking-[1px] text-[15px] leading-[30px] !text-black px-8 py-3 hover:!bg-[#111111] hover:!text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-              suppressHydrationWarning
-            >
-              {data.btnText}
-            </Link>
+            {data.btnLink && data.btnText ? (
+              <Link 
+                href={data.btnLink} 
+                className="btn-primary font-sans font-normal uppercase tracking-[1px] text-[15px] leading-[30px] !text-black px-8 py-3 hover:!bg-[#111111] hover:!text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                suppressHydrationWarning
+              >
+                {data.btnText}
+              </Link>
+            ) : null}
             
             {data.phoneText && (
               <a 

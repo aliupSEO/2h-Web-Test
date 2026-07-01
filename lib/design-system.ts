@@ -144,13 +144,13 @@ export interface DesignSystemSettings {
  * Returns null if the endpoint is unreachable or not configured.
  */
 export async function getDesignSystemSettings(): Promise<DesignSystemSettings | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_REST_URL;
-  if (!baseUrl) {
-    console.warn("NEXT_PUBLIC_WORDPRESS_REST_URL not set — skipping design system fetch.");
-    return null;
-  }
-
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_REST_URL;
+    if (!baseUrl) {
+      console.warn("NEXT_PUBLIC_WORDPRESS_REST_URL not set — skipping design system fetch.");
+      return null;
+    }
+
     // Generate a cache buster that changes every second to bypass the host Nginx proxy cache,
     // while allowing Next.js to share the response within the 1-second revalidation period.
     const cacheBuster = Math.floor(Date.now() / 1000);
@@ -165,7 +165,12 @@ export async function getDesignSystemSettings(): Promise<DesignSystemSettings | 
       return null;
     }
 
-    const data: DesignSystemSettings = await res.json();
+    let rawData = await res.text();
+    // Replace staging URLs with production URLs as requested by user
+    rawData = rawData.replace(/http:\/\/silvioh23\.sg-host\.com/g, 'https://2hwebsolutions.at');
+    rawData = rawData.replace(/https:\/\/silvioh23\.sg-host\.com/g, 'https://2hwebsolutions.at');
+    
+    const data: DesignSystemSettings = JSON.parse(rawData);
     return data;
   } catch (error) {
     console.error("Failed to fetch design system settings:", error);

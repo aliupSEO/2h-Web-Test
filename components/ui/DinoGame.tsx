@@ -11,8 +11,8 @@ const JUMP_VELOCITY = -9;
 const GAME_SPEED = 4;
 const DINO_WIDTH = 20;
 const DINO_HEIGHT = 22;
-const CONTAINER_WIDTH = 350;
-const CONTAINER_HEIGHT = 100;
+const CONTAINER_WIDTH = 600;
+const CONTAINER_HEIGHT = 150;
 
 export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoGameProps) {
   const [uiState, setUiState] = useState<"IDLE" | "PLAYING" | "GAMEOVER">("IDLE");
@@ -28,6 +28,13 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
   const scoreRef = useRef(0);
   const obstaclesRef = useRef<{ id: number; x: number; el: HTMLDivElement | null }[]>([]);
   const lastObstacleTime = useRef(0);
+  
+  const cloudsRef = useRef<{ id: number; x: number; el: HTMLDivElement | null }[]>([]);
+  const lastCloudTime = useRef(0);
+  
+  const groundRef = useRef<{ id: number; x: number; el: HTMLDivElement | null }[]>([]);
+  const lastGroundTime = useRef(0);
+  
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,8 +55,14 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
       
       obstaclesRef.current.forEach(obs => obs.el?.remove());
       obstaclesRef.current = [];
+      cloudsRef.current.forEach(c => c.el?.remove());
+      cloudsRef.current = [];
+      groundRef.current.forEach(g => g.el?.remove());
+      groundRef.current = [];
     } else if (newState === "PLAYING") {
       lastObstacleTime.current = performance.now();
+      lastCloudTime.current = performance.now();
+      lastGroundTime.current = performance.now();
       requestRef.current = requestAnimationFrame(gameLoop);
     }
   };
@@ -96,18 +109,57 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
     // Spawn obstacles
     if (time - lastObstacleTime.current > 900 + Math.random() * 1500) {
       const el = document.createElement("div");
-      el.className = "flex gap-[2px] items-end absolute z-10";
+      el.className = "absolute z-10";
       el.style.bottom = "2px";
       el.style.left = `${CONTAINER_WIDTH}px`;
+      // Pixel-art cactus (green)
       el.innerHTML = `
-        <div class="w-[4px] h-[16px] bg-zinc-600 rounded-t-sm"></div>
-        <div class="w-[5px] h-[22px] bg-zinc-600 rounded-t-sm"></div>
-        <div class="w-[4px] h-[14px] bg-zinc-600 rounded-t-sm"></div>
+        <div class="relative w-[14px] h-[24px]">
+          <div class="absolute bottom-0 left-[5px] w-[4px] h-[24px] bg-[#3ba859]"></div>
+          <div class="absolute bottom-[10px] left-0 w-[4px] h-[8px] bg-[#3ba859]"></div>
+          <div class="absolute bottom-[10px] left-[4px] w-[4px] h-[3px] bg-[#3ba859]"></div>
+          <div class="absolute bottom-[14px] left-[10px] w-[4px] h-[8px] bg-[#3ba859]"></div>
+          <div class="absolute bottom-[14px] left-[6px] w-[4px] h-[3px] bg-[#3ba859]"></div>
+        </div>
       `;
       containerRef.current?.appendChild(el);
       
       obstaclesRef.current.push({ id: time, x: CONTAINER_WIDTH, el });
       lastObstacleTime.current = time;
+    }
+    
+    // Spawn clouds
+    if (time - lastCloudTime.current > 2000 + Math.random() * 3000) {
+      const el = document.createElement("div");
+      el.className = "absolute z-0 opacity-50";
+      // Pixel-art cloud (grey)
+      el.innerHTML = `
+        <div class="w-[30px] h-[10px] bg-[#4d4d4d] relative">
+          <div class="absolute bottom-[10px] left-[5px] w-[20px] h-[5px] bg-[#4d4d4d]"></div>
+          <div class="absolute bottom-[15px] left-[10px] w-[10px] h-[5px] bg-[#4d4d4d]"></div>
+        </div>
+      `;
+      const yPos = 20 + Math.random() * 60; // Top placement
+      el.style.top = `${yPos}px`;
+      el.style.left = `${CONTAINER_WIDTH}px`;
+      containerRef.current?.appendChild(el);
+      
+      cloudsRef.current.push({ id: time, x: CONTAINER_WIDTH, el });
+      lastCloudTime.current = time;
+    }
+
+    // Spawn ground dots
+    if (time - lastGroundTime.current > 100 + Math.random() * 200) {
+      const el = document.createElement("div");
+      el.className = "absolute z-0 bg-[#666666]";
+      el.style.width = Math.random() > 0.5 ? "2px" : "3px";
+      el.style.height = "1px";
+      el.style.bottom = `${2 + Math.random() * 8}px`;
+      el.style.left = `${CONTAINER_WIDTH}px`;
+      containerRef.current?.appendChild(el);
+      
+      groundRef.current.push({ id: time, x: CONTAINER_WIDTH, el });
+      lastGroundTime.current = time;
     }
 
     let isHit = false;
@@ -119,7 +171,7 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
       }
       
       // Collision AABB
-      const obsRect = { left: obs.x, right: obs.x + 13, top: CONTAINER_HEIGHT - 22, bottom: CONTAINER_HEIGHT };
+      const obsRect = { left: obs.x, right: obs.x + 14, top: CONTAINER_HEIGHT - 24, bottom: CONTAINER_HEIGHT };
       const dinoRect = { left: 20, right: 20 + DINO_WIDTH, top: CONTAINER_HEIGHT - DINO_HEIGHT - dinoYRef.current, bottom: CONTAINER_HEIGHT - dinoYRef.current };
       
       // Forgiving collision box (inset by 6px)
@@ -133,6 +185,26 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
       
       if (obs.x < -30) {
         obs.el?.remove();
+        return false;
+      }
+      return true;
+    });
+
+    cloudsRef.current = cloudsRef.current.filter(cloud => {
+      cloud.x -= GAME_SPEED * 0.3; // Parallax effect
+      if (cloud.el) cloud.el.style.left = `${cloud.x}px`;
+      if (cloud.x < -50) {
+        cloud.el?.remove();
+        return false;
+      }
+      return true;
+    });
+
+    groundRef.current = groundRef.current.filter(g => {
+      g.x -= GAME_SPEED;
+      if (g.el) g.el.style.left = `${g.x}px`;
+      if (g.x < -10) {
+        g.el?.remove();
         return false;
       }
       return true;
@@ -168,36 +240,37 @@ export default function DinoGame({ title = "Lass uns ein Spiel spielen" }: DinoG
   return (
     <div className="flex flex-col items-start lg:items-center">
       <h4 
-        className="text-zinc-500 font-normal text-[40px] leading-[50px] text-center mb-4 w-full max-w-[350px]"
+        className="text-[#727272] font-bold text-[40px] leading-[60px] text-center mb-4 w-full max-w-none whitespace-pre"
+        style={{ fontFamily: 'Federo, sans-serif' }}
       >
-        {title}
+        {title.replace(" spielen", "\nspielen")}
       </h4>
       
       <div 
         ref={containerRef}
-        className="relative w-full max-w-[350px] h-[100px] border-b border-zinc-600 flex items-end px-2 pb-[2px] cursor-pointer overflow-hidden group"
+        className="relative w-full max-w-[600px] h-[150px] border-b border-zinc-600 flex items-end px-2 pb-[2px] cursor-pointer overflow-hidden group"
         onClick={jump}
       >
          {/* Background text */}
          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4 z-0">
            <div className="flex justify-end w-full px-2 mb-2">
-              <span className="text-zinc-600 text-[10px] font-mono tracking-widest uppercase">
+              <span className="text-text-secondary text-[10px] font-mono tracking-widest uppercase">
                 HI {highScore.toString().padStart(5, '0')} &nbsp; <span ref={scoreRefElement}>00000</span>
               </span>
            </div>
            
            {uiState === "IDLE" && (
-             <span className="text-zinc-500 font-mono tracking-[0.1em] text-xs mt-6 transition-opacity group-hover:opacity-70">Tippen zum Start</span>
+             <span className="text-text-secondary font-mono tracking-[0.1em] text-xs mt-6 transition-opacity group-hover:opacity-70">Tippen zum Start</span>
            )}
            
            {uiState === "PLAYING" && (
-             <span className="text-zinc-600 text-[9px] mt-8 tracking-wider uppercase opacity-30">Tippen zum Springen</span>
+             <span className="text-text-secondary text-[9px] mt-8 tracking-wider uppercase opacity-30">Tippen zum Springen</span>
            )}
 
            {uiState === "GAMEOVER" && (
              <>
-               <span className="text-zinc-500 font-mono tracking-[0.2em] text-xs mt-2 text-center">GAME OVER</span>
-               <span className="text-zinc-600 text-[9px] mt-4 tracking-wider uppercase">Tippen für Neustart</span>
+               <span className="text-text-secondary font-mono tracking-[0.2em] text-xs mt-2 text-center">GAME OVER</span>
+               <span className="text-text-secondary text-[9px] mt-4 tracking-wider uppercase">Tippen für Neustart</span>
              </>
            )}
          </div>

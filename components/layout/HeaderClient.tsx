@@ -27,23 +27,10 @@ export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle
   }, []);
 
   const logoUrl = isScrolled || isMobileMenuOpen ? (logoDark || logoLight) : logoLight;
-  const textColor = isScrolled || isMobileMenuOpen ? "rgb(16, 16, 16)" : "var(--color-text-light, #ffffff)";
+  const textColor = isScrolled || isMobileMenuOpen ? "var(--color-text-primary, #101010)" : "var(--color-text-light, #ffffff)";
 
   const navItems = menuItems && menuItems.length > 0 ? menuItems : [
     { id: "fallback-1", label: "STARTSEITE", uri: "/" },
-    { 
-      id: "fallback-2", 
-      label: "DIGITALE LÖSUNGEN", 
-      uri: "/unsere-leistungen",
-      childItems: {
-        nodes: [
-          { id: "sub-1", label: "Webdesign", uri: "/service/webdesign/" },
-          { id: "sub-2", label: "SEO", uri: "/service/seo-beratung-wien/" },
-          { id: "sub-3", label: "Google Ads", uri: "/service/google-ads-agentur-wien/" }
-        ]
-      }
-    },
-    { id: "fallback-3", label: "REFERENZEN", uri: "/referenzen" },
     { id: "fallback-4", label: "ÜBER 2H", uri: "/uber-2h" },
     { id: "fallback-5", label: "KONTAKT", uri: "/kontakt" }
   ];

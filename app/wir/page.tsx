@@ -10,7 +10,7 @@
 
 import { Metadata } from "next";
 import { 
-  getWirPage, 
+  getPageBySlug,
   extractHeroSectionData,
   extractAboutSectionData, 
   extractServicesSectionData,
@@ -26,7 +26,7 @@ import OfficeSection from "@/components/sections/OfficeSection";
 import NextStepSection from "@/components/sections/NextStepSection";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getWirPage();
+  const page = await getPageBySlug("wir");
   return {
     title: page?.seo?.title || "Wir | 2H Web Solutions",
     description: page?.seo?.description || "Aus Leidenschaft für Webdesign, Sichtbarkeit und digitale Strategien entstehen Lösungen, die langfristig funktionieren.",
@@ -35,20 +35,44 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function WirPage() {
+  const page = await getPageBySlug("wir");
+
+  if (!page) {
+    return (
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4" style={{ color: "var(--color-brand-primary, #22c55e)" }}>
+            WordPress Connection Needed
+          </h1>
+          <p style={{ color: "var(--color-text-secondary, #a1a1aa)" }}>
+            Please ensure the &quot;wir&quot; page exists in WordPress.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  const html = page.content || "";
+  const heroData = extractHeroSectionData(html);
+  const aboutData = extractAboutSectionData(html);
+  const servicesData = extractServicesSectionData(html);
+  const teamData = extractTeamSectionData(html);
+  const officeData = extractOfficeSectionData(html);
+  const nextStepData = extractNextStepSectionData(html);
+
   return (
-    <main className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4" style={{ background: "var(--color-bg-dark, #0a0a0a)" }}>
-      <div className="mb-8 flex items-center justify-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-        <span className="text-[14px] md:text-[17px] font-sans uppercase tracking-[2px] md:tracking-[3px]" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>
-          Temporär
-        </span>
-      </div>
-      <h1 className="text-3xl md:text-5xl font-bold mb-6 text-white uppercase tracking-wider font-sans">
-        Seite im Aufbau
-      </h1>
-      <p className="text-lg md:text-xl text-zinc-400 max-w-md mx-auto font-sans">
-        Diese Seite ist vorübergehend nicht verfügbar. Bitte schauen Sie später wieder vorbei.
-      </p>
-    </main>
+    <>
+      <HeroSection 
+        title={heroData?.titleLine1 ? `${heroData.titleLine1} ${heroData.titleLine2 || ""}` : page.title}
+        subtitle={heroData?.subtitle}
+        description={heroData?.description}
+        backgroundImage={page.featuredImage?.node?.sourceUrl}
+      />
+      {aboutData && <AboutSection data={aboutData} />}
+      {servicesData && <ServicesSection data={servicesData} variant="dark" />}
+      {teamData && <TeamSection data={teamData} />}
+      {officeData && <OfficeSection data={officeData} />}
+      {nextStepData && <NextStepSection data={nextStepData} />}
+    </>
   );
 }
