@@ -1422,6 +1422,9 @@ export function extractSeoPageData(html: string): SeoPageData {
     content = parts[0];
   }
 
+  // Support for Elementor icon-list widgets used as subtitles
+  content = content.replace(/<div[^>]*elementor-widget-icon-list[^>]*>[\s\S]*?<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/div>/gi, '<div class="section-subtitle">$1</div>');
+
   let heroData: SeoHeroData = {} as any;
   const sections: SeoSectionData[] = [];
   
