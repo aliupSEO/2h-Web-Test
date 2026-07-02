@@ -31,6 +31,12 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
     <section className="py-24 px-6 md:px-12 lg:px-24 bg-white relative">
       <div className="max-w-[1000px] mx-auto text-center mb-16 animate-fade-slide-up">
 
+        {data.subtitle && (
+          <div className="flex justify-center mb-4">
+            <SectionBadge label={data.subtitle} variant="light" />
+          </div>
+        )}
+
         <h2 
           className="text-[46px] leading-[59.8px] font-normal mb-6 uppercase mx-auto max-w-4xl"
           style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
