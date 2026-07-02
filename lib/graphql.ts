@@ -1589,7 +1589,7 @@ export function extractSeoPageData(html: string): SeoPageData {
       }
 
       let subtitleMatch = blockHtml.match(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/i) || blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i);
-      let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+      let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "⚠️ WP MISSING: Add <div class=\"section-subtitle\"> above h2";
 
       sections.push({
         type: "benefits",
