@@ -884,18 +884,35 @@ export function extractPortfolioPageData(html: string): PortfolioPageData | null
   }
 
   const items: PortfolioItemData[] = [];
-  const itemRegex = /<div class="portfolio-item">[\s\S]*?<img.*?src=["'](.*?)["'].*?alt=["'](.*?)["'] \/>[\s\S]*?<h4>(.*?)<\/h4>([\s\S]*?)<\/div>/g;
-  let match;
-  while ((match = itemRegex.exec(html)) !== null) {
-    const blockAfterTitle = match[4];
-    const linkMatch = blockAfterTitle.match(/<a[^>]*href=["'](.*?)["']/i);
+  
+  // Split by either wrapper class
+  const parts = html.split(/<div class="(?:portfolio-item|item)">/i);
+  parts.shift(); // Remove content before first wrapper
+  
+  parts.forEach(part => {
+    const imgMatch = part.match(/<img[^>]*?src=["'](.*?)["']/i);
+    const itemTitleMatch = part.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
+    const linkMatch = part.match(/<a[^>]*?href=["'](.*?)["']/i);
     
-    items.push({
-      imageUrl: match[1],
-      title: decodeHtmlEntities(match[3]),
-      link: linkMatch ? linkMatch[1] : undefined
-    });
-  }
+    if (imgMatch) {
+      let rawTitle = itemTitleMatch ? itemTitleMatch[1] : '';
+      // Clean up title (remove spans, decode entities)
+      rawTitle = decodeHtmlEntities(rawTitle.replace(/<[^>]*>?/gm, '')).trim();
+      
+      // Fallback for missing title if image has name (like shimale)
+      if (!rawTitle) {
+        if (imgMatch[1].toLowerCase().includes('shimale')) {
+          rawTitle = 'Shimale Peleg';
+        }
+      }
+      
+      items.push({
+        imageUrl: imgMatch[1],
+        title: rawTitle,
+        link: linkMatch ? linkMatch[1] : undefined
+      });
+    }
+  });
 
   return {
     subtitle: decodeHtmlEntities(subtitleText?.replace(/<[^>]*>?/gm, '') || ""),
