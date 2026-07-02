@@ -17,55 +17,68 @@ export default function AboutSection({ data }: AboutSectionProps) {
       <div className="max-w-[1250px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-12 lg:gap-12 items-center">
         {/* Text Content */}
         <div className="flex flex-col items-start text-left animate-fade-slide-up">
-          {data.subtitle && <SectionBadge label={data.subtitle} variant="light" />}
+          {data.subtitle && (
+            <div 
+              className="font-sans font-normal uppercase tracking-[2px] mb-4"
+              style={{ fontSize: "21px", lineHeight: "21px", color: "#101010" }}
+            >
+              {data.subtitle}
+            </div>
+          )}
           
           <h2 
-            className="text-[32px] md:text-[42px] leading-[1.1] md:leading-[46.2px] font-normal mb-6 uppercase"
-            style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
+            className="font-sans font-normal mb-6 uppercase"
+            style={{ fontSize: "42px", lineHeight: "46.2px", color: "#101010" }}
             suppressHydrationWarning
-          >
-            {data.titleLine1}
-            {data.titleLine2 && <br className="hidden md:block" />}
-            {data.titleLine2}
-          </h2>
+            dangerouslySetInnerHTML={{ __html: data.titleLine2 ? `${data.titleLine1}<br/>${data.titleLine2}` : data.titleLine1 }}
+          />
 
-          <p 
-            className="text-[18px] leading-[28.8px] font-normal mb-6 max-w-full lg:max-w-lg whitespace-pre-line"
-            style={{ fontFamily: "var(--font-barlow)", color: "#7A7A7A" }}
+          <div 
+            className="font-sans font-normal mb-6 max-w-full lg:max-w-lg"
+            style={{ fontSize: "22px", lineHeight: "22px", color: "#7A7A7A" }}
             suppressHydrationWarning
-          >
-            {data.description}
-          </p>
+            dangerouslySetInnerHTML={{ __html: data.description || "Sie erreichen genau die Menschen, die aktiv nach Ihrer Leistung suchen – und können Ergebnisse jederzeit messen und steuern." }}
+          />
 
           {data.motto && (
-            <h5 
-              className="text-[17px] leading-[29.8px] font-normal mb-6 max-w-full lg:max-w-lg uppercase"
-              style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
+            <div 
+              className="font-sans font-normal mb-8 max-w-full lg:max-w-lg"
+              style={{ fontSize: "20px", lineHeight: "24px", color: "#101010" }}
               suppressHydrationWarning
             >
               {data.motto}
-            </h5>
+            </div>
           )}
 
           {data.list1 && data.list1.length > 0 && (
-            <ul className="mb-8 space-y-1.5">
+            <ul className="mb-8 space-y-4">
               {data.list1.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-2.5">
-                  <BadgeCheck 
-                    className="mt-[1px] flex-shrink-0" 
-                    size={28} 
-                    fill="var(--color-brand-primary,#b6ef00)" 
-                    stroke="white" 
-                    strokeWidth={2}
-                  />
+                  <div className="mt-[4px] w-[24px] h-[24px] rounded-full bg-[var(--color-brand-primary,#b6ef00)] flex items-center justify-center flex-shrink-0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
                   <span 
-                    className="text-[17px] leading-[29.8px] font-normal"
-                    style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
+                    className="font-serif font-normal"
+                    style={{ fontSize: "17px", lineHeight: "29.8px", color: "#101010" }}
                   >
                     {item}
                   </span>
                 </li>
               ))}
+            </ul>
+          )}
+          
+          {/* Fallback list if WP is empty */}
+          {(!data.list1 || data.list1.length === 0) && (
+            <ul className="mb-8 space-y-4">
+              <li className="flex items-start gap-2.5">
+                <BadgeCheck className="mt-[4px] flex-shrink-0" size={28} fill="var(--color-brand-primary,#b6ef00)" stroke="white" strokeWidth={2} />
+                <span className="font-sans font-normal" style={{ fontSize: "24px", lineHeight: "36px", color: "#101010" }}>
+                  Sofort sichtbar bei Google
+                </span>
+              </li>
             </ul>
           )}
 
@@ -90,15 +103,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
           )}
   
           <div className="flex flex-wrap items-center justify-start gap-6">
-            {data.btnLink && data.btnText ? (
-              <Link 
-                href={data.btnLink} 
-                className="btn-primary font-sans font-normal uppercase tracking-[1px] text-[15px] leading-[30px] !text-black px-8 py-3 hover:!bg-[#111111] hover:!text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-                suppressHydrationWarning
-              >
-                {data.btnText}
-              </Link>
-            ) : null}
+            {/* Button removed per user request */}
             
             {data.phoneText && (
               <a 
@@ -126,7 +131,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
                 alt={data.motto || "About Image"}
                 fill
                 quality={95}
-                className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
+                className="object-cover grayscale transition-all duration-700 ease-in-out"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
                 suppressHydrationWarning

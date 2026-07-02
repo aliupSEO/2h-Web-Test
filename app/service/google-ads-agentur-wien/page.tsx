@@ -1,4 +1,4 @@
-import { getPageBySlug, extractNextStepSectionData, extractSeoPageData, extractServicesSectionData } from "@/lib/graphql";
+import { getPageBySlug, extractNextStepSectionData, extractSeoPageData, extractServicesSectionData, extractGoogleAdsPageData } from "@/lib/graphql";
 import { Metadata } from "next";
 import NextStepSection from "@/components/sections/NextStepSection";
 import HeroSection from "@/components/sections/HeroSection";
@@ -36,7 +36,7 @@ export default async function GoogleAdsPage() {
     );
   }
 
-  const { heroData, sections } = extractSeoPageData(page.content || "");
+  const { heroData, sections } = extractGoogleAdsPageData(page.content || "");
   const nextStepData = page.content ? extractNextStepSectionData(page.content) : null;
   const servicesData = page.content ? extractServicesSectionData(page.content) : null;
 
@@ -60,39 +60,43 @@ export default async function GoogleAdsPage() {
         />
       )}
 
-      {(() => {
-        const aboutSection = sections.find(s => s.type === "about");
-        const benefitsSection = sections.find(s => s.type === "benefits");
-        const buildingBlocksSection = sections.find(s => s.type === "buildingBlocks");
-        const faqSection = sections.find(s => s.type === "faq");
-        const genericSections = sections.filter(s => s.type === "generic");
-
-        const hasAnySection = aboutSection || benefitsSection || buildingBlocksSection || faqSection || genericSections.length > 0;
-        if (!hasAnySection) return null;
-
-        return (
-          <div style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
-            {aboutSection && <AboutSection data={aboutSection.data as any} />}
-            {benefitsSection && <BenefitsSection data={benefitsSection.data as any} />}
-            {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
-            {faqSection && <FaqSection data={faqSection.data as any} />}
-            {genericSections.map((section, idx) => (
-              <div key={idx} className="max-w-4xl mx-auto px-6 mt-16">
-                <div 
-                  className="wp-content about-wp-content"
-                  style={{ color: "var(--color-text-primary, #f4f4f5)" }}
-                  dangerouslySetInnerHTML={{ __html: section.html || "" }}
-                  suppressHydrationWarning
-                />
-              </div>
-            ))}
-          </div>
-        );
-      })()}
+      <div style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
+        {sections.map((section, idx) => {
+          switch (section.type) {
+            case "about":
+              return <AboutSection key={idx} data={section.data as any} />;
+            case "benefits":
+              return <BenefitsSection key={idx} data={section.data as any} />;
+            case "buildingBlocks":
+              return <BuildingBlocksSection key={idx} data={section.data as any} />;
+            case "faq":
+              return <FaqSection key={idx} data={section.data as any} />;
+            case "googleFeature":
+              // We'll need to import or handle this type if we use it, 
+              // but for now AboutSection handles most of them.
+              return <AboutSection key={idx} data={section.data as any} />;
+            case "nextStep":
+              return <NextStepSection key={idx} data={section.data as any} />;
+            case "generic":
+              return (
+                <div key={idx} className="max-w-4xl mx-auto px-6 mt-16">
+                  <div 
+                    className="wp-content about-wp-content"
+                    style={{ color: "var(--color-text-primary, #f4f4f5)" }}
+                    dangerouslySetInnerHTML={{ __html: section.html || "" }}
+                    suppressHydrationWarning
+                  />
+                </div>
+              );
+            default:
+              return null;
+          }
+        })}
+      </div>
 
       {servicesData && <ServicesSection data={servicesData} variant="dark" />}
 
-      {nextStepData && <NextStepSection data={nextStepData} />}
+      {!sections.some(s => s.type === "nextStep") && nextStepData && <NextStepSection data={nextStepData} />}
     </>
   );
 }

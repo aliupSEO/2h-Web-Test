@@ -68,7 +68,7 @@ export default async function SeoPage() {
             {sections.map((section, idx) => {
               if (section.type === "about") return <AboutSection key={idx} data={section.data as any} />;
               if (section.type === "benefits") return <BenefitsSection key={idx} data={section.data as any} />;
-              if (section.type === "buildingBlocks") return <BuildingBlocksSection key={idx} data={section.data as any} />;
+              if (section.type === "buildingBlocks") return <BuildingBlocksSection key={idx} data={section.data as any} variant="seo" />;
               if (section.type === "googleFeature") return <GoogleFeatureSection key={idx} data={section.data as any} />;
               if (section.type === "faq") return <FaqSection key={idx} data={section.data as any} />;
               if (section.type === "nextStep") return <NextStepSection key={idx} data={section.data as any} />;

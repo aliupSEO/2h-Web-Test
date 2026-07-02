@@ -539,19 +539,31 @@ export function extractAboutSectionData(html: string): AboutSectionData | null {
   }
 
   let description = "";
+  let motto = "";
   const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
   let pMatch;
+  let pCount = 0;
   while ((pMatch = pRegex.exec(sectionHtml)) !== null) {
-    if (!pMatch[1].includes('<a')) {
-      description = pMatch[1];
-      break;
+    const text = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+    if (!pMatch[1].includes('<a') && text.length > 5) {
+      if (pCount === 0) {
+        description = pMatch[1];
+      } else if (pCount === 1) {
+        motto = pMatch[1];
+        break;
+      }
+      pCount++;
     }
   }
+  
   if (!description) {
       description = sectionHtml.match(/<p class="description">(.*?)<\/p>/i)?.[1] || "";
   }
 
-  const mottoMatch = sectionHtml.match(/<h5[^>]*>([\s\S]*?)<\/h5>/i);
+  const h5Match = sectionHtml.match(/<h5[^>]*>([\s\S]*?)<\/h5>/i);
+  if (h5Match) {
+    motto = h5Match[1];
+  }
   
   let list1: string[] = [];
   let list2: string[] = [];
@@ -587,7 +599,7 @@ export function extractAboutSectionData(html: string): AboutSectionData | null {
     titleLine2: decodeHtmlEntities(titleLine2),
     description: decodeHtmlEntities(description),
     list1: list1,
-    motto: decodeHtmlEntities(mottoMatch?.[1] || ""),
+    motto: decodeHtmlEntities(motto || ""),
     list2: list2,
     btnText: decodeHtmlEntities(btnText),
     btnLink: btnLink,
@@ -1025,8 +1037,8 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
     sectionHtml = html.split('<!-- NEXT STEP SECTION -->')[1].split('<!--')[0];
   } else if (html.includes('next-step-section')) {
     sectionHtml = html.split('<div class="next-step-section">')[1] || html;
-  } else if (html.match(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch/i)) {
-    const matches = [...html.matchAll(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch/gi)];
+  } else if (html.match(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch|Budget kann mehr/i)) {
+    const matches = [...html.matchAll(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch|Budget kann mehr/gi)];
     const lastMatch = matches[matches.length - 1];
     sectionHtml = html.substring(Math.max(0, lastMatch.index! - 500));
     const nextSectionIdx = sectionHtml.indexOf('<section', 501);
@@ -1038,10 +1050,35 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
     const nextSectionIdx = sectionHtml.indexOf('<section', 501);
     if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
   } else {
+    const titleMatch = sectionHtml.match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i) || 
+                     sectionHtml.match(/<div[^>]*class="[^"]*(?:title|heading)[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+  
+    let title = titleMatch?.[1]?.replace(/<[^>]*>?/gm, '').trim() || "";
+    let afterTitle = sectionHtml;
+    if (titleMatch && titleMatch.index !== undefined) {
+        afterTitle = sectionHtml.substring(titleMatch.index + titleMatch[0].length);
+    }
+  
+    let description = "";
+    // Look for the first paragraph or div that contains the description text
+    const pRegex = /<(?:p|div)[^>]*>([\s\S]*?)<\/(?:p|div)>/gi;
+    let pMatch;
+    while ((pMatch = pRegex.exec(afterTitle)) !== null) {
+      const text = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      if (text.length > 20 && !text.includes('<a') && !text.includes('<ul')) {
+        description = text;
+        break;
+      }
+    }
     return null;
   }
 
-  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || sectionHtml.match(/<h2 class="section-title">([\s\S]*?)<\/h2>/i);
+  // Improve title extraction: Look for the H2 that is closest to the keywords if possible, 
+  // or at least ensure we don't pick up a preceding H2 from another section.
+  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?(?:Wie viele Anfragen|Mehr Anfragen|Erstgespräch|Budget kann mehr|Was ist bei Ihnen)[\s\S]*?)<\/h2>/i) || 
+                     sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || 
+                     sectionHtml.match(/<h2 class="section-title">([\s\S]*?)<\/h2>/i);
+  
   let beforeH2 = sectionHtml;
   if (titleMatch && titleMatch.index !== undefined) {
       beforeH2 = sectionHtml.substring(0, titleMatch.index);
@@ -1132,7 +1169,7 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
 
   return {
     subtitle: decodeHtmlEntities(subtitleText || "Nächster Schritt"),
-    title: decodeHtmlEntities(titleMatch?.[1]?.replace(/<[^>]*>?/gm, '') || ""),
+    title: decodeHtmlEntities(titleMatch?.[1]?.replace(/<[^>]*>?/gm, '') || "Ihr Budget kann mehr leisten"),
     description: decodeHtmlEntities(description?.replace(/<[^>]*>?/gm, '') || ""),
     btnLink: btnMatch?.[1] || "",
     btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '') || ""),
@@ -1426,6 +1463,278 @@ export interface SeoPageData {
   sections: SeoSectionData[];
 }
 
+export function extractGoogleAdsPageData(html: string): SeoPageData {
+  let content = html;
+  
+  // 1. NORMALIZE SUBTITLES
+  // Convert list items or headings that are meant to be subtitles
+  content = content.replace(/<(?:li|span|p|div)[^>]*>([\s\S]*?)<\/(?:li|span|p|div)>/gi, (match, p1) => {
+    const text = p1.replace(/<br\s*\/?>/gi, '').replace(/<[^>]*>?/gm, '').trim();
+    if (text === "Was Google Ads bringt" || text === "FAQ" || text === "Der Unterschied liegt im Ansatz") {
+       return `<div class="section-subtitle">${text}</div>\n`;
+    }
+    return match;
+  });
+
+  let heroData: SeoHeroData = {} as any;
+  const sections: SeoSectionData[] = [];
+  
+  // Split by H2 OR Subtitle
+  const rawParts = content.split(/(?=<div class="section-subtitle"|<h2)/i);
+  if (rawParts.length > 0) {
+    let heroHtml = rawParts[0];
+    
+    // Normalize hero structures
+    heroHtml = heroHtml.replace(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/gi, (match, p1) => {
+      if (p1.includes('<h1')) return match;
+      return `<p>${p1}</p>`;
+    });
+    
+    const bulletPoints: string[] = [];
+    const iconListRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+    let iconMatch;
+    while ((iconMatch = iconListRegex.exec(heroHtml)) !== null) {
+      const text = iconMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      if (text && text.toLowerCase() !== 'faq' && !text.includes('Google Ads bringt')) {
+        bulletPoints.push(text);
+      }
+    }
+
+    const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    const pMatch = heroHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const btnMatch = heroHtml.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+    
+    heroData = {
+      subtitle: "Service",
+      title: titleMatch ? titleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaText: btnMatch ? btnMatch[2].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaLink: btnMatch ? btnMatch[1].trim() : "",
+      bulletPoints,
+      tickerText: ""
+    };
+  }
+
+  // Helper for image normalization
+  const getFullImageUrl = (html: string) => {
+    const match = html.match(/<img[^>]*src=["'](.*?)["']/i);
+    if (!match) return "";
+    return match[1].replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+  };
+
+  const allImages = [...content.matchAll(/<img[^>]*src=["'](.*?)["']/gi)].map(m => m[1].replace(/-\d+x\d+(?=\.[a-z]+$)/i, ''));
+  // Remove duplicates
+  const uniqueImages = Array.from(new Set(allImages));
+  
+  // We'll track which image index we are on for sections
+  let contentImageIndex = 0;
+  // If the first image is in the hero block, we should skip it for content sections
+  if (uniqueImages.length > 0 && rawParts[0].includes(uniqueImages[0])) {
+    contentImageIndex = 1;
+  }
+
+  // Process blocks
+  const blocks: string[] = [];
+  const partsToProcess = rawParts.slice(1);
+  for (let i = 0; i < partsToProcess.length; i++) {
+    let block = partsToProcess[i];
+    if (block.includes('class="section-subtitle"') && i + 1 < partsToProcess.length && partsToProcess[i+1].includes('<h2')) {
+      blocks.push(block + partsToProcess[i+1]);
+      i++;
+    } else {
+      blocks.push(block);
+    }
+  }
+
+  for (let i = 0; i < blocks.length; i++) {
+    const blockHtml = blocks[i];
+    let hMatch = blockHtml.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
+    const title = hMatch ? hMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+    
+    // Assign image for this section
+    let imageUrl = getFullImageUrl(blockHtml);
+    if (!imageUrl && contentImageIndex < uniqueImages.length) {
+       imageUrl = uniqueImages[contentImageIndex];
+       contentImageIndex++;
+    }
+
+    // Extract text blocks (paragraphs or elementor headings)
+    const pMatches = [...blockHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>|<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/gi)];
+    let desc = "";
+    let motto = "";
+    const validTexts: string[] = [];
+    if (pMatches.length > 0) {
+      for (const m of pMatches) {
+        const text = (m[1] || m[2] || "").replace(/<[^>]*>?/gm, '').trim();
+        if (text && text !== title && !text.includes("Was Google Ads bringt") && !text.includes("FAQ") && text.length > 5) {
+          validTexts.push(text);
+        }
+      }
+    }
+    if (validTexts.length > 0) desc = validTexts[0];
+    if (validTexts.length > 1) motto = validTexts[1];
+
+    let subtitleMatch = blockHtml.match(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/i);
+    let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+
+    // Detect BuildingBlocks (cards) section
+    // Look for h3 or elementor-heading-title followed by p or div
+    const cardMatches = [...blockHtml.matchAll(/<(?:h3|div)[^>]*class="[^"]*(?:title|heading)[^"]*"[^>]*>([\s\S]*?)<\/(?:h3|div)>\s*<(?:p|div)[^>]*>([\s\S]*?)<\/(?:p|div)>/gi)];
+    
+    if (cardMatches.length >= 3 && !blockHtml.includes('elementor-icon-list-text') && !/\bfaq\b|\bfragen\b/i.test(title)) {
+       const blocksArr = cardMatches.map(m => ({
+          title: m[1].replace(/<[^>]*>?/gm, '').trim(),
+          description: m[2].replace(/<[^>]*>?/gm, '').trim()
+       })).filter(b => b.title && b.description && b.title !== title && b.title !== subtitle);
+       
+       if (blocksArr.length >= 2) {
+         sections.push({
+           type: "buildingBlocks",
+           data: {
+             subtitle: subtitle,
+             title: title,
+             description: desc,
+             blocks: blocksArr,
+             backgroundImage: imageUrl
+           } as any
+         });
+         continue;
+       }
+    }
+
+    if (/Mehr Anfragen|Erstgespräch|Wie viele Anfragen|Budget kann mehr|next-step-section/i.test(blockHtml)) {
+        // nextStep
+        const stitle = title || "Ihr Budget kann mehr leisten";
+        const sdescMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i) || blockHtml.match(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i);
+        const sdesc = sdescMatch ? sdescMatch[1].replace(/<[^>]*>?/gm, '').trim() : desc;
+        
+        const items: string[] = [];
+        const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+        let m;
+        while ((m = liRegex.exec(blockHtml)) !== null) {
+          items.push(m[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+
+        sections.push({
+          type: "nextStep",
+          data: {
+            title: stitle,
+            description: sdesc,
+            btnText: "Kostenloses Erstgespräch buchen",
+            btnLink: "https://2hws-termin-buchen.vercel.app/",
+            features: items,
+            imageUrl: imageUrl || getFullImageUrl(blockHtml)
+          }
+        });
+        continue;
+    }
+
+    if (/\bfaq\b|\bfragen\b|\bquestions\b/i.test(title) || /\bfaq\b|\bfragen\b|\bquestions\b/i.test(blockHtml) || blockHtml.includes('acc-btn')) {
+        const faqs: { question: string, answer: string }[] = [];
+        
+        // 1. Try accordion patterns (acc-btn and acc-content)
+        const accBtns = [...blockHtml.matchAll(/<div[^>]*class="acc-btn"[^>]*>([\s\S]*?)<\/div>/gi)];
+        const accTexts = [...blockHtml.matchAll(/<div[^>]*class="text"[^>]*>([\s\S]*?)<\/div>/gi)];
+        for (let j = 0; j < accBtns.length && j < accTexts.length; j++) {
+           const q = accBtns[j][1].replace(/<[^>]*>?/gm, '').trim();
+           const a = accTexts[j][1].replace(/<[^>]*>?/gm, '').trim();
+           if (q && a && !faqs.some(f => f.question === q)) faqs.push({ question: q, answer: a });
+        }
+
+        // 2. Try h3/p pairs
+        const h3MatchesFAQ = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+        for (const m of h3MatchesFAQ) {
+           const q = m[1].replace(/<[^>]*>?/gm, '').trim();
+           const a = m[2].replace(/<[^>]*>?/gm, '').trim();
+           if (q && a && !faqs.some(f => f.question === q)) faqs.push({ question: q, answer: a });
+        }
+
+        // 3. Try tag-agnostic question-like blocks
+        const allTextMatches = [...blockHtml.matchAll(/<(?:p|div|h[1-6]|span)[^>]*>([\s\S]*?)<\/(?:p|div|h[1-6]|span)>/gi)];
+        for (let j = 0; j < allTextMatches.length; j++) {
+           const text = allTextMatches[j][1].replace(/<[^>]*>?/gm, '').trim();
+           // If it ends with ? and isn't too long, it's likely a question
+           if (text.endsWith('?') && text.length < 250 && j + 1 < allTextMatches.length) {
+              const q = text;
+              const a = allTextMatches[j+1][1].replace(/<[^>]*>?/gm, '').trim();
+              if (q && a && a.length > 5 && !faqs.some(f => f.question === q)) {
+                 faqs.push({ question: q, answer: a });
+                 j++;
+              }
+           }
+        }
+        
+        sections.push({ 
+          type: "faq", 
+          data: { 
+            subtitle: subtitle || (/\bfaq\b/i.test(blockHtml) ? "FAQ" : ""),
+            title: title || "Häufige Fragen zum SEA", 
+            faqs 
+          } as any 
+        });
+        continue;
+    }
+
+    // Default to AboutSection for image sections
+    const items: string[] = [];
+    
+    // Extract items from ALL uls in the block
+    const uls = [...blockHtml.matchAll(/<ul[^>]*>([\s\S]*?)<\/ul>/gi)];
+    uls.forEach(ul => {
+      const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+      let m;
+      while ((m = liRegex.exec(ul[1])) !== null) {
+        const text = m[1].replace(/<[^>]*>?/gm, '').trim();
+        if (text && text !== "Was Google Ads bringt" && text !== "FAQ") {
+          items.push(text);
+        }
+      }
+    });
+    
+    // Also extract from icon lists
+    const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+    let iconMatch;
+    while ((iconMatch = liRegex.exec(blockHtml)) !== null) {
+      const text = iconMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      if (text && !text.includes("Was Google Ads bringt") && !text.includes("FAQ") && !items.includes(text)) {
+        items.push(text);
+      }
+    }
+
+    // Support H3/P pairs for "bringt" style sections
+    const h3pMatches = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+    if (h3pMatches.length > 0) {
+      h3pMatches.forEach(m => {
+        const h3text = m[1].replace(/<[^>]*>?/gm, '').trim();
+        const ptext = m[2].replace(/<[^>]*>?/gm, '').trim();
+        const combined = `${h3text}: ${ptext}`;
+        if (!items.includes(combined)) items.push(combined);
+      });
+    }
+
+    const isBenefits = subtitle === "Was Google Ads bringt" || title.toLowerCase().includes("bringt");
+
+    sections.push({
+      type: isBenefits ? "benefits" : "about",
+      data: {
+        titleLine1: title,
+        title: title, // Support both formats
+        titleLine2: "",
+        subtitle: subtitle,
+        description: desc,
+        motto: motto,
+        list1: items,
+        benefits: items, // Map to benefits for BenefitsSection
+        imageUrl: isBenefits ? "" : imageUrl,
+        btnText: "Mehr erfahren",
+        btnLink: "#"
+      } as any
+    });
+  }
+
+  return { heroData, sections };
+}
+
 export function extractSeoPageData(html: string): SeoPageData {
   let content = html;
   
@@ -1446,17 +1755,21 @@ export function extractSeoPageData(html: string): SeoPageData {
   const h2Split = content.split(/(?=<h2)/i);
   if (h2Split.length > 0) {
     let heroHtml = h2Split[0];
-    content = content.substring(heroHtml.length);
-
-    // NORMALIZE ELEMENTOR HERO STRUCTURES
-    // 1. Convert Elementor heading divs to paragraphs if they follow the H1
+    
+    // If heroHtml contains a section-subtitle but NO h1, 
+    // it's likely actually the start of the first content section, not a hero.
+    if (heroHtml.includes('section-subtitle') && !heroHtml.includes('<h1')) {
+       // Keep it in content for later processing
+    } else {
+       content = content.substring(heroHtml.length);
+       // Normalize hero structures
+    }
+    
     heroHtml = heroHtml.replace(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/gi, (match, p1) => {
-      // If it contains an H1, don't change it (it's the title)
       if (p1.includes('<h1')) return match;
       return `<p>${p1}</p>`;
     });
 
-    // 2. Convert Elementor icon list items to list items
     const bulletPoints: string[] = [];
     const iconListRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
     let iconMatch;
@@ -1479,18 +1792,6 @@ export function extractSeoPageData(html: string): SeoPageData {
     }
     const tickerTextRaw = allParagraphs.length >= 3 ? allParagraphs[allParagraphs.length - 1] : "";
     const tickerText = tickerTextRaw.replace(/<[^>]*>?/gm, '').trim();
-    
-    // If we didn't find bullets via icon lists, try standard UL
-    if (bulletPoints.length === 0) {
-      const ulMatch = heroHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
-      if (ulMatch) {
-        const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
-        let match;
-        while ((match = liRegex.exec(ulMatch[1])) !== null) {
-          bulletPoints.push(match[1].trim().replace(/&amp;/g, '&').replace(/<[^>]*>?/gm, ''));
-        }
-      }
-    }
     
     heroData = {
       subtitle: "Service",

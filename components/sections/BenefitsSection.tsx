@@ -54,7 +54,7 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
         />
         
         {data.description && (
-          <p 
+          <div 
             className="text-[18px] md:text-[22px] leading-[1.4] md:leading-[22px] font-normal max-w-[850px] mx-auto"
             style={{ fontFamily: "var(--font-federo)", color: "#7A7A7A" }}
             suppressHydrationWarning
@@ -64,7 +64,7 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
       </div>
 
       <div className="max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 animate-fade-slide-up animation-delay-200">
-        {data.benefits.map((benefit, index) => (
+        {(data.benefits || []).map((benefit, index) => (
           <div key={index} className="flex items-center gap-6 group cursor-default">
             {/* Solid Icon circle */}
             <div 
