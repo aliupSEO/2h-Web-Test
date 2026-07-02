@@ -32,8 +32,15 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
       <div className="max-w-[1000px] mx-auto text-center mb-16 animate-fade-slide-up">
 
         {data.subtitle && (
-          <div className="flex justify-center mb-4">
-            <SectionBadge label={data.subtitle} variant="light" />
+          <div className="flex justify-center items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #22c55e)" }}></span>
+            <span 
+              className="text-[17px] leading-[29.8px] font-normal uppercase"
+              style={{ fontFamily: "var(--font-federo)", color: "#101010", letterSpacing: "0px" }}
+              suppressHydrationWarning
+            >
+              {data.subtitle}
+            </span>
           </div>
         )}
 
