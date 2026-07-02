@@ -907,7 +907,7 @@ export function extractPortfolioPageData(html: string): PortfolioPageData | null
       }
       
       items.push({
-        imageUrl: imgMatch[1],
+        imageUrl: imgMatch[1].replace(/-\d+x\d+(?=\.[a-zA-Z]+(?:$|\?))/i, ''),
         title: rawTitle,
         link: linkMatch ? linkMatch[1] : undefined
       });
