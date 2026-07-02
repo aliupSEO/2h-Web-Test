@@ -1499,6 +1499,45 @@ export function extractSeoPageData(html: string): SeoPageData {
             items: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
           }
         });
+      } else if (/Google setzt/i.test(title)) {
+        const headings = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
+        const subtitle = headings.length > 0 ? headings[0][1].replace(/<[^>]*>?/gm, '').trim() : "";
+        const motto = headings.length > 1 ? headings[1][1].replace(/<[^>]*>?/gm, '').trim() : "";
+        
+        let description = "";
+        const descMatch = blockHtml.match(/<div[^>]*elementor-heading-title[^>]*data-ninja-font="barlow[^>]*>([\s\S]*?)<\/div>/i);
+        if (descMatch) {
+          description = descMatch[1].replace(/<[^>]*>?/gm, '').trim();
+        } else {
+          const pMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+          if (pMatch) description = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+        }
+        
+        const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+        const listItems: string[] = [];
+        if (ulMatch) {
+          const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+          let match;
+          while ((match = liRegex.exec(ulMatch[1])) !== null) {
+            listItems.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+          }
+        }
+        
+        const imgMatch = blockHtml.match(/<img[^>]+src="([^">]+)"/i);
+        let imageUrl = imgMatch ? imgMatch[1] : "";
+        imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+        
+        sections.push({
+          type: "googleFeature",
+          data: {
+            title: title,
+            subtitle: subtitle,
+            description: description,
+            motto: motto,
+            items: listItems,
+            imageUrl: imageUrl
+          }
+        });
       } else if (/baustein/i.test(title)) {
          sections.push({
           type: "buildingBlocks",

@@ -6,6 +6,7 @@ import TickerSection from "@/components/sections/TickerSection";
 import AboutSection from "@/components/sections/AboutSection";
 import BenefitsSection from "@/components/sections/BenefitsSection";
 import BuildingBlocksSection from "@/components/sections/BuildingBlocksSection";
+import GoogleFeatureSection from "@/components/sections/GoogleFeatureSection";
 import FaqSection from "@/components/sections/FaqSection";
 import ServicesSection from "@/components/sections/ServicesSection";
 
@@ -64,10 +65,11 @@ export default async function SeoPage() {
         const aboutSection = sections.find(s => s.type === "about");
         const benefitsSection = sections.find(s => s.type === "benefits");
         const buildingBlocksSection = sections.find(s => s.type === "buildingBlocks");
+        const googleFeatureSection = sections.find(s => s.type === "googleFeature");
         const faqSection = sections.find(s => s.type === "faq");
         const genericSections = sections.filter(s => s.type === "generic");
 
-        const hasAnySection = aboutSection || benefitsSection || buildingBlocksSection || faqSection || genericSections.length > 0;
+        const hasAnySection = aboutSection || benefitsSection || buildingBlocksSection || googleFeatureSection || faqSection || genericSections.length > 0;
         if (!hasAnySection) return null;
 
         return (
@@ -75,6 +77,7 @@ export default async function SeoPage() {
             {aboutSection && <AboutSection data={aboutSection.data as any} />}
             {benefitsSection && <BenefitsSection data={benefitsSection.data as any} />}
             {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
+            {googleFeatureSection && <GoogleFeatureSection data={googleFeatureSection.data as any} />}
             {faqSection && <FaqSection data={faqSection.data as any} />}
             {genericSections.map((section, idx) => (
               <div key={idx} className="max-w-4xl mx-auto px-6 mt-16"><div 
