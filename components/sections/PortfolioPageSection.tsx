@@ -42,7 +42,7 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
               
               <a 
                 href="/contact" 
-                className="inline-flex items-center justify-center px-8 md:px-10 py-4 rounded-full bg-[#b6ef00] hover:bg-[#a3d800] transition-colors duration-300 font-sans font-medium text-[15px] leading-[15px] text-[#101010]"
+                className="inline-flex items-center justify-center px-8 md:px-10 py-4 rounded-full border border-[#b6ef00] bg-transparent hover:bg-[#b6ef00] hover:text-[#101010] transition-colors duration-300 font-sans font-normal text-[15px] leading-[15px] text-[#f0f0f0]"
               >
                 Kostenloses Erstgespräch buchen
               </a>
