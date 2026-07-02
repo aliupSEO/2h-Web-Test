@@ -19,7 +19,7 @@ export default function TickerSection({ items, text }: TickerSectionProps) {
   const tickerItems = [...parsedItems, ...parsedItems, ...parsedItems, ...parsedItems, ...parsedItems];
 
   return (
-    <section className="relative w-full overflow-hidden border-y border-gray-200 py-3" style={{ background: "var(--color-bg-alternate, #f3f4f6)" }}>
+    <section className="relative w-full overflow-hidden border-y border-[#e5e7eb] py-4" style={{ background: "var(--color-ticker-bg, #f4f4f5)" }}>
       {/* Inline styles for the marquee animation */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes ticker-marquee {
@@ -37,14 +37,14 @@ export default function TickerSection({ items, text }: TickerSectionProps) {
         {tickerItems.map((item, index) => (
           <React.Fragment key={index}>
             <span 
-              className="mx-6 text-sm font-medium tracking-[2px] uppercase whitespace-nowrap"
-              style={{ color: "var(--color-text-secondary, #4b5563)" }}
+              className="mx-8 text-[15px] font-sans tracking-[2px] uppercase whitespace-nowrap"
+              style={{ color: "var(--color-ticker-text, #111111)" }}
             >
               {item}
             </span>
             {/* The asterisk icon from the screenshot */}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-              <path d="M12 2L12 22M2 12L22 12M4.92893 4.92893L19.0711 19.0711M4.92893 19.0711L19.0711 4.92893" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 2L12 22M2 12L22 12M4.92893 4.92893L19.0711 19.0711M4.92893 19.0711L19.0711 4.92893" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </React.Fragment>
         ))}
