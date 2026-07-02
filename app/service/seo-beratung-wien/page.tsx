@@ -71,7 +71,7 @@ export default async function SeoPage() {
         if (!hasAnySection) return null;
 
         return (
-          <div className="py-16 md:py-24" style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
+          <div style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
             {aboutSection && <AboutSection data={aboutSection.data as any} />}
             {benefitsSection && <BenefitsSection data={benefitsSection.data as any} />}
             {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
