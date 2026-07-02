@@ -81,20 +81,20 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                   </div>
                   
                   {/* The true gooey cutout for the button */}
-                  {item.link && (
-                    <div className="absolute bottom-0 right-0 bg-white rounded-tl-[32px] pl-3 pt-3 pb-0 pr-0">
-                      {/* Top connector curve */}
-                      <div 
-                        className="absolute -top-[24px] right-0 w-[24px] h-[24px] pointer-events-none"
-                        style={{ background: 'radial-gradient(circle at 0 0, transparent 24px, white 24px)' }}
-                      ></div>
-                      
-                      {/* Left connector curve */}
-                      <div 
-                        className="absolute bottom-0 -left-[24px] w-[24px] h-[24px] pointer-events-none"
-                        style={{ background: 'radial-gradient(circle at 0 0, transparent 24px, white 24px)' }}
-                      ></div>
+                  <div className="absolute bottom-0 right-0 bg-white rounded-tl-[32px] pl-3 pt-3 pb-0 pr-0">
+                    {/* Top connector curve */}
+                    <div 
+                      className="absolute -top-[24px] right-0 w-[24px] h-[24px] pointer-events-none"
+                      style={{ background: 'radial-gradient(circle at 0 0, transparent 24px, white 24px)' }}
+                    ></div>
+                    
+                    {/* Left connector curve */}
+                    <div 
+                      className="absolute bottom-0 -left-[24px] w-[24px] h-[24px] pointer-events-none"
+                      style={{ background: 'radial-gradient(circle at 0 0, transparent 24px, white 24px)' }}
+                    ></div>
 
+                    {item.link ? (
                       <a 
                         href={item.link}
                         className="w-[64px] h-[64px] bg-brand-card hover:bg-brand-dark rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1"
@@ -103,8 +103,16 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
                         </svg>
                       </a>
-                    </div>
-                  )}
+                    ) : (
+                      <div 
+                        className="w-[64px] h-[64px] bg-brand-card hover:bg-brand-dark rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1 cursor-pointer"
+                      >
+                        <svg className="w-6 h-6" style={{ color: "var(--color-brand-primary, #b6ef00)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
