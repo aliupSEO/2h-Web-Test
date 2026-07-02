@@ -32,7 +32,7 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
             <div className="animate-fade-slide-up max-w-4xl">
               <div className="mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-none" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-                <span className="text-[15px] md:text-[17px] leading-[30px] font-sans font-normal text-[#ffffff]">
+                <span className="text-[15px] md:text-[17px] leading-[30px] tracking-[1.4px] uppercase font-sans font-normal text-[#ffffff]">
                   {data.subtitle}
                 </span>
               </div>
