@@ -14,6 +14,11 @@
 // Core fetch helper
 // ---------------------------------------------------------------------------
 
+function cleanImageUrl(url: string | undefined): string {
+  if (!url) return "";
+  return url.replace(/-\d+x\d+(?=\.[a-zA-Z]+(?:$|\?))/i, '');
+}
+
 export async function fetchGraphQL(query: string, variables: Record<string, unknown> = {}) {
   const endpoint = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL;
   if (!endpoint || endpoint.includes("your-wordpress-site.com")) {
@@ -432,7 +437,7 @@ export function extractDigitaleHeroSectionData(html: string): DigitaleHeroSectio
     description: decodeHtmlEntities(description),
     btnLink: btnMatch?.[1] || "",
     btnText: decodeHtmlEntities(btnMatch?.[2].replace(/<[^>]*>?/gm, '').trim() || ""),
-    imageUrl: imgMatch?.[1] || "",
+    imageUrl: cleanImageUrl(imgMatch?.[1]),
   };
 }
 
@@ -493,7 +498,7 @@ export function extractDigitaleNextStepSectionData(html: string): NextStepSectio
     btnLink: btnMatch?.[1] || "",
     btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '') || ""),
     features,
-    imageUrl: imgMatch?.[1] || "",
+    imageUrl: cleanImageUrl(imgMatch?.[1]),
   };
 }
 
@@ -605,7 +610,7 @@ export function extractAboutSectionData(html: string): AboutSectionData | null {
     btnLink: btnLink,
     phoneText: decodeHtmlEntities(phoneText),
     phoneLink: phoneLink,
-    imageUrl: imgMatch?.[1] || "",
+    imageUrl: cleanImageUrl(imgMatch?.[1]),
   };
 }
 
@@ -692,7 +697,7 @@ export function extractServicesSectionData(html: string): ServicesSectionData | 
   }
 
   const imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/i);
-  let imgUrl = imgMatch ? imgMatch[1] : undefined;
+  let imgUrl = cleanImageUrl(imgMatch?.[1]);
   if (imgUrl) {
     // Remove WP size suffixes like -300x200 to get the full-res image
     imgUrl = imgUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
@@ -736,7 +741,7 @@ export function extractTeamSectionData(html: string): TeamSectionData | null {
     const bio = bioMatch ? decodeHtmlEntities(bioMatch[1].replace(/<[^>]+>/g, '').trim()) : '';
     
     const imgMatch = chunk.match(/<img[^>]*src=["'](.*?)["']/);
-    let image = imgMatch ? imgMatch[1] : '';
+    let image = cleanImageUrl(imgMatch?.[1]);
     if (image) {
       image = image.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
     }
@@ -751,6 +756,7 @@ export interface OfficeSectionData {
   title: string;
   paragraphs: string[];
   imageUrl: string;
+  mapUrl?: string;
 }
 
 export function extractOfficeSectionData(html: string): OfficeSectionData | null {
@@ -761,7 +767,7 @@ export function extractOfficeSectionData(html: string): OfficeSectionData | null
 
   const paragraphs = [...sectionHtml.matchAll(/<p[^>]*>(.*?)<\/p>/gi)]
     .map(m => decodeHtmlEntities(m[1].replace(/<[^>]+>/g, '').trim()))
-    .filter(text => text && !text.includes('<img'));
+    .filter(text => text && !text.includes('<img')).filter(Boolean);
 
   const imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/);
   let imageUrl = imgMatch ? imgMatch[1] : '';
@@ -769,10 +775,14 @@ export function extractOfficeSectionData(html: string): OfficeSectionData | null
     imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
   }
 
+  const mapIframeMatch = sectionHtml.match(/<iframe[^>]*src=["'](.*?)["']/i);
+  const mapUrl = mapIframeMatch ? decodeHtmlEntities(mapIframeMatch[1]) : undefined;
+
   return {
     title: "MITTEN IN WIEN-MARIAHILF ZU HAUSE",
     paragraphs,
-    imageUrl
+    imageUrl,
+    mapUrl
   };
 }
 
@@ -829,7 +839,7 @@ export function extractProjectsSectionData(html: string): ProjectsSectionData | 
               title: decodeHtmlEntities(title),
               tags: decodeHtmlEntities(tags),
               link: aMatch ? aMatch[1] : "",
-              imageUrl: imgMatch ? imgMatch[1] : ""
+              imageUrl: cleanImageUrl(imgMatch?.[1])
           });
       }
   } else {
@@ -998,7 +1008,7 @@ export function extractTestimonialsSectionData(html: string): TestimonialsSectio
               author: decodeHtmlEntities(author),
               text: decodeHtmlEntities(text),
               role: decodeHtmlEntities(roleMatch ? roleMatch[1] : ""),
-              imageUrl: imgMatch ? imgMatch[1] : ""
+              imageUrl: cleanImageUrl(imgMatch?.[1])
           });
       }
   } else {
@@ -1334,6 +1344,7 @@ export interface ContactPageData {
   location?: string;
   formTitle?: string;
   mapTitle?: string;
+  mapUrl?: string;
   submitLabel?: string;
   fields?: { id: string; label: string; type: string; required?: boolean; placeholder?: string; }[];
 }
@@ -1394,7 +1405,7 @@ export function extractKontaktPageData(html: string): ContactPageData {
   const description = getMatch(/<p class="section-desc"[^>]*>([\s\S]*?)<\/p>/i) || "Wir freuen uns auf deine Nachricht.";
   
   const imgMatch = html.match(/<div class="contact-image"[^>]*>[\s\S]*?<img[^>]*src=["'](.*?)["']/i) || html.match(/<img[^>]*src=["'](.*?)["']/i);
-  const imageUrl = imgMatch ? imgMatch[1] : undefined;
+  const imageUrl = cleanImageUrl(imgMatch?.[1]);
 
   const emailTitle = getMatch(/<div class="contact-method email"[^>]*>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/i) || "e-Mail";
   const email = getMatch(/<div class="contact-method email"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i) || "office@2h-websolutions.at";
@@ -1421,6 +1432,9 @@ export function extractKontaktPageData(html: string): ContactPageData {
   // Set defaults if still empty
   locationTitle = locationTitle || "Der Standort";
 
+  const mapIframeMatch = html.match(/<iframe[^>]*src=["'](.*?)["']/i);
+  const mapUrl = mapIframeMatch ? decodeHtmlEntities(mapIframeMatch[1]) : undefined;
+
   return {
     subtitle,
     title,
@@ -1434,6 +1448,7 @@ export function extractKontaktPageData(html: string): ContactPageData {
     phone,
     formTitle,
     mapTitle,
+    mapUrl,
     submitLabel,
     imageUrl,
     fields: fields.length > 0 ? fields : undefined
@@ -1779,6 +1794,16 @@ export function extractSeoPageData(html: string): SeoPageData {
         bulletPoints.push(text);
       }
     }
+    
+    // Also extract from standard ul/li lists if present in the hero HTML
+    const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+    let liMatch;
+    while ((liMatch = liRegex.exec(heroHtml)) !== null) {
+      const text = liMatch[1].replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim();
+      if (text && text.toLowerCase() !== 'faq' && !bulletPoints.includes(text)) {
+        bulletPoints.push(text);
+      }
+    }
 
     const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
     const pMatch = heroHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
@@ -1809,12 +1834,12 @@ export function extractSeoPageData(html: string): SeoPageData {
   
   for (const blockHtml of blocksSplit) {
     let h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-    const title = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "";
+    let title = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "";
     
-    if (/Mehr Anfragen|Erstgespräch|Wie viele Anfragen/i.test(title) || /Mehr Anfragen|Erstgespräch|Wie viele Anfragen/i.test(blockHtml)) {
+    if (!/baustein|leistungen|\bfaq\b|\bfragen\b/i.test(title) && (/Mehr Anfragen|Erstgespräch|Wie viele Anfragen/i.test(title) || /Erstgespräch|Wie viele Anfragen/i.test(blockHtml))) {
         // Next Step / CTA Section
         const h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-        const stitle = h2Match ? h2Match[1].replace(/<[^>]*>?/gm, '').trim() : title;
+        const stitle = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : title;
         
         const descMatch = blockHtml.match(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i) || 
                           blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
@@ -1835,7 +1860,7 @@ export function extractSeoPageData(html: string): SeoPageData {
         // Find background image if possible
         const imgMatch = blockHtml.match(/background-image:url\(['"]?(.*?)['"]?\)/i) || 
                          blockHtml.match(/src=["'](.*?)["']/i);
-        const imageUrl = imgMatch ? imgMatch[1] : "";
+        const imageUrl = cleanImageUrl(imgMatch?.[1]);
 
         sections.push({
           type: "nextStep",
@@ -1854,6 +1879,38 @@ export function extractSeoPageData(html: string): SeoPageData {
     const hasImg = /<img/i.test(blockHtml);
     const h3Matches = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
     
+    const h3Elements = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
+    const h3AnyBlocks = h3Elements.map((h3, i) => {
+        const h3Title = h3[1].replace(/<[^>]*>?/gm, '').trim();
+        const startIdx = h3.index! + h3[0].length;
+        const endIdx = (i + 1 < h3Elements.length) ? h3Elements[i+1].index! : blockHtml.length;
+        const content = blockHtml.slice(startIdx, endIdx);
+        
+        let desc = "";
+        const ulMatch = content.match(/<ul[^>]*>([\s\S]*?)(?:<\/ul>|$)/i);
+        if (ulMatch) {
+             const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+             let m;
+             let html = "";
+             while ((m = liRegex.exec(ulMatch[1])) !== null) {
+                 const text = m[1].replace(/<[^>]*>?/gm, '').trim();
+                 html += `<div class="flex items-start gap-2 mb-2"><svg class="w-4 h-4 mt-1 text-[var(--color-brand-primary,#22c55e)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg><span>${text}</span></div>`;
+             }
+             desc = html;
+        } else {
+             const parts = content.split(/<\/?p[^>]*>|<br\s*\/?>/i)
+                .map(p => p.replace(/<[^>]*>?/gm, '').trim())
+                .filter(p => p.length > 0);
+                
+             let html = "";
+             parts.forEach(text => {
+                 html += `<div class="flex items-start gap-2 mb-2"><svg class="w-4 h-4 mt-1 text-[var(--color-brand-primary,#22c55e)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg><span>${text}</span></div>`;
+             });
+             desc = html;
+        }
+        return { title: h3Title, description: desc };
+    });
+
     if (/Google setzt/i.test(title)) {
         const headings = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
         const subtitle = headings.length > 0 ? headings[0][1].replace(/<[^>]*>?/gm, '').trim() : "";
@@ -1879,7 +1936,7 @@ export function extractSeoPageData(html: string): SeoPageData {
         }
         
         const imgMatch = blockHtml.match(/<img[^>]+src="([^">]+)"/i);
-        let imageUrl = imgMatch ? imgMatch[1] : "";
+        let imageUrl = cleanImageUrl(imgMatch?.[1]);
         imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
         
         sections.push({
@@ -1899,11 +1956,19 @@ export function extractSeoPageData(html: string): SeoPageData {
         if (h3Matches.length > 0) {
            faqs = h3Matches.map(m => ({ question: m[1].replace(/<[^>]*>?/gm, '').trim(), answer: m[2].replace(/<[^>]*>?/gm, '').trim() }));
         } else {
-            // Sequential parsing of FAQ parts
-            const pMatches = [...blockHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
-            
-            for (let i = 0; i < pMatches.length; i++) {
-              const fullP = pMatches[i][0];
+            // Check for acc-btn / acc-content structure first
+            const accMatches = [...blockHtml.matchAll(/<div[^>]*class=["'][^"']*acc-btn[^"']*["'][^>]*>([\s\S]*?)<\/div>\s*<div[^>]*class=["'][^"']*acc-content[^"']*["'][^>]*>([\s\S]*?)<\/div>/gi)];
+            if (accMatches.length > 0) {
+              faqs = accMatches.map(m => ({
+                question: m[1].replace(/<[^>]*>?/gm, '').trim(),
+                answer: m[2].replace(/<[^>]*>?/gm, '').trim()
+              }));
+            } else {
+              // Sequential parsing of FAQ parts
+              const pMatches = [...blockHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+              
+              for (let i = 0; i < pMatches.length; i++) {
+                const fullP = pMatches[i][0];
               const innerHtml = pMatches[i][1];
               
               if (innerHtml.includes('?') && innerHtml.includes('<br')) {
@@ -1951,6 +2016,7 @@ export function extractSeoPageData(html: string): SeoPageData {
                 if (q && a) faqs.push({ question: q, answer: a });
               }
             }
+          }
         }
         
         sections.push({
@@ -1961,7 +2027,7 @@ export function extractSeoPageData(html: string): SeoPageData {
             faqs: faqs.filter(f => f.question)
           }
         });
-    } else if (h3Matches.length > 1) {
+    } else if (h3Matches.length > 1 || h3AnyBlocks.length > 1) {
       if (/warum|vorteil/i.test(title)) {
         sections.push({
           type: "benefits",
@@ -1971,13 +2037,44 @@ export function extractSeoPageData(html: string): SeoPageData {
             items: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
           }
         });
-      } else if (/baustein/i.test(title)) {
+      } else if (/baustein|leistungen/i.test(title) && h3AnyBlocks.length > 1) {
+         const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i) || 
+                        blockHtml.match(/<div class="elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i);
+         let pDesc = pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+         if (pDesc === title) {
+           const nextDesc = blockHtml.match(new RegExp(`<div class="elementor-heading-title[^>]*>${title}<\/div>\\s*<\/div>\\s*<div[^>]*>\\s*<div class="elementor-heading-title[^>]*>([\\s\\S]*?)<\/div>`, "i"));
+           if (nextDesc) pDesc = nextDesc[1].replace(/<[^>]*>?/gm, '').trim();
+         }
+         
+         const imgMatch = blockHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+         let imageUrl = cleanImageUrl(imgMatch?.[1]);
+         imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+         
+         const btnMatch = blockHtml.match(/<a[^>]*class="[^"]*elementor-button[^"]*"[^>]*>([\s\S]*?<span class="elementor-button-text"[^>]*>([\s\S]*?)<\/span>[\s\S]*?)<\/a>/i) ||
+                          blockHtml.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+         let btnText = "";
+         let btnLink = "";
+         if (btnMatch) {
+             btnText = (btnMatch[2] || btnMatch[1]).replace(/<[^>]*>?/gm, '').trim();
+             btnLink = blockHtml.match(/href=["'](.*?)["']/i)?.[1] || "#";
+         }
+         
+         // In case the button is just a generic link with "buchen" or "anfragen"
+         if (!btnText && /buchen|anfragen|kontakt/i.test(blockHtml)) {
+             btnText = "Kostenloses Erstgespräch buchen";
+             btnLink = "/kontakt";
+         }
+
          sections.push({
           type: "buildingBlocks",
           data: {
             title: title,
-            subtitle: "Deine Bausteine",
-            blocks: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
+            subtitle: "Service",
+            description: pDesc,
+            backgroundImage: imageUrl,
+            btnText: btnText,
+            btnLink: btnLink,
+            blocks: h3AnyBlocks
           }
         });
       } else {
@@ -1994,14 +2091,18 @@ export function extractSeoPageData(html: string): SeoPageData {
            items.push(match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim());
          }
        }
-       const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+       const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i);
+       
+       let imageUrl = cleanImageUrl(imgMatch?.[1]);
+       // Remove WordPress thumbnail sizes like -300x169 to get the full resolution image
+       imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
        
        sections.push({
           type: "weitereLeistungen",
           data: {
             title: title,
             description: pMatch ? pMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "",
-            imageUrl: imgMatch ? imgMatch[1] : "",
+            imageUrl: imageUrl,
             items: items
           }
        });
@@ -2039,7 +2140,7 @@ export function extractSeoPageData(html: string): SeoPageData {
            motto: motto,
            list1: items,
            list2: [],
-           imageUrl: imgMatch ? imgMatch[1] : "",
+           imageUrl: cleanImageUrl(imgMatch?.[1]),
            btnText: "",
            btnLink: "",
            phoneText: "",
@@ -2069,7 +2170,20 @@ export function extractSeoPageData(html: string): SeoPageData {
       let subtitleMatch = blockHtml.match(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/i) || 
                           blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i) || 
                           blockHtml.match(/<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/i);
-      let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "⚠️ WP MISSING: Add <div class=\"section-subtitle\"> above h2";
+      
+      let subtitle = "";
+      if (!subtitleMatch || !subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim()) {
+        if (pDesc) {
+          // The user likely put the subtitle in the H2 and the title in the <p>
+          subtitle = title;
+          title = pDesc;
+          pDesc = "";
+        } else {
+          subtitle = "⚠️ WP MISSING: Add <div class=\"section-subtitle\"> above h2";
+        }
+      } else {
+        subtitle = subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      }
 
       sections.push({
         type: "benefits",

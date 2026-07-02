@@ -8,8 +8,8 @@ interface OfficeSectionProps {
 export default function OfficeSection({ data }: OfficeSectionProps) {
   if (!data) return null;
 
-  // Google Maps URL encoded for Windmühlgasse 26, 1060 Wien, Austria
-  const mapIframeUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2659.39572621183!2d16.3558299!3d48.1983137!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476d0785f80459a1%3A0xe447395d223d4e9e!2sWindm%C3%BChlgasse%2026%2C%201060%20Wien%2C%20Austria!5e0!3m2!1sen!2sat!4v1782222400000!5m2!1sen!2sat";
+  // Google Maps URL extracted from WordPress or fallback
+  const mapIframeUrl = data.mapUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2659.39572621183!2d16.3558299!3d48.1983137!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476d0785f80459a1%3A0xe447395d223d4e9e!2sWindm%C3%BChlgasse%2026%2C%201060%20Wien%2C%20Austria!5e0!3m2!1sen!2sat!4v1782222400000!5m2!1sen!2sat";
 
   return (
     <section className="pb-24 pt-8 lg:pt-12 px-6 md:px-12 lg:px-24 bg-[#F8FAFC] text-zinc-900 relative">

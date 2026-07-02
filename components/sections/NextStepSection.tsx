@@ -29,11 +29,16 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
       {/* Content */}
       <div className="max-w-[1100px] mx-auto text-center flex flex-col items-center animate-fade-slide-up relative z-20 w-full">
         
-        <h2 className="text-[32px] md:text-[50px] leading-[1.2] md:leading-[65px] font-sans font-normal text-white mb-5 uppercase">
-          {data.title}
-        </h2>
+        <h2 
+          className="text-[32px] md:text-[50px] leading-[1.2] md:leading-[65px] uppercase mb-5 max-w-[750px] mx-auto"
+          style={{ fontFamily: 'var(--font-federo)', fontWeight: 500, color: '#ffffff' }}
+          dangerouslySetInnerHTML={{ __html: data.title }}
+        />
   
-        <p className="text-[18px] md:text-[22px] leading-[1.4] md:leading-[26.4px] font-sans font-normal text-white mb-8 max-w-[780px] mx-auto text-center whitespace-pre-line px-2 md:px-0">
+        <p 
+          className="text-[18px] md:text-[22px] leading-[1.4] md:leading-[26px] mb-8 max-w-[780px] mx-auto text-center whitespace-pre-line px-2 md:px-0"
+          style={{ fontFamily: 'var(--font-federo)', fontWeight: 500, color: '#ffffff' }}
+        >
           {data.description}
         </p>
   
@@ -49,7 +54,10 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
         {data.features.map((feature, index) => (
           <div key={index} className="flex items-center gap-1 md:gap-2">
             <span className="font-sans font-bold text-[22px] md:text-[30px] leading-none mt-1.5 md:mt-2" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>*</span>
-            <span className="font-serif font-normal uppercase whitespace-nowrap text-[#D3D3D3] text-[14px] md:text-[17px] leading-[1.4] md:leading-[29.8px]">
+            <span 
+              className="uppercase whitespace-nowrap text-[14px] md:text-[17px] leading-[1.4] md:leading-[30px]"
+              style={{ fontFamily: 'var(--font-barlow)', fontWeight: 500, color: 'rgb(211,211,211)' }}
+            >
               {feature}
             </span>
           </div>

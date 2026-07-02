@@ -8,6 +8,7 @@ import BenefitsSection from "@/components/sections/BenefitsSection";
 import BuildingBlocksSection from "@/components/sections/BuildingBlocksSection";
 import FaqSection from "@/components/sections/FaqSection";
 import ServicesSection from "@/components/sections/ServicesSection";
+import WeitereLeistungenSection from "@/components/sections/WeitereLeistungenSection";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("web-design");
@@ -64,17 +65,19 @@ export default async function WebDesignPage() {
         const aboutSection = sections.find(s => s.type === "about");
         const benefitsSection = sections.find(s => s.type === "benefits");
         const buildingBlocksSection = sections.find(s => s.type === "buildingBlocks");
+        const weitereLeistungenSection = sections.find(s => s.type === "weitereLeistungen");
         const faqSection = sections.find(s => s.type === "faq");
         const genericSections = sections.filter(s => s.type === "generic");
 
-        const hasAnySection = aboutSection || benefitsSection || buildingBlocksSection || faqSection || genericSections.length > 0;
+        const hasAnySection = aboutSection || benefitsSection || buildingBlocksSection || weitereLeistungenSection || faqSection || genericSections.length > 0;
         if (!hasAnySection) return null;
 
         return (
           <div style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
             {aboutSection && <AboutSection data={aboutSection.data as any} />}
             {benefitsSection && <BenefitsSection data={benefitsSection.data as any} />}
-            {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
+            {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} variant="webdesign" />}
+            {weitereLeistungenSection && <WeitereLeistungenSection data={weitereLeistungenSection.data as any} />}
             {faqSection && <FaqSection data={faqSection.data as any} />}
             {genericSections.map((section, idx) => (
               <div key={idx} className="max-w-4xl mx-auto px-6 mt-16">

@@ -94,7 +94,8 @@ export default function HeaderClient({ menuItems, logoLight, logoDark, siteTitle
                     <li key={child.id}>
                       <Link 
                         href={child.uri}
-                        className="text-base text-zinc-600 hover:text-[var(--color-brand-primary)]"
+                        className="block text-[17px] leading-[30px] text-[#101010] hover:!text-[var(--color-brand-primary,#b6ef00)] hover:translate-x-2 transition-all duration-300"
+                        style={{ fontFamily: 'var(--font-barlow)', fontWeight: 400 }}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <span suppressHydrationWarning>{child.label}</span>

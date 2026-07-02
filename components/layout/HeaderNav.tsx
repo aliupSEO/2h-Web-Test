@@ -74,8 +74,8 @@ export default function HeaderNav({ items, isScrolled = false }: { items: MenuIt
                       <li key={child.id}>
                         <Link
                           href={child.uri}
-                          className="block px-5 py-2.5 text-[14px] font-sans hover:text-[var(--color-brand-primary,#b6ef00)] transition-colors hover:bg-black/5"
-                          style={{ color: "var(--color-text-primary, #000000)" }}
+                          className="block px-5 py-2 text-[17px] leading-[30px] text-[#101010] hover:!text-[var(--color-brand-primary,#b6ef00)] hover:translate-x-2 transition-all duration-300"
+                          style={{ fontFamily: 'var(--font-barlow)', fontWeight: 400 }}
                         >
                           <span suppressHydrationWarning>{child.label}</span>
                         </Link>

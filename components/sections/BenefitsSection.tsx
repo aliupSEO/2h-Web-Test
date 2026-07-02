@@ -1,7 +1,7 @@
 import React from "react";
 import SectionBadge from "@/components/ui/SectionBadge";
 import VerticalSeparator from "@/components/ui/VerticalSeparator";
-import { BarChart2, Eye, Award, Coins, Handshake } from "lucide-react";
+import { Compass, Handshake, ArrowRight, Zap, Lightbulb, Rocket } from "lucide-react";
 
 export interface BenefitsSectionData {
   subtitle?: string;
@@ -17,14 +17,15 @@ interface BenefitsSectionProps {
 export default function BenefitsSection({ data }: BenefitsSectionProps) {
   // Map index to a specific Lucide icon
   const getIcon = (index: number) => {
-    const props = { size: 24, color: "white", strokeWidth: 2 };
+    const props = { size: 24, color: "var(--color-brand-primary, #b6ef00)", strokeWidth: 2 };
     switch (index) {
-      case 0: return <BarChart2 {...props} />;
-      case 1: return <Eye {...props} />;
-      case 2: return <Award {...props} />;
-      case 3: return <Coins {...props} />;
-      case 4: return <Handshake {...props} />;
-      default: return <Award {...props} />;
+      case 0: return <Compass {...props} />;
+      case 1: return <Handshake {...props} />;
+      case 2: return <ArrowRight {...props} />;
+      case 3: return <Zap {...props} />;
+      case 4: return <Lightbulb {...props} />;
+      case 5: return <Rocket {...props} />;
+      default: return <Compass {...props} />;
     }
   };
 
@@ -66,10 +67,10 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
       <div className="max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 animate-fade-slide-up animation-delay-200">
         {(data.benefits || []).map((benefit, index) => (
           <div key={index} className="flex items-center gap-6 group cursor-default">
-            {/* Solid Icon circle */}
+            {/* Outline Icon circle */}
             <div 
-              className="w-[60px] h-[60px] rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110" 
-              style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }}
+              className="w-[60px] h-[60px] rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 border-[2px]" 
+              style={{ borderColor: "var(--color-brand-primary, #b6ef00)", backgroundColor: "transparent" }}
             >
               {getIcon(index)}
             </div>

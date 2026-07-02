@@ -90,7 +90,7 @@ export default function HeroSection({
             quality={100}
             unoptimized={true}
             sizes="100vw"
-            className="object-cover object-center"
+            className="object-cover object-center grayscale"
             suppressHydrationWarning
           />
           <div className="absolute inset-0 bg-black/45" />

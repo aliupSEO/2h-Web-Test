@@ -27,20 +27,29 @@ const barlow = Barlow({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  // ── Edit these per project ──────────────────────────────────────────────
-  title: {
-    default: "Your Site Name",
-    template: "%s | Your Site Name",
-  },
-  description: "Your site description — edit this in app/layout.tsx",
-  // ── Keep these ─────────────────────────────────────────────────────────
-  robots: { index: true, follow: true },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const dsSettings = await getDesignSystemSettings();
+  
+  return {
+    // ── Edit these per project ──────────────────────────────────────────────
+    title: {
+      default: dsSettings?.branding?.site_title || "Your Site Name",
+      template: `%s | ${dsSettings?.branding?.site_title || "Your Site Name"}`,
+    },
+    description: dsSettings?.branding?.tagline || "Your site description — edit this in app/layout.tsx",
+    icons: {
+      icon: "/favicon.svg",
+      shortcut: "/favicon.svg",
+      apple: "/favicon.svg",
+    },
+    // ── Keep these ─────────────────────────────────────────────────────────
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+    },
+  };
+}
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";

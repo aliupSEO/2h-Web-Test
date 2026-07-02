@@ -27,15 +27,15 @@ export default function AboutSection({ data }: AboutSectionProps) {
           )}
           
           <h2 
-            className="font-sans font-normal mb-6 uppercase"
+            className="font-sans font-normal mb-6"
             style={{ fontSize: "42px", lineHeight: "46.2px", color: "#101010" }}
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: data.titleLine2 ? `${data.titleLine1}<br/>${data.titleLine2}` : data.titleLine1 }}
           />
 
           <div 
-            className="font-sans font-normal mb-6 max-w-full lg:max-w-lg"
-            style={{ fontSize: "22px", lineHeight: "22px", color: "#7A7A7A" }}
+            className="font-serif font-normal mb-6 max-w-full lg:max-w-lg"
+            style={{ fontSize: "18px", lineHeight: "28.8px", color: "#7A7A7A" }}
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: data.description || "Sie erreichen genau die Menschen, die aktiv nach Ihrer Leistung suchen – und können Ergebnisse jederzeit messen und steuern." }}
           />
@@ -43,7 +43,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
           {data.motto && (
             <div 
               className="font-sans font-normal mb-8 max-w-full lg:max-w-lg"
-              style={{ fontSize: "20px", lineHeight: "24px", color: "#101010" }}
+              style={{ fontSize: "20px", lineHeight: "20px", color: "#101010" }}
               suppressHydrationWarning
             >
               {data.motto}
