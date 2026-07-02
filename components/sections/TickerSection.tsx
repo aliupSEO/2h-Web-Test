@@ -29,7 +29,7 @@ export default function TickerSection({ items, text }: TickerSectionProps) {
         .animate-ticker {
           display: flex;
           width: max-content;
-          animation: ticker-marquee 30s linear infinite;
+          animation: ticker-marquee 60s linear infinite;
         }
       `}} />
       
