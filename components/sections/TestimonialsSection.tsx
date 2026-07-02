@@ -14,6 +14,11 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [currentPage, setCurrentPage] = useState(0);
 
+  // Swipe / Drag state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) setItemsPerPage(1);
@@ -43,6 +48,47 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
     setCurrentPage(totalPages - 1);
   }
 
+  // Swipe / Drag Handlers
+  const minSwipeDistance = 50;
+
+  const onDragStart = (e: React.TouchEvent | React.MouseEvent) => {
+    setTouchEnd(null);
+    setIsDragging(true);
+    if ('touches' in e) {
+      setTouchStart(e.targetTouches[0].clientX);
+    } else {
+      setTouchStart((e as React.MouseEvent).clientX);
+    }
+  };
+
+  const onDragMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDragging) return;
+    if ('touches' in e) {
+      setTouchEnd(e.targetTouches[0].clientX);
+    } else {
+      setTouchEnd((e as React.MouseEvent).clientX);
+    }
+  };
+
+  const onDragEnd = () => {
+    setIsDragging(false);
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && currentPage < totalPages - 1) {
+      setCurrentPage(prev => prev + 1);
+    }
+    if (isRightSwipe && currentPage > 0) {
+      setCurrentPage(prev => prev - 1);
+    }
+    
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
   return (
     <section className="py-24 bg-white overflow-hidden" id="testimonials">
       <div className="flex flex-col items-center text-center mb-8 animate-fade-slide-up px-6 md:px-12 lg:px-24">
@@ -51,9 +97,20 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
       </div>
 
       {/* Carousel Wrapper */}
-      <div className="relative w-full max-w-7xl mx-auto overflow-hidden">
+      <div 
+        className="relative w-full max-w-7xl mx-auto overflow-hidden cursor-grab active:cursor-grabbing"
+        onTouchStart={onDragStart}
+        onTouchMove={onDragMove}
+        onTouchEnd={onDragEnd}
+        onMouseDown={onDragStart}
+        onMouseMove={onDragMove}
+        onMouseUp={onDragEnd}
+        onMouseLeave={() => {
+          if (isDragging) onDragEnd();
+        }}
+      >
         <div 
-          className="flex transition-transform duration-700 ease-in-out w-full"
+          className="flex transition-transform duration-700 ease-in-out w-full select-none"
           style={{ transform: `translateX(-${currentPage * 100}%)` }}
         >
           {pages.map((page, pageIndex) => (
