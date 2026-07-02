@@ -98,17 +98,17 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                       {item.link ? (
                         <a 
                           href={item.link}
-                          className="w-[64px] h-[64px] bg-brand-card hover:bg-brand-dark rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1"
+                          className="w-[64px] h-[64px] bg-brand-card hover:bg-[var(--color-brand-primary,#b6ef00)] text-[var(--color-brand-primary,#b6ef00)] hover:text-[rgb(16,16,16)] rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1"
                         >
-                          <svg className="w-6 h-6" style={{ color: "var(--color-brand-primary, #b6ef00)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-6 h-6 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
                           </svg>
                         </a>
                       ) : (
                         <div 
-                          className="w-[64px] h-[64px] bg-brand-card hover:bg-brand-dark rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1 cursor-pointer"
+                          className="w-[64px] h-[64px] bg-brand-card hover:bg-[var(--color-brand-primary,#b6ef00)] text-[var(--color-brand-primary,#b6ef00)] hover:text-[rgb(16,16,16)] rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1 cursor-pointer"
                         >
-                          <svg className="w-6 h-6" style={{ color: "var(--color-brand-primary, #b6ef00)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-6 h-6 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
                           </svg>
                         </div>
