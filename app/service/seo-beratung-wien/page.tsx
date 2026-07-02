@@ -77,14 +77,12 @@ export default async function SeoPage() {
             {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
             {faqSection && <FaqSection data={faqSection.data as any} />}
             {genericSections.map((section, idx) => (
-              <div key={idx} className="max-w-4xl mx-auto px-6 mt-16">
-                <div 
+              <div key={idx} className="max-w-4xl mx-auto px-6 mt-16"><div 
                   className="wp-content about-wp-content"
                   style={{ color: "var(--color-text-primary, #f4f4f5)" }}
-                  dangerouslySetInnerHTML={{ __html: section.html || "" }}
+                  dangerouslySetInnerHTML={{ __html: section.html ? section.html.trim() : "" }}
                   suppressHydrationWarning
-                />
-              </div>
+                /></div>
             ))}
           </div>
         );
