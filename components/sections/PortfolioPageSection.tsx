@@ -42,8 +42,8 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
               
               <a 
                 href="/contact" 
-                className="btn-outline"
-                style={{ borderColor: "var(--color-brand-primary, #b6ef00)", color: "#ffffff" }}
+                className="inline-flex items-center justify-center px-8 md:px-10 py-3 md:py-4 rounded-full border-2 bg-transparent hover:bg-[#b6ef00] hover:text-black transition-colors duration-300 font-sans font-medium text-[13px] md:text-[15px] text-white uppercase tracking-wider"
+                style={{ borderColor: "var(--color-brand-primary, #b6ef00)" }}
               >
                 Kostenloses Erstgespräch buchen
               </a>
