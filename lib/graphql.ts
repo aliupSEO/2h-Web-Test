@@ -629,8 +629,8 @@ export function extractServicesSectionData(html: string): ServicesSectionData | 
 
   // Fallback: If no h4-h6 or section-subtitle (or if it's empty), use the first paragraph after the title
   if (!subtitleText) {
-    const titleEndIndex = titleMatch ? titleMatch.index + titleMatch[0].length : 0;
-    const firstServiceIndex = h3Matches.length > 0 
+    const titleEndIndex = titleMatch && titleMatch.index !== undefined ? titleMatch.index + titleMatch[0].length : 0;
+    const firstServiceIndex = h3Matches.length > 0 && h3Matches[0].index !== undefined
       ? h3Matches[0].index 
       : (sectionHtml.indexOf('<div class="service-item">') > -1 ? sectionHtml.indexOf('<div class="service-item">') : sectionHtml.length);
     
