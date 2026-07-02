@@ -1567,6 +1567,40 @@ export function extractSeoPageData(html: string): SeoPageData {
            phoneLink: ""
          }
       });
+    } else if (/<ul/i.test(blockHtml)) {
+      const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+      const items: string[] = [];
+      if (ulMatch) {
+        const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let match;
+        while ((match = liRegex.exec(ulMatch[1])) !== null) {
+          items.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+      }
+      
+      let pDesc = "";
+      const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+      if (pMatch) {
+        pDesc = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      } else {
+        const anyPMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+        if (anyPMatch) pDesc = anyPMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      }
+
+      let subtitle = "";
+      if (/anfragen|seo bringt/i.test(title)) {
+        subtitle = "WAS SEO BRINGT";
+      }
+
+      sections.push({
+        type: "benefits",
+        data: {
+          title: title,
+          subtitle: subtitle,
+          description: pDesc,
+          benefits: items
+        }
+      });
     } else {
        sections.push({ type: "generic", html: blockHtml });
     }
