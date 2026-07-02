@@ -22,8 +22,8 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
           className="absolute top-0 left-0 w-full h-full bg-cover bg-center"
           style={{ backgroundImage: data.imageUrl ? `url(${data.imageUrl})` : 'none' }}
         >
-          {/* Grayscale and dark overlay to match design */}
-          <div className="absolute inset-0 bg-brand-dark/60 backdrop-grayscale"></div>
+          {/* Hardcode black overlay so it always stays dark regardless of WP theme */}
+          <div className="absolute inset-0 bg-black/60 backdrop-grayscale"></div>
         </div>
         
         {/* Hero Content */}
@@ -32,18 +32,18 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
             <div className="animate-fade-slide-up max-w-4xl">
               <div className="mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-none" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-                <span className="text-[14px] md:text-[15px] font-sans font-bold tracking-widest uppercase text-text-secondary">
+                <span className="text-[14px] md:text-[15px] font-sans font-bold tracking-widest uppercase text-white/80">
                   {data.subtitle}
                 </span>
               </div>
-              <h1 className="text-[40px] md:text-[70px] lg:text-[80px] leading-[1.1] font-serif font-medium text-text-light uppercase mb-10">
+              <h1 className="text-[40px] md:text-[70px] lg:text-[80px] leading-[1.1] font-serif font-medium text-white uppercase mb-10">
                 {data.title}
               </h1>
               
               <a 
                 href="/contact" 
                 className="btn-outline"
-                style={{ borderColor: "var(--color-brand-primary, #b6ef00)", color: "inherit" }}
+                style={{ borderColor: "var(--color-brand-primary, #b6ef00)", color: "#ffffff" }}
               >
                 Kostenloses Erstgespräch buchen
               </a>
