@@ -20,6 +20,8 @@ import {
   extractProjectsSectionData,
   extractTestimonialsSectionData,
   extractNextStepSectionData,
+  extractTeamSectionData,
+  extractOfficeSectionData,
   getProjects,
   getTestimonials
 } from "@/lib/graphql";
@@ -27,6 +29,8 @@ import Header from "@/components/layout/Header";
 import HeroSection from "@/components/sections/HeroSection";
 import AboutSection from "@/components/sections/AboutSection";
 import ServicesSection from "@/components/sections/ServicesSection";
+import TeamSection from "@/components/sections/TeamSection";
+import OfficeSection from "@/components/sections/OfficeSection";
 import ProjectsSection from "@/components/sections/ProjectsSection";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import NextStepSection from "@/components/sections/NextStepSection";
@@ -49,6 +53,8 @@ export default async function HomePage() {
   const heroData = page?.content ? extractHeroSectionData(page.content) : null;
   const aboutData = page?.content ? extractAboutSectionData(page.content) : null;
   const servicesData = page?.content ? extractServicesSectionData(page.content) : null;
+  const teamData = page?.content ? extractTeamSectionData(page.content) : null;
+  const officeData = page?.content ? extractOfficeSectionData(page.content) : null;
   const projectsData = page?.content ? extractProjectsSectionData(page.content) : null;
   const testimonialsData = page?.content ? extractTestimonialsSectionData(page.content) : null;
   const nextStepData = page?.content ? extractNextStepSectionData(page.content) : null;
@@ -83,6 +89,12 @@ export default async function HomePage() {
       {/* Services Section */}
       <ServicesSection data={servicesData} />
 
+      {/* Team Section */}
+      <TeamSection data={teamData} />
+
+      {/* Office Section */}
+      <OfficeSection data={officeData} />
+
       {/* Projects Section */}
       <ProjectsSection data={projectsData} />
 
@@ -90,7 +102,10 @@ export default async function HomePage() {
       <TestimonialsSection data={testimonialsData} />
 
       {/* Next Step Section */}
-      <NextStepSection data={nextStepData} />
+      <NextStepSection data={{
+        ...nextStepData!,
+        imageUrl: nextStepData?.imageUrl || page?.featuredImage?.node?.sourceUrl || ""
+      }} />
 
     </main>
   );

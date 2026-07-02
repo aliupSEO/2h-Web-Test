@@ -111,17 +111,16 @@ export default function HeroSection({
 
         {/* Main Heading */}
         <h1
-          className={`animate-fade-slide-up animation-delay-200 text-4xl sm:text-6xl lg:text-[80px] leading-[1.1] ${description ? "mb-4" : "mb-10"} max-w-[720px] uppercase font-sans font-normal tracking-wide ${align === "center" ? "mx-auto" : ""}`}
+          className={`animate-fade-slide-up animation-delay-200 text-[40px] md:text-[76px] leading-[1.2] md:leading-[99px] font-normal uppercase font-sans tracking-wide ${description ? "mb-4" : "mb-10"} max-w-[720px] ${align === "center" ? "mx-auto" : ""}`}
           style={{ color: "var(--color-text-light, #ffffff)" }}
           suppressHydrationWarning
-        >
-          {title}
-        </h1>
+          dangerouslySetInnerHTML={{ __html: title || "" }}
+        />
 
         {/* Description */}
         {description && (
           <p
-            className={`animate-fade-slide-up animation-delay-300 text-base md:text-lg font-sans mb-8 max-w-[640px] leading-relaxed whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
+            className={`animate-fade-slide-up animation-delay-300 text-[18px] md:text-[22px] leading-[1.5] md:leading-[31px] font-medium font-sans mb-8 max-w-[640px] whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
             style={{ color: "var(--color-text-light, #ffffff)" }}
             suppressHydrationWarning
           >
@@ -134,14 +133,14 @@ export default function HeroSection({
           {cta ? (
             <Link
               href={cta.href}
-              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[var(--color-brand-primary,#b6ef00)] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black transition-colors"
+              className="inline-flex items-center justify-center px-12 md:px-[60px] py-4 md:py-[22px] rounded-full border border-[var(--color-brand-primary,#b6ef00)] bg-transparent text-white font-sans font-medium text-[15px] leading-[15px] uppercase tracking-wide hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[#101010] transition-colors duration-300"
               suppressHydrationWarning
             >
               {cta.text}
             </Link>
           ) : (
             <span 
-              className="inline-flex items-center justify-center px-10 py-4 rounded-full border border-[var(--color-brand-primary,#b6ef00)] text-white font-sans uppercase tracking-[2px] text-[14px] hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-black transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center px-12 md:px-[60px] py-4 md:py-[22px] rounded-full border border-[var(--color-brand-primary,#b6ef00)] bg-transparent text-white font-sans font-medium text-[15px] leading-[15px] uppercase tracking-wide hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[#101010] transition-colors duration-300 cursor-pointer"
               suppressHydrationWarning
             >
               DIGITALE LÖSUNGEN

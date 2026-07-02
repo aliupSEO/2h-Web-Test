@@ -364,11 +364,30 @@ export function extractHeroSectionData(html: string): HeroSectionData | null {
   const titleMatch = sectionHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || sectionHtml.match(/<div class="hero-title">([\s\S]*?)<\/div>/i);
   const btnMatch = sectionHtml.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i) || sectionHtml.match(/<a class="hero-button" href="([\s\S]*?)">([\s\S]*?)<\/a>/i);
 
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(sectionHtml)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      // Strip actual HTML comments and encoded HTML comments to see if there's real text
+      const cleanText = pMatch[1]
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/&lt;!--[\s\S]*?--&gt;/g, '')
+        .trim();
+      
+      if (cleanText.length > 0) {
+        description = cleanText;
+        break;
+      }
+    }
+  }
+
   if (!titleMatch && !subtitleMatch) return null;
 
   return {
     subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
     title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    description: decodeHtmlEntities(description),
     btnLink: btnMatch?.[1] || "",
     btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '').trim() || ""),
   };
@@ -484,7 +503,9 @@ export interface AboutSectionData {
   titleLine2: string;
   description: string;
   contentHtml?: string;
+  list1?: string[];
   motto: string;
+  list2?: string[];
   btnText: string;
   btnLink: string;
   phoneText: string;
@@ -532,6 +553,20 @@ export function extractAboutSectionData(html: string): AboutSectionData | null {
 
   const mottoMatch = sectionHtml.match(/<h5[^>]*>([\s\S]*?)<\/h5>/i);
   
+  let list1: string[] = [];
+  let list2: string[] = [];
+  const ulRegex = /<ul[^>]*>([\s\S]*?)<\/ul>/gi;
+  const lists = [...sectionHtml.matchAll(ulRegex)];
+  const extractLis = (ulHtml: string) => {
+    return [...ulHtml.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map(m => decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()));
+  };
+  if (lists.length > 0) {
+    list1 = extractLis(lists[0][1]);
+  }
+  if (lists.length > 1) {
+    list2 = extractLis(lists[1][1]);
+  }
+
   const links = [...sectionHtml.matchAll(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/gi)];
   let btnLink = "", btnText = "", phoneLink = "", phoneText = "";
   for (const match of links) {
@@ -551,7 +586,9 @@ export function extractAboutSectionData(html: string): AboutSectionData | null {
     titleLine1: decodeHtmlEntities(titleLine1),
     titleLine2: decodeHtmlEntities(titleLine2),
     description: decodeHtmlEntities(description),
+    list1: list1,
     motto: decodeHtmlEntities(mottoMatch?.[1] || ""),
+    list2: list2,
     btnText: decodeHtmlEntities(btnText),
     btnLink: btnLink,
     phoneText: decodeHtmlEntities(phoneText),
@@ -583,11 +620,28 @@ export function extractServicesSectionData(html: string): ServicesSectionData | 
     return null;
   }
 
-  const subtitleMatch = sectionHtml.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || sectionHtml.match(/<div class="section-subtitle">(.*?)<\/div>/i);
-  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || sectionHtml.match(/<div class="section-title">(.*?)<\/div>/i);
+  let subtitleMatch = sectionHtml.match(/<h[4-6][^>]*>([\s\S]*?)<\/h[4-6]>/i) || sectionHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i);
+  const titleMatch = sectionHtml.match(/<h[1-2][^>]*>([\s\S]*?)<\/h[1-2]>/i) || sectionHtml.match(/<div class="section-title">([\s\S]*?)<\/div>/i);
+
+  const h3Matches = [...sectionHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
+  
+  let subtitleText = subtitleMatch ? subtitleMatch[1].trim() : "";
+
+  // Fallback: If no h4-h6 or section-subtitle (or if it's empty), use the first paragraph after the title
+  if (!subtitleText) {
+    const titleEndIndex = titleMatch ? titleMatch.index + titleMatch[0].length : 0;
+    const firstServiceIndex = h3Matches.length > 0 
+      ? h3Matches[0].index 
+      : (sectionHtml.indexOf('<div class="service-item">') > -1 ? sectionHtml.indexOf('<div class="service-item">') : sectionHtml.length);
+    
+    const searchArea = sectionHtml.substring(titleEndIndex, firstServiceIndex);
+    const pMatch = searchArea.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    if (pMatch) {
+      subtitleText = pMatch[1].trim();
+    }
+  }
 
   const services: ServiceItemData[] = [];
-  const h3Matches = [...sectionHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
   
   if (h3Matches.length > 0) {
       for (let i = 0; i < h3Matches.length; i++) {
@@ -625,12 +679,91 @@ export function extractServicesSectionData(html: string): ServicesSectionData | 
       }
   }
 
+  const imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/i);
+  let imgUrl = imgMatch ? imgMatch[1] : undefined;
+  if (imgUrl) {
+    // Remove WP size suffixes like -300x200 to get the full-res image
+    imgUrl = imgUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+  }
+
   return {
-    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    subtitle: decodeHtmlEntities(subtitleText || ""),
     title: decodeHtmlEntities(titleMatch?.[1] || ""),
-    services
+    services,
+    imageUrl: imgUrl
   };
 }
+
+export interface TeamMemberData {
+  title: string;
+  paragraphs: string[];
+  bio: string;
+  image: string;
+}
+
+export interface TeamSectionData {
+  members: TeamMemberData[];
+}
+
+export function extractTeamSectionData(html: string): TeamSectionData | null {
+  const teamSection = html.split('<div class="team-section">')[1]?.split('MITTEN IN WIEN-MARIAHILF')[0];
+  if (!teamSection) return null;
+
+  const chunks = teamSection.split('<h2 class="elementor-heading-title elementor-size-default">');
+  chunks.shift(); // remove the part before the first h2
+
+  const members = chunks.map(chunk => {
+    const titleMatch = chunk.match(/^(.*?)<\/h2>/);
+    const title = titleMatch ? decodeHtmlEntities(titleMatch[1].trim()) : '';
+
+    const paragraphs = [...chunk.matchAll(/<p[^>]*>(.*?)<\/p>/gi)]
+      .map(m => decodeHtmlEntities(m[1].replace(/<[^>]+>/g, '').trim()))
+      .filter(text => text && !text.includes('Gründer') && !text.includes('Externer Partner') && text !== '&nbsp;');
+
+    const bioMatch = chunk.match(/<p class="member-bio">(.*?)<\/p>/) || chunk.match(/<figcaption[^>]*>(.*?)<\/figcaption>/);
+    const bio = bioMatch ? decodeHtmlEntities(bioMatch[1].replace(/<[^>]+>/g, '').trim()) : '';
+    
+    const imgMatch = chunk.match(/<img[^>]*src=["'](.*?)["']/);
+    let image = imgMatch ? imgMatch[1] : '';
+    if (image) {
+      image = image.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+    }
+
+    return { title, paragraphs, bio, image };
+  }).filter(m => m.title); // filter out empty remaining chunks
+
+  return { members };
+}
+
+export interface OfficeSectionData {
+  title: string;
+  paragraphs: string[];
+  imageUrl: string;
+}
+
+export function extractOfficeSectionData(html: string): OfficeSectionData | null {
+  const titleMatch = html.match(/<h2 class="elementor-heading-title elementor-size-default">MITTEN IN WIEN-MARIAHILF ZU HAUSE<\/h2>/);
+  if (!titleMatch) return null;
+
+  const sectionHtml = html.split('<h2 class="elementor-heading-title elementor-size-default">MITTEN IN WIEN-MARIAHILF ZU HAUSE</h2>')[1]?.split('<!-- NEXT STEP SECTION -->')[0] || '';
+
+  const paragraphs = [...sectionHtml.matchAll(/<p[^>]*>(.*?)<\/p>/gi)]
+    .map(m => decodeHtmlEntities(m[1].replace(/<[^>]+>/g, '').trim()))
+    .filter(text => text && !text.includes('<img'));
+
+  const imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/);
+  let imageUrl = imgMatch ? imgMatch[1] : '';
+  if (imageUrl) {
+    imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+  }
+
+  return {
+    title: "MITTEN IN WIEN-MARIAHILF ZU HAUSE",
+    paragraphs,
+    imageUrl
+  };
+}
+
 
 export interface ProjectItemData {
   tags: string;
@@ -928,6 +1061,12 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
   if (!description) {
       description = afterH2.match(/<p class="description">([\s\S]*?)<\/p>/i)?.[1] || "";
   }
+  if (!description) {
+      const divHeadingMatch = afterH2.match(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i);
+      if (divHeadingMatch && divHeadingMatch[1].trim().length > 10) {
+          description = divHeadingMatch[1].trim();
+      }
+  }
 
   const btnMatch = afterH2.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
   let imgMatch = afterH2.match(/<img[^>]*src=["'](.*?)["']/i);
@@ -936,6 +1075,11 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
     if (beforeImages.length > 0) {
       imgMatch = beforeImages[beforeImages.length - 1];
     }
+  }
+
+  let imageUrl = imgMatch?.[1] || "";
+  if (imageUrl) {
+      imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
   }
 
   const features: string[] = [];
@@ -964,7 +1108,7 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
     btnLink: btnMatch?.[1] || "",
     btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '') || ""),
     features,
-    imageUrl: imgMatch?.[1] || "",
+    imageUrl: imageUrl,
   };
 }
 
@@ -1107,61 +1251,6 @@ export async function getWirPage() {
   return data?.pages?.nodes?.[0] ?? null;
 }
 
-export interface TeamMemberData {
-  name: string;
-  role: string;
-  bio: string;
-  imageUrl: string;
-}
-
-export interface TeamSectionData {
-  title: string;
-  members: TeamMemberData[];
-}
-
-export function extractTeamSectionData(html: string): TeamSectionData | null {
-  if (!html?.includes('team-section')) return null;
-
-  const titleMatch = html.match(/<div class="team-section">[\s\S]*?<h2 class="section-title">(.*?)<\/h2>/);
-  const members: TeamMemberData[] = [];
-  const memberRegex = /<div class="team-member">[\s\S]*?<h5 class="member-name">(.*?)<\/h5>[\s\S]*?<p class="member-role">(.*?)<\/p>[\s\S]*?<p class="member-bio">(.*?)<\/p>[\s\S]*?<img[^>]*class="member-image"[^>]*src="(.*?)"/g;
-
-  let match;
-  while ((match = memberRegex.exec(html)) !== null) {
-    members.push({
-      name: decodeHtmlEntities(match[1]),
-      role: decodeHtmlEntities(match[2]),
-      bio: decodeHtmlEntities(match[3]),
-      imageUrl: match[4]
-    });
-  }
-
-  return {
-    title: decodeHtmlEntities(titleMatch?.[1] || "Starke Partner"),
-    members
-  };
-}
-
-export interface OfficeSectionData {
-  title: string;
-  description: string;
-  imageUrl: string;
-}
-
-export function extractOfficeSectionData(html: string): OfficeSectionData | null {
-  if (!html?.includes('office-section')) return null;
-
-  const sectionHtml = html.split('<div class="office-section">')[1] || html;
-  const titleMatch = sectionHtml.match(/<h2 class="section-title">([\s\S]*?)<\/h2>/);
-  const descMatch = sectionHtml.match(/<p class="description">([\s\S]*?)<\/p>/);
-  const imgMatch = sectionHtml.match(/<img[^>]*class="office-image"[^>]*src="(.*?)"/);
-
-  return {
-    title: decodeHtmlEntities(titleMatch?.[1] || ""),
-    description: decodeHtmlEntities(descMatch?.[1] || ""),
-    imageUrl: imgMatch?.[1] || ""
-  };
-}
 
 
 export interface ContactPageData {

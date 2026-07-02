@@ -12,39 +12,29 @@ export default function OfficeSection({ data }: OfficeSectionProps) {
   const mapIframeUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2659.39572621183!2d16.3558299!3d48.1983137!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476d0785f80459a1%3A0xe447395d223d4e9e!2sWindm%C3%BChlgasse%2026%2C%201060%20Wien%2C%20Austria!5e0!3m2!1sen!2sat!4v1782222400000!5m2!1sen!2sat";
 
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-24 bg-white text-zinc-900 relative">
-      <div className="max-w-[1150px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-        {/* Left: Text Details */}
-        <div className="flex flex-col items-start animate-fade-slide-up">
-          <div className="mb-4 flex items-center justify-start gap-2">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-            <span className="text-[11px] md:text-[13px] uppercase tracking-[3px] font-medium text-zinc-500">
-              Unser Standort
-            </span>
-          </div>
+    <section className="pb-24 pt-8 lg:pt-12 px-6 md:px-12 lg:px-24 bg-[#F8FAFC] text-zinc-900 relative">
+      <div className="max-w-[1200px] mx-auto flex flex-col items-center">
+        {/* Green Line Separator */}
+        <div className="h-10 md:h-[60px] w-[1px] mb-12 lg:mb-16" style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }}></div>
 
-          <h2 className="text-3xl sm:text-[40px] lg:text-[45px] font-sans font-normal uppercase tracking-wide leading-tight mb-6 text-zinc-900">
-            {data.title}
-          </h2>
+        {/* Title */}
+        <h2 className="font-sans font-medium text-[28px] md:text-[40px] leading-[1.2] md:leading-[52px] text-[rgb(16,16,16)] mb-8 md:mb-10 text-center animate-fade-slide-up">
+          {data.title}
+        </h2>
 
-          <p className="text-[14px] leading-[1.8] text-zinc-600 font-sans mb-8">
-            {data.description}
-          </p>
-
-          <a 
-            href="https://maps.app.goo.gl/uR6Vx5Wz2b979a159" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn-primary font-sans font-medium uppercase tracking-[1px] text-[13px] px-8 py-3 hover:!bg-[#111111] hover:!text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-          >
-            Route planen →
-          </a>
+        {/* Paragraphs */}
+        <div className="w-full flex flex-col gap-4 md:gap-6 text-left animate-fade-slide-up" style={{ animationDelay: '100ms' }}>
+          {data.paragraphs.map((p, i) => (
+            <p key={i} className="font-serif font-normal text-[15px] md:text-[17px] leading-[1.6] md:leading-[30px] text-[rgb(114,114,114)]">
+              {p}
+            </p>
+          ))}
         </div>
 
-        {/* Right: Map & Image */}
-        <div className="flex flex-col gap-6 w-full animate-fade-slide-up animation-delay-200">
-          {/* Interactive Google Map iframe */}
-          <div className="relative w-full h-[320px] rounded-3xl overflow-hidden shadow-md border border-zinc-200">
+        {/* Image Grid */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mt-16 animate-fade-slide-up" style={{ animationDelay: '250ms' }}>
+          {/* Map */}
+          <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden">
             <iframe
               src={mapIframeUrl}
               width="100%"
@@ -54,19 +44,18 @@ export default function OfficeSection({ data }: OfficeSectionProps) {
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               title="Google Maps Location"
-              className="grayscale contrast-[1.1]"
             />
           </div>
 
-          {/* Optional Office/Team Photo below Map */}
+          {/* Office Photo */}
           {data.imageUrl && (
-            <div className="relative w-full h-[220px] rounded-3xl overflow-hidden shadow-md">
+            <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden">
               <Image
                 src={data.imageUrl}
                 alt="Office Location"
                 fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover grayscale"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
           )}

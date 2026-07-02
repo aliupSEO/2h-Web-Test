@@ -47,10 +47,14 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
       // Monitor with paintbrush (Webdesign & Ecommerce)
       return (
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
-          <rect x="2" y="4" width="20" height="12" rx="2" ry="2"></rect>
-          <line x1="8" y1="20" x2="16" y2="20"></line>
-          <line x1="12" y1="16" x2="12" y2="20"></line>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          <rect x="2" y="4" width="20" height="13" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+          <line x1="2" y1="13" x2="22" y2="13"></line>
+          <g transform="translate(1, -2) scale(1.1)">
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            <line x1="15" y1="6" x2="18" y2="9"></line>
+          </g>
         </svg>
       );
     }
@@ -58,17 +62,24 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
       // Magnifying glass with chart (SEO, GEO & AEO)
       return (
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          <polyline points="7 13 10 10 13 13 16 9"></polyline>
+          <circle cx="10.5" cy="10.5" r="8.5"></circle>
+          <rect x="16" y="16" width="6" height="3" rx="1" transform="rotate(45 16 16)"></rect>
+          <line x1="15" y1="15" x2="17" y2="17"></line>
+          <path d="M6 13l2.5-2.5 2 1.5 3-3"></path>
+          <polyline points="10.5 9 13.5 9 13.5 12"></polyline>
         </svg>
       );
     }
     // Megaphone (SEA)
     return (
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-4">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        <g transform="rotate(-30 12 12) translate(-2, 0)">
+          <path d="M10 6L18 3v12L10 12H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5z"></path>
+          <path d="M10 12v4a2 2 0 0 0 4 0v-2"></path>
+          <line x1="21" y1="7.5" x2="24" y2="7.5"></line>
+          <line x1="20" y1="3.5" x2="22" y2="1.5"></line>
+          <line x1="20" y1="11.5" x2="22" y2="13.5"></line>
+        </g>
       </svg>
     );
   };
@@ -76,27 +87,27 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
   if (variant === "dark") {
     return (
       <section 
-        className="relative py-24 px-6 md:px-12 lg:px-24 flex items-center min-h-[600px]"
+        className="relative py-32 lg:py-48 px-6 md:px-12 lg:px-24 flex items-center min-h-[800px]"
         id="services-dark"
       >
         {/* Background Image with Dark Overlay */}
         {data.imageUrl && (
           <div className="absolute inset-0 z-0">
             <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat grayscale"
               style={{ backgroundImage: `url(${data.imageUrl})` }}
             ></div>
-            {/* Dark overlay: solid dark color with 85% opacity */}
-            <div className="absolute inset-0 bg-black opacity-85"></div>
+            {/* Dark overlay: solid dark color with 70% opacity */}
+            <div className="absolute inset-0 bg-black opacity-70"></div>
           </div>
         )}
 
-        <div className="relative z-10 max-w-[1200px] mx-auto w-full">
+        <div className="relative z-10 max-w-[1400px] mx-auto w-full">
           <div className="flex flex-col items-center text-center mb-16 animate-fade-slide-up">
-            <h2 className="text-3xl md:text-5xl font-sans font-normal text-white uppercase tracking-wider mb-4 leading-tight whitespace-pre-line">
+            <h2 className="font-sans font-medium text-[32px] md:text-[46px] leading-[1.2] md:leading-[60px] text-white uppercase tracking-wider mb-4 whitespace-pre-line px-2 md:px-0">
               {data.title}
             </h2>
-            <p className="text-gray-400 text-lg max-w-2xl font-serif">
+            <p className="font-sans font-normal text-[20px] leading-[20px] text-[rgba(255,255,255,0.99)] max-w-5xl">
               {data.subtitle}
             </p>
           </div>
@@ -109,10 +120,10 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
                 style={{ animationDelay: `${index * 150}ms` }}
               >
                 {getDarkIcon(index)}
-                <h3 className="text-xl font-sans font-normal text-white mb-4 uppercase tracking-wider">
+                <h3 className="font-sans font-semibold text-[22px] leading-[32px] text-white mb-4 uppercase tracking-wider">
                   {service.title}
                 </h3>
-                <p className="text-gray-400 font-serif leading-relaxed">
+                <p className="font-serif font-normal text-[17px] leading-[30px] text-[rgb(114,114,114)] max-w-[400px] mx-auto">
                   {service.description}
                 </p>
               </div>

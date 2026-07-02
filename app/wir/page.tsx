@@ -56,6 +56,7 @@ export default async function WirPage() {
   const heroData = extractHeroSectionData(html);
   const aboutData = extractAboutSectionData(html);
   const servicesData = extractServicesSectionData(html);
+  console.log("=== SERVICES DATA ===", JSON.stringify(servicesData, null, 2));
   const teamData = extractTeamSectionData(html);
   const officeData = extractOfficeSectionData(html);
   const nextStepData = extractNextStepSectionData(html);
@@ -67,6 +68,7 @@ export default async function WirPage() {
         subtitle={heroData?.subtitle}
         description={heroData?.description}
         backgroundImage={page.featuredImage?.node?.sourceUrl}
+        cta={heroData?.btnText ? { text: heroData.btnText, href: heroData.btnLink } : undefined}
       />
       {aboutData && <AboutSection data={aboutData} />}
       {servicesData && <ServicesSection data={servicesData} variant="dark" />}

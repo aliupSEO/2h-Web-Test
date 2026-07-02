@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { TeamSectionData } from "@/lib/graphql";
-import SectionTitle from "@/components/ui/SectionTitle";
 
 interface TeamSectionProps {
   data: TeamSectionData | null;
@@ -10,60 +9,65 @@ export default function TeamSection({ data }: TeamSectionProps) {
   if (!data || !data.members || data.members.length === 0) return null;
 
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-24 bg-zinc-950 text-white relative">
-      <div className="max-w-[1150px] mx-auto">
-        {/* Title */}
-        <div className="flex flex-col items-center text-center mb-16 animate-fade-slide-up">
-          <div className="mb-4 flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-            <span className="text-[11px] md:text-[13px] uppercase tracking-[3px] font-medium text-zinc-400">
-              Partner Netzwerk
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-[40px] lg:text-[48px] font-sans text-white uppercase tracking-[1px] md:tracking-[2px] leading-tight max-w-2xl">
-            {data.title}
-          </h2>
-        </div>
+    <section 
+      className="pt-24 lg:pt-32 pb-12 lg:pb-16 px-6 md:px-12 lg:px-24"
+      style={{ background: "var(--color-bg-primary, #ffffff)" }}
+    >
+      <div className="max-w-[1400px] mx-auto flex flex-col gap-16 lg:gap-24">
+        {data.members.map((member, index) => {
+          const isImageRight = index % 2 === 0;
 
-        {/* Members Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {data.members.map((member, index) => (
-            <div 
-              key={index}
-              className="flex flex-col sm:flex-row gap-6 p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800/40 hover:border-zinc-700/60 transition-all duration-300 backdrop-blur-sm group animate-fade-slide-up"
-              style={{ animationDelay: `${index * 150}ms` }}
-            >
-              {/* Member Image */}
-              {member.imageUrl && (
-                <div className="relative w-full sm:w-[150px] h-[200px] sm:h-auto aspect-[3/4] sm:aspect-square rounded-2xl overflow-hidden flex-shrink-0">
-                  <Image 
-                    src={member.imageUrl} 
-                    alt={member.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105 filter grayscale group-hover:grayscale-0"
-                    sizes="(max-width: 640px) 100vw, 150px"
-                  />
+          return (
+            <div key={index} className="flex flex-col w-full gap-16 lg:gap-24">
+              {index > 0 && (
+                <div className="w-full flex justify-center animate-fade-slide-up">
+                  <div className="h-10 md:h-[60px] w-[1px]" style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }}></div>
                 </div>
               )}
+              <div 
+                className={`flex flex-col ${isImageRight ? 'lg:flex-row' : 'lg:flex-row-reverse'} justify-center gap-10 lg:gap-12 items-center`}
+              >
+              {/* Text Content */}
+              <div className="w-full flex flex-col justify-center max-w-[720px] animate-fade-slide-up" style={{ animationDelay: '100ms' }}>
+                <h2 className="font-sans font-medium text-[28px] md:text-[40px] leading-[1.2] md:leading-[52px] text-[rgb(16,16,16)] uppercase tracking-wide mb-6 md:mb-8 whitespace-pre-line">
+                  {member.title}
+                </h2>
+                <div className="flex flex-col gap-4 md:gap-6">
+                  {member.paragraphs.map((p, i) => (
+                    <p key={i} className="font-serif font-normal text-[15px] md:text-[17px] leading-[1.6] md:leading-[30px] text-[rgb(114,114,114)]">
+                      {p}
+                    </p>
+                  ))}
+                </div>
+              </div>
 
-              {/* Member Details */}
-              <div className="flex flex-col justify-start">
-                <h3 className="text-xl sm:text-2xl font-sans text-white mb-1">
-                  {member.name}
-                </h3>
-                <p 
-                  className="text-xs sm:text-sm font-medium tracking-[1.5px] uppercase mb-4"
-                  style={{ color: "var(--color-brand-primary, #b6ef00)" }}
-                >
-                  {member.role}
-                </p>
-                <p className="text-[13px] leading-relaxed text-zinc-400 font-sans">
-                  {member.bio}
-                </p>
+              {/* Image Content */}
+              <div className="w-full max-w-[420px] mx-auto lg:mx-0 animate-fade-slide-up" style={{ animationDelay: '250ms' }}>
+                <div className="flex flex-col items-center">
+                  <div className="relative w-full max-w-[420px] mx-auto aspect-[4/5] overflow-hidden rounded-2xl mb-4">
+                    {member.image ? (
+                      <Image
+                        src={member.image}
+                        alt={member.bio || member.title}
+                        fill
+                        className="object-cover grayscale"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-200"></div>
+                    )}
+                  </div>
+                  {member.bio && (
+                    <p className="font-serif font-semibold text-[15px] leading-[30px] text-[rgb(122,122,122)] text-center md:whitespace-nowrap">
+                      {member.bio}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+          );
+        })}
       </div>
     </section>
   );

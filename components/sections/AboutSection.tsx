@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BadgeCheck, CheckSquare } from "lucide-react";
 import SectionBadge from "@/components/ui/SectionBadge";
 import SectionTitle from "@/components/ui/SectionTitle";
 import { AboutSectionData } from "@/lib/graphql";
@@ -12,34 +13,79 @@ export default function AboutSection({ data }: AboutSectionProps) {
   if (!data) return null;
 
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-24 bg-white">
-      <div className="max-w-[1150px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <section className="py-24 px-6 md:px-12 lg:px-24 bg-white overflow-hidden">
+      <div className="max-w-[1250px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-12 lg:gap-12 items-center">
         {/* Text Content */}
         <div className="flex flex-col items-start text-left animate-fade-slide-up">
-          <SectionBadge label={data.subtitle} variant="light" />
+          {data.subtitle && <SectionBadge label={data.subtitle} variant="light" />}
           
           <h2 
-            className="text-4xl sm:text-[45px] lg:text-[45px] leading-[1.15] lg:leading-[54px] font-sans font-normal mb-6 tracking-wide text-zinc-900 uppercase"
+            className="text-[36px] md:text-[42px] leading-[1.2] md:leading-[46px] font-medium mb-6 uppercase md:whitespace-nowrap"
+            style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
             suppressHydrationWarning
           >
-            <span style={{ color: "var(--color-brand-primary, #b6ef00)" }} suppressHydrationWarning>{data.titleLine1}</span>
+            {data.titleLine1}
             <br />
             {data.titleLine2}
           </h2>
 
           <p 
-            className="text-[17px] leading-[30px] mb-6 text-[#727272] max-w-full lg:max-w-lg font-normal"
+            className="text-[18px] leading-[29px] font-medium mb-6 max-w-full lg:max-w-lg whitespace-pre-line"
+            style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
             suppressHydrationWarning
           >
             {data.description}
           </p>
+
+          {data.list1 && data.list1.length > 0 && (
+            <ul className="mb-8 space-y-1.5">
+              {data.list1.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2.5">
+                  <BadgeCheck 
+                    className="mt-[1px] flex-shrink-0" 
+                    size={28} 
+                    fill="var(--color-brand-primary,#b6ef00)" 
+                    stroke="white" 
+                    strokeWidth={2}
+                  />
+                  <span 
+                    className="text-[17px] leading-[30px] font-normal"
+                    style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
+                  >
+                    {item}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
   
           <h5 
-            className="text-[20px] font-sans font-normal mb-8 text-[rgb(16,16,16)] leading-[30px] uppercase tracking-[1px] max-w-full lg:max-w-lg"
+            className="text-[20px] leading-[20px] font-medium mb-6 max-w-full lg:max-w-lg"
+            style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
             suppressHydrationWarning
           >
             {data.motto}
           </h5>
+
+          {data.list2 && data.list2.length > 0 && (
+            <ul className="mb-10 space-y-1.5">
+              {data.list2.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2.5">
+                  <div className="mt-[1px] w-[28px] h-[28px] rounded-[4px] bg-[var(--color-brand-primary,#b6ef00)] flex items-center justify-center flex-shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                  <span 
+                    className="text-[17px] leading-[30px] font-normal"
+                    style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
+                  >
+                    {item}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
   
           <div className="flex flex-wrap items-center justify-start gap-6">
             {data.btnLink && data.btnText ? (
@@ -70,8 +116,8 @@ export default function AboutSection({ data }: AboutSectionProps) {
         </div>
   
         {/* Image */}
-        <div className="flex justify-center lg:justify-end animate-fade-slide-up animation-delay-200 mt-4 lg:mt-0">
-          <div className="relative w-full max-w-[800px] lg:max-w-[480px] aspect-[4/3] lg:aspect-[16/10] rounded-[1rem] overflow-hidden shadow-xl group cursor-pointer">
+        <div className="flex justify-center lg:justify-end animate-fade-slide-up animation-delay-200 mt-4 lg:mt-0 w-full">
+          <div className="relative w-full aspect-[4/3] rounded-[1rem] overflow-hidden shadow-xl group cursor-pointer">
             {data.imageUrl && (
               <Image
                 src={data.imageUrl}
