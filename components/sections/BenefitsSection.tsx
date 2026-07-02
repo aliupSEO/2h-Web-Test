@@ -74,8 +74,8 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
             
             {/* Benefit text */}
             <h3 
-              className="text-[15px] md:text-[16px] font-medium uppercase tracking-[1px] leading-snug"
-              style={{ color: "#101010" }}
+              className="text-[24px] leading-[36px] font-normal"
+              style={{ fontFamily: "var(--font-federo)", color: "#101010", letterSpacing: "0px" }}
               suppressHydrationWarning
             >
               {benefit}
