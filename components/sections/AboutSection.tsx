@@ -20,18 +20,18 @@ export default function AboutSection({ data }: AboutSectionProps) {
           {data.subtitle && <SectionBadge label={data.subtitle} variant="light" />}
           
           <h2 
-            className="text-[36px] md:text-[42px] leading-[1.2] md:leading-[46px] font-medium mb-6 uppercase"
+            className="text-[42px] leading-[46.2px] font-normal mb-6 uppercase"
             style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
             suppressHydrationWarning
           >
             {data.titleLine1}
-            <br />
+            {data.titleLine2 && <br />}
             {data.titleLine2}
           </h2>
 
           <p 
-            className="text-[18px] leading-[29px] font-medium mb-6 max-w-full lg:max-w-lg whitespace-pre-line"
-            style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
+            className="text-[18px] leading-[28.8px] font-normal mb-6 max-w-full lg:max-w-lg whitespace-pre-line"
+            style={{ fontFamily: "var(--font-barlow)", color: "#7A7A7A" }}
             suppressHydrationWarning
           >
             {data.description}
@@ -39,8 +39,8 @@ export default function AboutSection({ data }: AboutSectionProps) {
 
           {data.motto && (
             <h5 
-              className="text-[20px] leading-[20px] font-medium mb-6 max-w-full lg:max-w-lg"
-              style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
+              className="text-[17px] leading-[29.8px] font-normal mb-6 max-w-full lg:max-w-lg uppercase"
+              style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
               suppressHydrationWarning
             >
               {data.motto}
@@ -59,7 +59,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
                     strokeWidth={2}
                   />
                   <span 
-                    className="text-[17px] leading-[30px] font-normal"
+                    className="text-[17px] leading-[29.8px] font-normal"
                     style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
                   >
                     {item}
@@ -79,7 +79,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
                     </svg>
                   </div>
                   <span 
-                    className="text-[17px] leading-[30px] font-normal"
+                    className="text-[17px] leading-[29.8px] font-normal"
                     style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
                   >
                     {item}
