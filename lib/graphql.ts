@@ -1537,15 +1537,34 @@ export function extractSeoPageData(html: string): SeoPageData {
           items.push(match[1].replace(/<[^>]*>?/gm, '').trim());
         }
       }
+      let pDesc = "";
       const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+      if (pMatch) {
+        pDesc = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      } else {
+        const anyPMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+        if (anyPMatch) pDesc = anyPMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      }
       
+      const mottoMatch = blockHtml.match(/<h[3456][^>]*>([\s\S]*?)<\/h[3456]>/i) || blockHtml.match(/<p[^>]*><strong>([\s\S]*?)<\/strong><\/p>/i);
+      let motto = mottoMatch ? mottoMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+      if (!motto && items.length > 0) motto = "TYPISCHE PROBLEME:";
+
       sections.push({
          type: "about",
          data: {
-           title: title,
-           description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+           titleLine1: title,
+           titleLine2: "",
+           subtitle: "",
+           description: pDesc,
+           motto: motto,
+           list1: items,
+           list2: [],
            imageUrl: imgMatch ? imgMatch[1] : "",
-           items: items
+           btnText: "",
+           btnLink: "",
+           phoneText: "",
+           phoneLink: ""
          }
       });
     } else {
