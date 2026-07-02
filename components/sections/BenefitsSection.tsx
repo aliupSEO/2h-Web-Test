@@ -1,6 +1,6 @@
 import React from "react";
 import SectionBadge from "@/components/ui/SectionBadge";
-import { Zap, Sliders, TrendingUp, Target, Rocket, Award } from "lucide-react";
+import { BarChart2, Eye, Award, Coins, Handshake } from "lucide-react";
 
 export interface BenefitsSectionData {
   subtitle?: string;
@@ -16,13 +16,13 @@ interface BenefitsSectionProps {
 export default function BenefitsSection({ data }: BenefitsSectionProps) {
   // Map index to a specific Lucide icon
   const getIcon = (index: number) => {
-    const props = { size: 24, color: "white" };
+    const props = { size: 24, color: "white", strokeWidth: 2 };
     switch (index) {
-      case 0: return <Zap {...props} />;
-      case 1: return <Sliders {...props} />;
-      case 2: return <TrendingUp {...props} />;
-      case 3: return <Target {...props} />;
-      case 4: return <Rocket {...props} />;
+      case 0: return <BarChart2 {...props} />;
+      case 1: return <Eye {...props} />;
+      case 2: return <Award {...props} />;
+      case 3: return <Coins {...props} />;
+      case 4: return <Handshake {...props} />;
       default: return <Award {...props} />;
     }
   };
