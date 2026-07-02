@@ -175,9 +175,9 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
           )}
 
           {/* Vertical brand line separator */}
-          <div className="flex justify-center mt-10 md:mt-12 -mb-8 md:-mb-16">
+          <div className="flex justify-center mt-16 md:mt-24 -mb-[128px]">
             <div 
-              className="w-[1px] h-[40px] md:h-[50px]" 
+              className="w-[1px] h-[50px] md:h-[60px]" 
               style={{ background: "var(--color-brand-primary, #b6ef00)" }}
             ></div>
           </div>
