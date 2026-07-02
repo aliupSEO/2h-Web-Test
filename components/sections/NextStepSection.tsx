@@ -39,7 +39,7 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
   
         <Link 
           href={data.btnLink} 
-          className="inline-flex items-center justify-center rounded-full px-6 md:px-12 py-4 md:py-6 text-[15px] leading-[15px] font-sans font-normal text-[#E7E7E7] bg-transparent border border-[var(--color-brand-primary,#b6ef00)] hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[rgb(16,16,16)] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl mb-10 max-w-[90vw] text-center"
+          className="inline-flex items-center justify-center rounded-full px-6 md:px-12 py-4 md:py-6 text-[15px] leading-[15px] font-sans font-normal text-[#E7E7E7] uppercase bg-transparent border border-[var(--color-brand-primary,#b6ef00)] hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[rgb(16,16,16)] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl mb-10 max-w-[90vw] text-center"
         >
           {data.btnText}
         </Link>
@@ -49,7 +49,7 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
         {data.features.map((feature, index) => (
           <div key={index} className="flex items-center gap-1 md:gap-2">
             <span className="font-sans font-bold text-[14px] md:text-[17px] leading-none mt-1" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>*</span>
-            <span className="font-serif font-normal whitespace-nowrap text-[#D3D3D3] text-[14px] md:text-[17px] leading-[1.4] md:leading-[29.8px]">
+            <span className="font-serif font-normal uppercase whitespace-nowrap text-[#D3D3D3] text-[14px] md:text-[17px] leading-[1.4] md:leading-[29.8px]">
               {feature}
             </span>
           </div>
