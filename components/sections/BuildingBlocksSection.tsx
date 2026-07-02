@@ -60,7 +60,7 @@ export default function BuildingBlocksSection({ data }: BuildingBlocksSectionPro
             return (
               <div 
                 key={index}
-                className="relative bg-[#f4f4f5] rounded-[24px] p-10 transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-start"
+                className="relative bg-[#f4f4f5] rounded-[24px] overflow-hidden p-10 pb-20 transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-start"
               >
                 <h3 
                   className="text-[22px] leading-[30px] font-normal uppercase mb-4"
@@ -78,9 +78,21 @@ export default function BuildingBlocksSection({ data }: BuildingBlocksSectionPro
                   {block.description}
                 </p>
                 
-                {/* Black Circular Button overlapping bottom right */}
-                <div className="absolute -bottom-4 -right-4 w-[60px] h-[60px] rounded-full bg-[#101010] flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-110 shadow-lg border-[6px] border-white">
-                  <Link size={20} color="white" />
+                {/* Smooth Corner Cutout Background Elements */}
+                {/* Main white square */}
+                <div className="absolute bottom-0 right-0 w-[80px] h-[80px] bg-white rounded-tl-[24px] pointer-events-none z-10"></div>
+                
+                {/* Top smooth curve */}
+                <div className="absolute bottom-[80px] right-0 w-[24px] h-[24px] bg-transparent rounded-br-[24px] shadow-[12px_12px_0_0_#ffffff] pointer-events-none z-10"></div>
+                
+                {/* Left smooth curve */}
+                <div className="absolute bottom-0 right-[80px] w-[24px] h-[24px] bg-transparent rounded-br-[24px] shadow-[12px_12px_0_0_#ffffff] pointer-events-none z-10"></div>
+                
+                {/* Black Circular Button inside the cutout */}
+                <div className="absolute bottom-0 right-0 w-[80px] h-[80px] flex items-center justify-center z-20 cursor-pointer group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-[60px] h-[60px] rounded-full bg-[#101010] flex items-center justify-center shadow-md">
+                    <Link size={20} color="white" />
+                  </div>
                 </div>
               </div>
             );
