@@ -75,7 +75,7 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                   
                   {/* Title */}
                   <div className="absolute bottom-8 left-8 md:bottom-10 md:left-10 pr-24">
-                    <h4 className="text-text-light text-[20px] md:text-[24px] font-serif uppercase tracking-widest font-medium">
+                    <h4 className="text-text-light text-[20px] md:text-[24px] font-sans uppercase tracking-widest font-normal">
                       {item.title}
                     </h4>
                   </div>
@@ -99,7 +99,7 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                         href={item.link}
                         className="w-[64px] h-[64px] bg-brand-card hover:bg-brand-dark rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1"
                       >
-                        <svg className="w-6 h-6 text-brand-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-6 h-6" style={{ color: "var(--color-brand-primary, #b6ef00)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
                         </svg>
                       </a>
@@ -114,24 +114,19 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-3 mt-16 md:mt-24 animate-fade-slide-up">
               {/* Prev Button */}
-              <button 
-                disabled={currentPage === 1}
-                onClick={() => {
-                  if (currentPage > 1) {
+              {currentPage > 1 && (
+                <button 
+                  onClick={() => {
                     setCurrentPage(prev => prev - 1);
                     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-                  }
-                }}
-                className={`w-12 h-12 rounded-full flex items-center justify-center font-medium text-[15px] transition-colors ${
-                  currentPage === 1 
-                    ? 'bg-brand-card text-text-secondary cursor-default' 
-                    : 'bg-brand-card text-text-secondary hover:bg-zinc-200 cursor-pointer'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+                  }}
+                  className="w-12 h-12 rounded-full flex items-center justify-center font-medium text-[15px] transition-colors bg-zinc-100 text-zinc-900 hover:bg-zinc-200 cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
 
               {/* Page Numbers */}
               {Array.from({ length: totalPages }).map((_, i) => (
@@ -143,8 +138,8 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                   }}
                   className={`w-12 h-12 rounded-full flex items-center justify-center font-medium text-[15px] transition-colors ${
                     currentPage === i + 1 
-                      ? 'hover:brightness-110 cursor-default' 
-                      : 'bg-brand-card text-text-secondary hover:bg-zinc-200 cursor-pointer'
+                      ? 'cursor-default' 
+                      : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 cursor-pointer'
                   }`}
                   style={currentPage === i + 1 ? { background: "var(--color-brand-primary, #b6ef00)", color: "#111" } : {}}
                 >
@@ -153,24 +148,19 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
               ))}
 
               {/* Next Button */}
-              <button 
-                disabled={currentPage === totalPages}
-                onClick={() => {
-                  if (currentPage < totalPages) {
+              {currentPage < totalPages && (
+                <button 
+                  onClick={() => {
                     setCurrentPage(prev => prev + 1);
                     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-                  }
-                }}
-                className={`w-12 h-12 rounded-full flex items-center justify-center font-medium text-[15px] transition-colors ${
-                  currentPage === totalPages 
-                    ? 'bg-brand-card text-text-secondary cursor-default' 
-                    : 'bg-brand-card text-text-secondary hover:bg-zinc-200 cursor-pointer'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+                  }}
+                  className="w-12 h-12 rounded-full flex items-center justify-center font-medium text-[15px] transition-colors bg-zinc-100 text-zinc-900 hover:bg-zinc-200 cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
             </div>
           )}
 
