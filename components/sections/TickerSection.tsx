@@ -10,8 +10,8 @@ interface TickerSectionProps {
 }
 
 export default function TickerSection({ items, text }: TickerSectionProps) {
-  // If we receive a raw string, split it by double spaces (or more)
-  const parsedItems = items || (text ? text.split(/\s{2,}/).filter(Boolean) : []);
+  // If we receive a raw string, split it by newlines or double spaces
+  const parsedItems = items || (text ? text.split(/\n+|\s{2,}/).map(s => s.trim()).filter(Boolean) : []);
 
   if (!parsedItems.length) return null;
 
@@ -37,8 +37,8 @@ export default function TickerSection({ items, text }: TickerSectionProps) {
         {tickerItems.map((item, index) => (
           <React.Fragment key={index}>
             <span 
-              className="mx-8 text-[15px] font-sans tracking-[2px] uppercase whitespace-nowrap"
-              style={{ color: "var(--color-ticker-text, #111111)" }}
+              className="mx-8 text-[24px] leading-[28.8px] font-sans tracking-[2px] uppercase whitespace-nowrap"
+              style={{ color: "var(--color-ticker-text, #101010)" }}
             >
               {item}
             </span>
