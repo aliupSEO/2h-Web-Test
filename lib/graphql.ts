@@ -1445,8 +1445,27 @@ export function extractSeoPageData(html: string): SeoPageData {
   
   const h2Split = content.split(/(?=<h2)/i);
   if (h2Split.length > 0) {
-    const heroHtml = h2Split[0];
+    let heroHtml = h2Split[0];
     content = content.substring(heroHtml.length);
+
+    // NORMALIZE ELEMENTOR HERO STRUCTURES
+    // 1. Convert Elementor heading divs to paragraphs if they follow the H1
+    heroHtml = heroHtml.replace(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/gi, (match, p1) => {
+      // If it contains an H1, don't change it (it's the title)
+      if (p1.includes('<h1')) return match;
+      return `<p>${p1}</p>`;
+    });
+
+    // 2. Convert Elementor icon list items to list items
+    const bulletPoints: string[] = [];
+    const iconListRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+    let iconMatch;
+    while ((iconMatch = iconListRegex.exec(heroHtml)) !== null) {
+      const text = iconMatch[1].replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim();
+      if (text && text.toLowerCase() !== 'faq') {
+        bulletPoints.push(text);
+      }
+    }
 
     const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
     const pMatch = heroHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
@@ -1461,13 +1480,15 @@ export function extractSeoPageData(html: string): SeoPageData {
     const tickerTextRaw = allParagraphs.length >= 3 ? allParagraphs[allParagraphs.length - 1] : "";
     const tickerText = tickerTextRaw.replace(/<[^>]*>?/gm, '').trim();
     
-    const bulletPoints: string[] = [];
-    const ulMatch = heroHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
-    if (ulMatch) {
-      const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
-      let match;
-      while ((match = liRegex.exec(ulMatch[1])) !== null) {
-        bulletPoints.push(match[1].trim().replace(/&amp;/g, '&').replace(/<[^>]*>?/gm, ''));
+    // If we didn't find bullets via icon lists, try standard UL
+    if (bulletPoints.length === 0) {
+      const ulMatch = heroHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+      if (ulMatch) {
+        const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let match;
+        while ((match = liRegex.exec(ulMatch[1])) !== null) {
+          bulletPoints.push(match[1].trim().replace(/&amp;/g, '&').replace(/<[^>]*>?/gm, ''));
+        }
       }
     }
     
