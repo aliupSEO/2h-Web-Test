@@ -111,7 +111,7 @@ export default function HeroSection({
 
         {/* Main Heading */}
         <h1
-          className={`animate-fade-slide-up animation-delay-200 text-[40px] md:text-[55px] leading-[1.2] md:leading-[66px] font-normal uppercase font-sans tracking-wide ${description ? "mb-4" : "mb-10"} max-w-[720px] ${align === "center" ? "mx-auto" : ""}`}
+          className={`animate-fade-slide-up animation-delay-200 text-[40px] md:text-[55px] leading-[1.2] md:leading-[66px] font-normal uppercase font-sans tracking-wide ${description ? "mb-4" : "mb-10"} max-w-[900px] ${align === "center" ? "mx-auto" : ""}`}
           style={{ color: "var(--color-text-light, #ffffff)" }}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: title || "" }}
