@@ -7,6 +7,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import SectionBadge from "@/components/ui/SectionBadge";
 import SectionTitle from "@/components/ui/SectionTitle";
 import { ProjectsSectionData } from "@/lib/graphql";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface ProjectsSectionProps {
   data: ProjectsSectionData | null;
@@ -50,10 +51,10 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
 
   return (
     <section className="py-24 bg-white" id="projects">
-      <div className="flex flex-col items-center text-center mb-16 animate-fade-slide-up px-6 md:px-12 lg:px-24">
+      <ScrollReveal className="flex flex-col items-center text-center mb-16 px-6 md:px-12 lg:px-24">
         <SectionBadge label={data.subtitle} variant="light" />
         <SectionTitle text={data.title} variant="light" as="h2" />
-      </div>
+      </ScrollReveal>
 
       {/* Embla Carousel Viewport */}
       <div className="overflow-hidden cursor-grab active:cursor-grabbing w-full" ref={emblaRef}>
@@ -62,8 +63,9 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
             const isActive = index === selectedIndex;
             
             return (
-              <div 
-                key={index}
+              <ScrollReveal 
+                key={index} 
+                delay={((index % 3) + 1) * 100 as any}
                 className="px-4 md:px-0 md:pl-8 flex-[0_0_100vw] md:flex-[0_0_700px] lg:flex-[0_0_900px] xl:flex-[0_0_1000px] min-w-0"
               >
                 <div 
@@ -166,7 +168,7 @@ export default function ProjectsSection({ data }: ProjectsSectionProps) {
                         </Link>
                       </div>
                 </div>
-              </div>
+              </ScrollReveal>
             );
           })}
         </div>

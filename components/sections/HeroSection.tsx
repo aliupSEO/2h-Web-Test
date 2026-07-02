@@ -17,6 +17,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface HeroSectionProps {
   /** Main heading text (from WordPress page title) */
@@ -101,7 +102,7 @@ export default function HeroSection({
       <div className={`relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-10 md:px-16 mt-24 ${align === "center" ? "flex flex-col items-center text-center" : ""}`}>
         {/* Subtitle badge */}
         {subtitle && (
-          <div className={`mb-4 flex items-center gap-2 text-sm sm:text-[14px] font-medium tracking-[2.5px] uppercase animate-fade-slide-up ${align === "center" ? "justify-center" : ""}`}>
+          <ScrollReveal delay={100} className={`mb-4 flex items-center gap-2 text-sm sm:text-[14px] font-medium tracking-[2.5px] uppercase ${align === "center" ? "justify-center" : ""}`}>
             <span
               className="h-1.5 w-1.5 rounded-full flex-shrink-0"
               style={{ background: "var(--color-brand-primary, #b6ef00)" }}
@@ -109,30 +110,34 @@ export default function HeroSection({
             <span className="font-sans uppercase" style={{ color: "var(--color-text-light, #ffffff)" }} suppressHydrationWarning>
               {subtitle}
             </span>
-          </div>
+          </ScrollReveal>
         )}
 
         {/* Main Heading */}
-        <h1
-          className={`animate-fade-slide-up animation-delay-200 text-[40px] md:text-[55px] leading-[1.2] md:leading-[66px] font-normal uppercase font-sans tracking-wide ${description ? "mb-4" : "mb-10"} max-w-[900px] ${align === "center" ? "mx-auto" : ""}`}
-          style={{ color: "var(--color-text-light, #ffffff)" }}
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: title || "" }}
-        />
+        <ScrollReveal delay={200}>
+          <h1
+            className={`text-[40px] md:text-[55px] leading-[1.2] md:leading-[66px] font-normal uppercase font-sans tracking-wide ${description ? "mb-4" : "mb-10"} max-w-[900px] ${align === "center" ? "mx-auto" : ""}`}
+            style={{ color: "var(--color-text-light, #ffffff)" }}
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: title || "" }}
+          />
+        </ScrollReveal>
 
         {/* Description */}
         {description && (
-          <p
-            className={`animate-fade-slide-up animation-delay-300 text-[18px] md:text-[22px] leading-[1.5] md:leading-[30.8px] font-normal font-sans mb-8 max-w-[800px] whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
-            style={{ color: "var(--color-text-light, #ffffff)" }}
-            suppressHydrationWarning
-          >
-            {description}
-          </p>
+          <ScrollReveal delay={300}>
+            <p
+              className={`text-[18px] md:text-[22px] leading-[1.5] md:leading-[30.8px] font-normal font-sans mb-8 max-w-[800px] whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
+              style={{ color: "var(--color-text-light, #ffffff)" }}
+              suppressHydrationWarning
+            >
+              {description}
+            </p>
+          </ScrollReveal>
         )}
 
         {/* CTA Button */}
-        <div className={`flex flex-wrap gap-4 mt-8 animate-fade-slide-up animation-delay-300 ${align === "center" ? "justify-center" : ""}`}>
+        <ScrollReveal delay={400} className={`flex flex-wrap gap-4 mt-8 ${align === "center" ? "justify-center" : ""}`}>
           {cta ? (
             <Link
               href={cta.href}
@@ -149,11 +154,11 @@ export default function HeroSection({
               DIGITALE LÖSUNGEN
             </span>
           )}
-        </div>
+        </ScrollReveal>
 
         {/* Bullet Points */}
         {bulletPoints && bulletPoints.length > 0 && (
-          <div className={`mt-6 flex flex-wrap items-center gap-6 animate-fade-slide-up animation-delay-[500ms] ${align === "center" ? "justify-center" : ""}`}>
+          <ScrollReveal delay={500} className={`mt-6 flex flex-wrap items-center gap-6 ${align === "center" ? "justify-center" : ""}`}>
             {bulletPoints.map((point, i) => (
               <div key={i} className="flex items-center gap-2">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
@@ -164,7 +169,7 @@ export default function HeroSection({
                 </span>
               </div>
             ))}
-          </div>
+          </ScrollReveal>
         )}
       </div>
     </section>

@@ -2,6 +2,7 @@
 
 import { ContactPageData } from "@/lib/graphql";
 import ContactForm from "@/components/ContactForm";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface ContactPageSectionProps {
   data: ContactPageData;
@@ -53,10 +54,11 @@ export default function ContactPageSection({ data }: ContactPageSectionProps) {
       {/* Contact Info Boxes overlapping the bottom */}
       <section className="relative z-10 w-full px-6 md:px-12 lg:px-24 -mt-24">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-slide-up animation-delay-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Box 1 (Email) */}
-            <a href={`mailto:${data.email || 'haas@2hws.at'}`} className="bg-[#f4f4f5] hover:!bg-[var(--color-brand-primary,#b6ef00)] group transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl p-8 md:p-10 rounded-2xl shadow-xl flex flex-col justify-start relative overflow-hidden min-h-[220px] cursor-pointer">
+            <ScrollReveal delay={100}>
+              <a href={`mailto:${data.email || 'haas@2hws.at'}`} className="h-full bg-[#f4f4f5] hover:!bg-[var(--color-brand-primary,#b6ef00)] group transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl p-8 md:p-10 rounded-2xl shadow-xl flex flex-col justify-start relative overflow-hidden min-h-[220px] cursor-pointer">
               {/* Huge faded icon */}
               <svg className="absolute -bottom-4 -right-4 w-40 h-40 text-zinc-200 opacity-50 group-hover:text-black/10 transition-colors z-0" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
               
@@ -77,10 +79,12 @@ export default function ContactPageSection({ data }: ContactPageSectionProps) {
                   </p>
                 </div>
               </div>
-            </a>
+              </a>
+            </ScrollReveal>
             
             {/* Box 2 (Location) */}
-            <a href="https://www.google.com/maps/place/2H+Web+Solutions/@48.1983125,16.3532567,17z/data=!3m1!4b1!4m6!3m5!1s0x476d07225ede5f4f:0x4bb56cb9fa9ce05f!8m2!3d48.198309!4d16.3558316!16s%2Fg%2F11sbpv7wsk!5m1!1e1?entry=tts&g_ep=EgoyMDI2MDYwMS4wIPu8ASoASAFQAw%3D%3D&skid=46ede52b-ca65-4b81-95f6-dff2f76a9e30" target="_blank" rel="noopener noreferrer" className="bg-[#f4f4f5] hover:!bg-[var(--color-brand-primary,#b6ef00)] group transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl p-8 md:p-10 rounded-2xl shadow-xl flex flex-col justify-start relative overflow-hidden min-h-[220px] cursor-pointer">
+            <ScrollReveal delay={200}>
+              <a href="https://www.google.com/maps/place/2H+Web+Solutions/@48.1983125,16.3532567,17z/data=!3m1!4b1!4m6!3m5!1s0x476d07225ede5f4f:0x4bb56cb9fa9ce05f!8m2!3d48.198309!4d16.3558316!16s%2Fg%2F11sbpv7wsk!5m1!1e1?entry=tts&g_ep=EgoyMDI2MDYwMS4wIPu8ASoASAFQAw%3D%3D&skid=46ede52b-ca65-4b81-95f6-dff2f76a9e30" target="_blank" rel="noopener noreferrer" className="h-full bg-[#f4f4f5] hover:!bg-[var(--color-brand-primary,#b6ef00)] group transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl p-8 md:p-10 rounded-2xl shadow-xl flex flex-col justify-start relative overflow-hidden min-h-[220px] cursor-pointer">
               {/* Huge faded icon */}
               <svg className="absolute -bottom-4 -right-4 w-40 h-40 text-zinc-200 opacity-50 group-hover:text-black/10 transition-colors z-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
               
@@ -101,10 +105,12 @@ export default function ContactPageSection({ data }: ContactPageSectionProps) {
                   </p>
                 </div>
               </div>
-            </a>
+              </a>
+            </ScrollReveal>
 
             {/* Box 3 (Phone - Green) */}
-            <a href={`tel:${data.phone ? data.phone.replace(/\\s/g, '') : '+436764508579'}`} className="transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl p-8 md:p-10 rounded-2xl shadow-xl flex flex-col justify-start relative overflow-hidden min-h-[220px] cursor-pointer group" style={{ background: "var(--color-brand-primary, #b6ef00)" }}>
+            <ScrollReveal delay={300}>
+              <a href={`tel:${data.phone ? data.phone.replace(/\\s/g, '') : '+436764508579'}`} className="h-full transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl p-8 md:p-10 rounded-2xl shadow-xl flex flex-col justify-start relative overflow-hidden min-h-[220px] cursor-pointer group" style={{ background: "var(--color-brand-primary, #b6ef00)" }}>
               {/* Huge faded icon */}
               <svg className="absolute -bottom-4 -right-4 w-40 h-40 text-text-primary/5 z-0" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
               
@@ -125,7 +131,8 @@ export default function ContactPageSection({ data }: ContactPageSectionProps) {
                   </p>
                 </div>
               </div>
-            </a>
+              </a>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -133,7 +140,7 @@ export default function ContactPageSection({ data }: ContactPageSectionProps) {
       {/* Form & Map Section below */}
       <section className="px-6 md:px-12 lg:px-24 pt-[120px] md:pt-[200px] pb-32 bg-white relative z-0">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 animate-fade-slide-up animation-delay-200">
+          <ScrollReveal delay={200} className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
             
             {/* Left: Form */}
             <div>
@@ -168,7 +175,7 @@ export default function ContactPageSection({ data }: ContactPageSectionProps) {
               </div>
             </div>
 
-          </div>
+          </ScrollReveal>
         </div>
       </section>
     </>

@@ -3,6 +3,8 @@ import SectionBadge from "@/components/ui/SectionBadge";
 import VerticalSeparator from "@/components/ui/VerticalSeparator";
 import { Compass, Handshake, ArrowRight, Zap, Lightbulb, Rocket } from "lucide-react";
 
+import ScrollReveal from "@/components/ui/ScrollReveal";
+
 export interface BenefitsSectionData {
   subtitle?: string;
   title: string;
@@ -31,7 +33,7 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
 
   return (
     <section className="pb-24 pt-0 px-6 md:px-12 lg:px-24 bg-white relative">
-      <div className="max-w-[1000px] mx-auto text-center mb-16 animate-fade-slide-up">
+      <ScrollReveal className="max-w-[1000px] mx-auto text-center mb-16">
         {data.subtitle && <VerticalSeparator />}
 
         {data.subtitle && (
@@ -62,11 +64,11 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
             dangerouslySetInnerHTML={{ __html: data.description }}
           />
         )}
-      </div>
+      </ScrollReveal>
 
-      <div className="max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 animate-fade-slide-up animation-delay-200">
+      <div className="max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
         {(data.benefits || []).map((benefit, index) => (
-          <div key={index} className="flex items-center gap-6 group cursor-default">
+          <ScrollReveal delay={((index % 6) + 1) * 100 as any} key={index} className="flex items-center gap-6 group cursor-default">
             {/* Outline Icon circle */}
             <div 
               className="w-[60px] h-[60px] rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 border-[2px]" 
@@ -83,7 +85,7 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
             >
               {benefit}
             </h3>
-          </div>
+          </ScrollReveal>
         ))}
       </div>
     </section>

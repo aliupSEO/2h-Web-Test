@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { OfficeSectionData } from "@/lib/graphql";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface OfficeSectionProps {
   data: OfficeSectionData | null;
@@ -18,21 +19,25 @@ export default function OfficeSection({ data }: OfficeSectionProps) {
         <div className="h-10 md:h-[60px] w-[1px] mb-12 lg:mb-16" style={{ backgroundColor: "var(--color-brand-primary, #b6ef00)" }}></div>
 
         {/* Title */}
-        <h2 className="font-sans font-medium text-[28px] md:text-[40px] leading-[1.2] md:leading-[52px] text-[rgb(16,16,16)] mb-8 md:mb-10 text-center animate-fade-slide-up">
-          {data.title}
-        </h2>
+        <ScrollReveal>
+          <h2 className="font-sans font-medium text-[28px] md:text-[40px] leading-[1.2] md:leading-[52px] text-[rgb(16,16,16)] mb-8 md:mb-10 text-center">
+            {data.title}
+          </h2>
+        </ScrollReveal>
 
         {/* Paragraphs */}
-        <div className="w-full flex flex-col gap-4 md:gap-6 text-left animate-fade-slide-up" style={{ animationDelay: '100ms' }}>
+        <div className="w-full flex flex-col gap-4 md:gap-6 text-left">
           {data.paragraphs.map((p, i) => (
-            <p key={i} className="font-serif font-normal text-[15px] md:text-[17px] leading-[1.6] md:leading-[30px] text-[rgb(114,114,114)]">
-              {p}
-            </p>
+            <ScrollReveal delay={((i % 5) + 1) * 100 as any} key={i}>
+              <p className="font-serif font-normal text-[15px] md:text-[17px] leading-[1.6] md:leading-[30px] text-[rgb(114,114,114)]">
+                {p}
+              </p>
+            </ScrollReveal>
           ))}
         </div>
 
         {/* Image Grid */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mt-16 animate-fade-slide-up" style={{ animationDelay: '250ms' }}>
+        <ScrollReveal delay={300} className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
           {/* Map */}
           <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden">
             <iframe
@@ -59,7 +64,7 @@ export default function OfficeSection({ data }: OfficeSectionProps) {
               />
             </div>
           )}
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

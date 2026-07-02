@@ -4,6 +4,7 @@ import { BadgeCheck, CheckSquare } from "lucide-react";
 import SectionBadge from "@/components/ui/SectionBadge";
 import SectionTitle from "@/components/ui/SectionTitle";
 import { AboutSectionData } from "@/lib/graphql";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface AboutSectionProps {
   data: AboutSectionData | null;
@@ -16,7 +17,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
     <section className="py-24 px-6 md:px-12 lg:px-24 bg-white overflow-hidden">
       <div className="max-w-[1250px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-12 lg:gap-12 items-center">
         {/* Text Content */}
-        <div className="flex flex-col items-start text-left animate-fade-slide-up">
+        <ScrollReveal className="flex flex-col items-start text-left">
           {data.subtitle && (
             <div 
               className="font-sans font-normal uppercase tracking-[2px] mb-4"
@@ -53,19 +54,21 @@ export default function AboutSection({ data }: AboutSectionProps) {
           {data.list1 && data.list1.length > 0 && (
             <ul className="mb-8 space-y-4">
               {data.list1.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2.5">
-                  <div className="mt-[4px] w-[24px] h-[24px] rounded-full bg-[var(--color-brand-primary,#b6ef00)] flex items-center justify-center flex-shrink-0">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </div>
-                  <span 
-                    className="font-serif font-normal"
-                    style={{ fontSize: "17px", lineHeight: "29.8px", color: "#101010" }}
-                  >
-                    {item}
-                  </span>
-                </li>
+                <ScrollReveal delay={((idx % 5) + 1) * 100 as any} key={idx}>
+                  <li className="flex items-start gap-2.5">
+                    <div className="mt-[4px] w-[24px] h-[24px] rounded-full bg-[var(--color-brand-primary,#b6ef00)] flex items-center justify-center flex-shrink-0">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <span 
+                      className="font-serif font-normal"
+                      style={{ fontSize: "17px", lineHeight: "29.8px", color: "#101010" }}
+                    >
+                      {item}
+                    </span>
+                  </li>
+                </ScrollReveal>
               ))}
             </ul>
           )}
@@ -85,19 +88,21 @@ export default function AboutSection({ data }: AboutSectionProps) {
           {data.list2 && data.list2.length > 0 && (
             <ul className="mb-10 space-y-1.5">
               {data.list2.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2.5">
-                  <div className="mt-[1px] w-[28px] h-[28px] rounded-[4px] bg-[var(--color-brand-primary,#b6ef00)] flex items-center justify-center flex-shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </div>
-                  <span 
-                    className="text-[17px] leading-[29.8px] font-normal"
-                    style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
-                  >
-                    {item}
-                  </span>
-                </li>
+                <ScrollReveal delay={((idx % 5) + 1) * 100 as any} key={idx}>
+                  <li className="flex items-start gap-2.5">
+                    <div className="mt-[1px] w-[28px] h-[28px] rounded-[4px] bg-[var(--color-brand-primary,#b6ef00)] flex items-center justify-center flex-shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <span 
+                      className="text-[17px] leading-[29.8px] font-normal"
+                      style={{ fontFamily: "var(--font-barlow)", color: "#101010" }}
+                    >
+                      {item}
+                    </span>
+                  </li>
+                </ScrollReveal>
               ))}
             </ul>
           )}
@@ -120,10 +125,10 @@ export default function AboutSection({ data }: AboutSectionProps) {
               </a>
             )}
           </div>
-        </div>
+        </ScrollReveal>
   
         {/* Image */}
-        <div className="flex justify-center lg:justify-end animate-fade-slide-up animation-delay-200 mt-4 lg:mt-0 w-full">
+        <ScrollReveal delay={200} className="flex justify-center lg:justify-end mt-4 lg:mt-0 w-full">
           <div className="relative w-full aspect-[4/3] rounded-[1rem] overflow-hidden shadow-xl group cursor-pointer">
             {data.imageUrl && (
               <Image
@@ -138,7 +143,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
               />
             )}
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

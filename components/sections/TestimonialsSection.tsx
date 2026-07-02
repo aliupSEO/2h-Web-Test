@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import SectionBadge from "@/components/ui/SectionBadge";
 import SectionTitle from "@/components/ui/SectionTitle";
 import { TestimonialsSectionData } from "@/lib/graphql";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface TestimonialsSectionProps {
   data: TestimonialsSectionData | null;
@@ -91,10 +92,10 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
 
   return (
     <section className="py-24 bg-white overflow-hidden" id="testimonials">
-      <div className="flex flex-col items-center text-center mb-8 animate-fade-slide-up px-6 md:px-12 lg:px-24">
+      <ScrollReveal className="flex flex-col items-center text-center mb-8 px-6 md:px-12 lg:px-24">
         <SectionBadge label={data.subtitle} variant="light" />
         <SectionTitle text={data.title} variant="light" as="h2" />
-      </div>
+      </ScrollReveal>
 
       {/* Carousel Wrapper */}
       <div 
@@ -117,10 +118,10 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
             <div key={pageIndex} className="w-full shrink-0 px-6 md:px-12 lg:px-24">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-4">
                 {page.map((testimonial, index) => (
-                  <div 
+                  <ScrollReveal 
                     key={index}
-                    className="group relative bg-[#f4f5f5] rounded-[24px] px-8 pt-8 md:px-10 md:pt-10 pb-[140px] h-full min-h-[500px] flex flex-col justify-start animate-fade-slide-up"
-                    style={{ animationDelay: `${index * 150}ms` }}
+                    delay={((index % 3) + 1) * 100 as any}
+                    className="group relative bg-[#f4f5f5] rounded-[24px] px-8 pt-8 md:px-10 md:pt-10 pb-[140px] h-full min-h-[500px] flex flex-col justify-start"
                   >
                     {/* Green Quotes */}
                     <div className="mb-6">
@@ -175,7 +176,7 @@ export default function TestimonialsSection({ data }: TestimonialsSectionProps) 
                         />
                       </div>
                     </div>
-                  </div>
+                  </ScrollReveal>
                 ))}
               </div>
             </div>

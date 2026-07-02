@@ -2,6 +2,7 @@ import Link from "next/link";
 import SectionBadge from "@/components/ui/SectionBadge";
 import SectionTitle from "@/components/ui/SectionTitle";
 import { ServicesSectionData } from "@/lib/graphql";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface ServicesSectionProps {
   data: ServicesSectionData | null;
@@ -103,21 +104,21 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
         )}
 
         <div className="relative z-10 max-w-[1400px] mx-auto w-full">
-          <div className="flex flex-col items-center text-center mb-16 animate-fade-slide-up">
+          <ScrollReveal className="flex flex-col items-center text-center mb-16">
             <h2 className="font-sans font-medium text-[32px] md:text-[46px] leading-[1.2] md:leading-[60px] text-white uppercase tracking-wider mb-4 whitespace-pre-line px-2 md:px-0">
               {data.title}
             </h2>
             <p className="font-sans font-normal text-[18px] md:text-[20px] leading-[1.4] md:leading-[20px] text-[rgba(255,255,255,0.99)] max-w-5xl">
               {data.subtitle}
             </p>
-          </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {data.services.map((service, index) => (
-              <div 
+              <ScrollReveal 
                 key={index}
-                className="flex flex-col items-center text-center animate-fade-slide-up"
-                style={{ animationDelay: `${index * 150}ms` }}
+                delay={((index % 3) + 1) * 100 as any}
+                className="flex flex-col items-center text-center"
               >
                 {getDarkIcon(index)}
                 <h3 className="font-sans font-semibold text-[22px] leading-[32px] text-white mb-4 uppercase tracking-wider">
@@ -126,7 +127,7 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
                 <p className="font-serif font-normal text-[17px] leading-[30px] text-[rgb(114,114,114)] max-w-[400px] mx-auto">
                   {service.description}
                 </p>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -137,17 +138,17 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
   return (
     <section className="py-16 px-6 md:px-12 lg:px-24 bg-white" id="services">
       <div className="max-w-[1100px] mx-auto">
-        <div className="flex flex-col items-center text-center mb-6 animate-fade-slide-up">
+        <ScrollReveal className="flex flex-col items-center text-center mb-6">
           <SectionBadge label={data.subtitle} variant="light" />
           <SectionTitle text={data.title} variant="light" as="h2" />
-        </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {data.services.map((service, index) => (
-            <div 
+            <ScrollReveal 
               key={index}
-              className="group relative p-8 pb-[140px] min-h-[320px] md:min-h-[460px] flex flex-col justify-start items-start rounded-[20px] bg-[#f4f5f5] animate-fade-slide-up overflow-hidden"
-              style={{ animationDelay: `${index * 150}ms` }}
+              delay={((index % 3) + 1) * 100 as any}
+              className="group relative p-8 pb-[140px] min-h-[320px] md:min-h-[460px] flex flex-col justify-start items-start rounded-[20px] bg-[#f4f5f5] overflow-hidden"
             >
               <h3 
                 className="text-[20px] leading-[30px] font-normal text-[rgb(16,16,16)] group-hover:text-[rgb(137,180,3)] transition-colors duration-300 mb-6 uppercase tracking-wider relative z-10"
@@ -206,7 +207,7 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
                   </div>
                 </Link>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

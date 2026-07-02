@@ -2,10 +2,12 @@ import React from "react";
 import SectionBadge from "@/components/ui/SectionBadge";
 import VerticalSeparator from "@/components/ui/VerticalSeparator";
 import { Link as LucideLink, ArrowUpRight, LineChart, Settings, Rocket, Target } from "lucide-react";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 export interface BuildingBlockData {
   title: string;
   description: string;
+  linkUrl?: string;
 }
 
 export interface BuildingBlocksSectionData {
@@ -39,7 +41,7 @@ export default function BuildingBlocksSection({ data, variant = 'google-ads' }: 
       } : {}}
     >
       <div className="relative z-10 max-w-[1400px] mx-auto">
-        <div className="text-center mb-16 animate-fade-slide-up">
+        <ScrollReveal className="text-center mb-16">
           {variant !== 'webdesign' && data.subtitle && (
             <div className="flex justify-center items-center gap-2 mb-4">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
@@ -69,18 +71,16 @@ export default function BuildingBlocksSection({ data, variant = 'google-ads' }: 
               __html: data.description || ""
             }}
           />
-        </div>
+        </ScrollReveal>
 
-        <div className={`grid grid-cols-1 md:grid-cols-2 ${variant === 'google-ads' || variant === 'webdesign' ? 'lg:grid-cols-2 xl:grid-cols-4' : 'lg:grid-cols-3'} ${variant === 'webdesign' ? 'gap-2 md:gap-3' : 'gap-8'} items-stretch animate-fade-slide-up animation-delay-200`}>
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${variant === 'google-ads' || variant === 'webdesign' ? 'lg:grid-cols-2 xl:grid-cols-4' : 'lg:grid-cols-3'} ${variant === 'webdesign' ? 'gap-2 md:gap-3' : 'gap-8'} items-stretch`}>
           {data.blocks.map((block, index) => {
             const icons = [LineChart, Settings, Rocket, Target];
             const Icon = icons[index % icons.length];
+            const delay = (((index % 4) + 1) * 100) as any;
 
             return (
-              <div 
-                key={index}
-                className="group relative h-full transition-all duration-300 flex flex-col justify-start"
-              >
+              <ScrollReveal delay={delay} key={index} className="group relative h-full transition-all duration-300 flex flex-col justify-start">
                 {/* Background Layer */}
                 <div 
                   className={`absolute inset-0 transition-all duration-300 
@@ -137,13 +137,13 @@ export default function BuildingBlocksSection({ data, variant = 'google-ads' }: 
                     </div>
                   </div>
                 )}
-              </div>
+              </ScrollReveal>
             );
           })}
         </div>
 
         {data.btnText && data.btnLink && (
-          <div className="mt-16 text-center animate-fade-slide-up animation-delay-400">
+          <ScrollReveal delay={400} className="mt-16 text-center">
             <a 
               href={data.btnLink} 
               className="inline-flex items-center justify-center font-sans uppercase transition-all duration-300 hover:bg-[var(--color-brand-primary,#b6ef00)] hover:!text-black"
@@ -161,7 +161,7 @@ export default function BuildingBlocksSection({ data, variant = 'google-ads' }: 
             >
               {data.btnText}
             </a>
-          </div>
+          </ScrollReveal>
         )}
       </div>
     </section>
