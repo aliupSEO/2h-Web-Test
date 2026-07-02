@@ -29,17 +29,17 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
       {/* Content */}
       <div className="max-w-[1100px] mx-auto text-center flex flex-col items-center animate-fade-slide-up relative z-20 w-full">
         
-        <h2 className="text-[32px] md:text-[50px] leading-[1.2] md:leading-[65px] font-sans font-medium text-white mb-5 uppercase">
+        <h2 className="text-[32px] md:text-[50px] leading-[1.2] md:leading-[65px] font-sans font-normal text-white mb-5 uppercase">
           {data.title}
         </h2>
   
-        <p className="text-[18px] md:text-[22px] leading-[1.4] md:leading-[26px] font-sans font-medium text-white mb-8 max-w-[780px] mx-auto text-center whitespace-pre-line px-2 md:px-0">
+        <p className="text-[18px] md:text-[22px] leading-[1.4] md:leading-[26.4px] font-sans font-normal text-white mb-8 max-w-[780px] mx-auto text-center whitespace-pre-line px-2 md:px-0">
           {data.description}
         </p>
   
         <Link 
           href={data.btnLink} 
-          className="inline-flex items-center justify-center rounded-full px-6 md:px-12 py-4 md:py-6 text-[16px] md:text-[18px] leading-[1.2] md:leading-[20px] font-sans font-medium text-[rgb(16,16,16)] bg-[#b6ef00] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl mb-10 border border-[#b6ef00] hover:bg-transparent hover:text-white max-w-[90vw] text-center"
+          className="inline-flex items-center justify-center rounded-full px-6 md:px-12 py-4 md:py-6 text-[15px] leading-[15px] font-sans font-normal text-[#E7E7E7] bg-[#b6ef00] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl mb-10 border border-[#b6ef00] hover:bg-transparent max-w-[90vw] text-center"
           style={{ 
             borderColor: "var(--color-brand-primary, #b6ef00)",
             backgroundColor: "var(--color-brand-primary, #b6ef00)",
@@ -53,7 +53,7 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
         {data.features.map((feature, index) => (
           <div key={index} className="flex items-center gap-1 md:gap-2">
             <span className="font-sans font-bold text-[14px] md:text-[17px] leading-none mt-1" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>*</span>
-            <span className="font-serif font-medium whitespace-nowrap text-[rgb(211,211,211)] text-[14px] md:text-[17px] leading-[1.4] md:leading-[30px]">
+            <span className="font-serif font-normal whitespace-nowrap text-[#D3D3D3] text-[14px] md:text-[17px] leading-[1.4] md:leading-[29.8px]">
               {feature}
             </span>
           </div>
