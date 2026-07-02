@@ -60,34 +60,35 @@ export default async function WebDesignPage() {
         />
       )}
 
-      <div className="py-16 md:py-24" style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
-        {(() => {
-          const aboutSection = sections.find(s => s.type === "about");
-          const benefitsSection = sections.find(s => s.type === "benefits");
-          const buildingBlocksSection = sections.find(s => s.type === "buildingBlocks");
-          const faqSection = sections.find(s => s.type === "faq");
-          const genericSections = sections.filter(s => s.type === "generic");
+      {(() => {
+        const aboutSection = sections.find(s => s.type === "about");
+        const benefitsSection = sections.find(s => s.type === "benefits");
+        const buildingBlocksSection = sections.find(s => s.type === "buildingBlocks");
+        const faqSection = sections.find(s => s.type === "faq");
+        const genericSections = sections.filter(s => s.type === "generic");
 
-          return (
-            <>
-              {aboutSection && <AboutSection data={aboutSection.data as any} />}
-              {benefitsSection && <BenefitsSection data={benefitsSection.data as any} />}
-              {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
-              {faqSection && <FaqSection data={faqSection.data as any} />}
-              {genericSections.map((section, idx) => (
-                <div key={idx} className="max-w-4xl mx-auto px-6 mt-16">
-                  <div 
-                    className="wp-content about-wp-content"
-                    style={{ color: "var(--color-text-primary, #f4f4f5)" }}
-                    dangerouslySetInnerHTML={{ __html: section.html || "" }}
-                    suppressHydrationWarning
-                  />
-                </div>
-              ))}
-            </>
-          );
-        })()}
-      </div>
+        const hasAnySection = aboutSection || benefitsSection || buildingBlocksSection || faqSection || genericSections.length > 0;
+        if (!hasAnySection) return null;
+
+        return (
+          <div className="py-16 md:py-24" style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
+            {aboutSection && <AboutSection data={aboutSection.data as any} />}
+            {benefitsSection && <BenefitsSection data={benefitsSection.data as any} />}
+            {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
+            {faqSection && <FaqSection data={faqSection.data as any} />}
+            {genericSections.map((section, idx) => (
+              <div key={idx} className="max-w-4xl mx-auto px-6 mt-16">
+                <div 
+                  className="wp-content about-wp-content"
+                  style={{ color: "var(--color-text-primary, #f4f4f5)" }}
+                  dangerouslySetInnerHTML={{ __html: section.html || "" }}
+                  suppressHydrationWarning
+                />
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {servicesData && <ServicesSection data={servicesData} variant="dark" />}
 
