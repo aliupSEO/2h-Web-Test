@@ -1464,7 +1464,8 @@ export function extractSeoPageData(html: string): SeoPageData {
     };
   }
 
-  const blocksSplit = content.split(/(?=<h2)/i).filter(Boolean);
+  const sectionRegex = /(?:<h6[^>]*>[\s\S]*?<\/h6>\s*|<div class="section-subtitle">[\s\S]*?<\/div>\s*)?<h2[\s\S]*?(?=(?:<h6[^>]*>[\s\S]*?<\/h6>\s*|<div class="section-subtitle">[\s\S]*?<\/div>\s*)?<h2|$)/gi;
+  const blocksSplit = content.match(sectionRegex) || [];
   
   for (const blockHtml of blocksSplit) {
     const h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
@@ -1587,10 +1588,8 @@ export function extractSeoPageData(html: string): SeoPageData {
         if (anyPMatch) pDesc = anyPMatch[1].replace(/<[^>]*>?/gm, '').trim();
       }
 
-      let subtitle = "";
-      if (/anfragen|seo bringt/i.test(title)) {
-        subtitle = "WAS SEO BRINGT";
-      }
+      let subtitleMatch = blockHtml.match(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/i) || blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i);
+      let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
 
       sections.push({
         type: "benefits",
