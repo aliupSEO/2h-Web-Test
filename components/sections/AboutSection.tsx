@@ -20,7 +20,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
           {data.subtitle && <SectionBadge label={data.subtitle} variant="light" />}
           
           <h2 
-            className="text-[36px] md:text-[42px] leading-[1.2] md:leading-[46px] font-medium mb-6 uppercase md:whitespace-nowrap"
+            className="text-[36px] md:text-[42px] leading-[1.2] md:leading-[46px] font-medium mb-6 uppercase"
             style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
             suppressHydrationWarning
           >
@@ -36,6 +36,16 @@ export default function AboutSection({ data }: AboutSectionProps) {
           >
             {data.description}
           </p>
+
+          {data.motto && (
+            <h5 
+              className="text-[20px] leading-[20px] font-medium mb-6 max-w-full lg:max-w-lg"
+              style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
+              suppressHydrationWarning
+            >
+              {data.motto}
+            </h5>
+          )}
 
           {data.list1 && data.list1.length > 0 && (
             <ul className="mb-8 space-y-1.5">
@@ -58,14 +68,6 @@ export default function AboutSection({ data }: AboutSectionProps) {
               ))}
             </ul>
           )}
-  
-          <h5 
-            className="text-[20px] leading-[20px] font-medium mb-6 max-w-full lg:max-w-lg"
-            style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
-            suppressHydrationWarning
-          >
-            {data.motto}
-          </h5>
 
           {data.list2 && data.list2.length > 0 && (
             <ul className="mb-10 space-y-1.5">
