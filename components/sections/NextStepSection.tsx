@@ -48,7 +48,7 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
         <div className="flex flex-row flex-wrap md:flex-nowrap items-center justify-center gap-x-3 md:gap-x-10 gap-y-2 w-full mt-2">
         {data.features.map((feature, index) => (
           <div key={index} className="flex items-center gap-1 md:gap-2">
-            <span className="font-sans font-bold text-[14px] md:text-[17px] leading-none mt-1" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>*</span>
+            <span className="font-sans font-bold text-[22px] md:text-[30px] leading-none mt-1.5 md:mt-2" style={{ color: "var(--color-brand-primary, #b6ef00)" }}>*</span>
             <span className="font-serif font-normal uppercase whitespace-nowrap text-[#D3D3D3] text-[14px] md:text-[17px] leading-[1.4] md:leading-[29.8px]">
               {feature}
             </span>
