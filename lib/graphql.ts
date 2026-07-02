@@ -1417,6 +1417,9 @@ export interface SeoPageData {
 export function extractSeoPageData(html: string): SeoPageData {
   let content = html;
   
+  // Convert Elementor icon list widgets into standard section subtitles
+  content = content.replace(/<div[^>]*elementor-widget-icon-list[^>]*>[\s\S]*?<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/div>/gi, '<div class="section-subtitle">$1</div>');
+  
   if (html.includes('class="next-step-section"')) {
     const parts = html.split(/<div[^>]*class="next-step-section"[^>]*>/);
     content = parts[0];
@@ -1471,8 +1474,8 @@ export function extractSeoPageData(html: string): SeoPageData {
   const blocksSplit = content.match(sectionRegex) || [];
   
   for (const blockHtml of blocksSplit) {
-    const h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-    const title = h2Match ? h2Match[1].replace(/<[^>]*>?/gm, '').trim() : "";
+    let h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+    let title = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "";
     
     const hasImg = /<img/i.test(blockHtml);
     const h3Matches = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
@@ -1516,19 +1519,19 @@ export function extractSeoPageData(html: string): SeoPageData {
          const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
          let match;
          while ((match = liRegex.exec(ulMatch[1])) !== null) {
-           items.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+           items.push(match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim());
          }
        }
        const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
        
        sections.push({
-         type: "weitereLeistungen",
-         data: {
-           title: title,
-           description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
-           imageUrl: imgMatch ? imgMatch[1] : "",
-           items: items
-         }
+          type: "weitereLeistungen",
+          data: {
+            title: title,
+            description: pMatch ? pMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "",
+            imageUrl: imgMatch ? imgMatch[1] : "",
+            items: items
+          }
        });
     } else if (hasImg) {
       const imgMatch = blockHtml.match(/<img[^>]*src=["'](.*?)["']/i);
@@ -1585,10 +1588,10 @@ export function extractSeoPageData(html: string): SeoPageData {
       let pDesc = "";
       const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
       if (pMatch) {
-        pDesc = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+        pDesc = pMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim();
       } else {
         const anyPMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-        if (anyPMatch) pDesc = anyPMatch[1].replace(/<[^>]*>?/gm, '').trim();
+        if (anyPMatch) pDesc = anyPMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim();
       }
 
       let subtitleMatch = blockHtml.match(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/i) || blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i);

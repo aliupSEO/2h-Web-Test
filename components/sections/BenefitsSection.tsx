@@ -48,18 +48,16 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
           className="text-[46px] leading-[59.8px] font-normal mb-6 uppercase mx-auto w-full"
           style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
           suppressHydrationWarning
-        >
-          {data.title}
-        </h2>
+          dangerouslySetInnerHTML={{ __html: data.title }}
+        />
         
         {data.description && (
           <p 
-            className="text-[22px] leading-[22px] font-normal w-full mx-auto"
+            className="text-[22px] leading-[22px] font-normal max-w-[850px] mx-auto"
             style={{ fontFamily: "var(--font-federo)", color: "#7A7A7A" }}
             suppressHydrationWarning
-          >
-            {data.description}
-          </p>
+            dangerouslySetInnerHTML={{ __html: data.description }}
+          />
         )}
       </div>
 
