@@ -150,7 +150,7 @@ export default function HeroSection({
 
         {/* Bullet Points */}
         {bulletPoints && bulletPoints.length > 0 && (
-          <div className={`mt-6 flex flex-col items-start gap-2 animate-fade-slide-up animation-delay-[500ms] ${align === "center" ? "justify-center items-center" : ""}`}>
+          <div className={`mt-6 flex flex-wrap items-center gap-6 animate-fade-slide-up animation-delay-[500ms] ${align === "center" ? "justify-center" : ""}`}>
             {bulletPoints.map((point, i) => (
               <div key={i} className="flex items-center gap-2">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
