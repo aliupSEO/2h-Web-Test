@@ -39,11 +39,7 @@ export default function NextStepSection({ data }: NextStepSectionProps) {
   
         <Link 
           href={data.btnLink} 
-          className="inline-flex items-center justify-center rounded-full px-6 md:px-12 py-4 md:py-6 text-[15px] leading-[15px] font-sans font-normal text-[#E7E7E7] bg-[#b6ef00] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl mb-10 border border-[#b6ef00] hover:bg-transparent max-w-[90vw] text-center"
-          style={{ 
-            borderColor: "var(--color-brand-primary, #b6ef00)",
-            backgroundColor: "var(--color-brand-primary, #b6ef00)",
-          }}
+          className="inline-flex items-center justify-center rounded-full px-6 md:px-12 py-4 md:py-6 text-[15px] leading-[15px] font-sans font-normal text-[#E7E7E7] bg-transparent border border-[var(--color-brand-primary,#b6ef00)] hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[rgb(16,16,16)] transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl mb-10 max-w-[90vw] text-center"
         >
           {data.btnText}
         </Link>
