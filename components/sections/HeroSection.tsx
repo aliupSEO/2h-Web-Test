@@ -120,7 +120,7 @@ export default function HeroSection({
         {/* Description */}
         {description && (
           <p
-            className={`animate-fade-slide-up animation-delay-300 text-[18px] md:text-[22px] leading-[1.5] md:leading-[30.8px] font-normal font-sans mb-8 max-w-[900px] whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
+            className={`animate-fade-slide-up animation-delay-300 text-[18px] md:text-[22px] leading-[1.5] md:leading-[30.8px] font-normal font-sans mb-8 max-w-[800px] whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
             style={{ color: "var(--color-text-light, #ffffff)" }}
             suppressHydrationWarning
           >
