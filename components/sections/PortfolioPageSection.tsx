@@ -6,7 +6,7 @@ import { PortfolioPageData } from "@/lib/graphql";
 
 export default function PortfolioPageSection({ data }: { data: PortfolioPageData }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2;
+  const itemsPerPage = 6;
   const totalPages = Math.ceil(data.items.length / itemsPerPage);
   
   const currentItems = data.items.slice(
