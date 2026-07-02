@@ -32,7 +32,8 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
       <div className="max-w-[1000px] mx-auto text-center mb-16 animate-fade-slide-up">
 
         <h2 
-          className="text-4xl md:text-[42px] leading-tight font-serif font-normal mb-6 tracking-wide text-text-primary uppercase mx-auto max-w-4xl"
+          className="text-[46px] leading-[59.8px] font-normal mb-6 uppercase mx-auto max-w-4xl"
+          style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
           suppressHydrationWarning
         >
           {data.title}
@@ -40,7 +41,8 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
         
         {data.description && (
           <p 
-            className="text-[17px] leading-[30px] text-text-secondary max-w-[850px] mx-auto font-normal"
+            className="text-[22px] leading-[22px] font-normal max-w-[850px] mx-auto"
+            style={{ fontFamily: "var(--font-federo)", color: "#7A7A7A" }}
             suppressHydrationWarning
           >
             {data.description}
@@ -61,7 +63,8 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
             
             {/* Benefit text */}
             <h3 
-              className="text-[15px] md:text-[16px] font-bold uppercase tracking-[1px] text-text-primary leading-snug"
+              className="text-[24px] leading-[36px] font-normal uppercase tracking-[1px]"
+              style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
               suppressHydrationWarning
             >
               {benefit}
