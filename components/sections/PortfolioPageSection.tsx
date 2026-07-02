@@ -98,7 +98,7 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                       {item.link ? (
                         <a 
                           href={item.link}
-                          className="w-[64px] h-[64px] bg-brand-card hover:bg-[var(--color-brand-primary,#b6ef00)] text-[var(--color-brand-primary,#b6ef00)] hover:text-[rgb(16,16,16)] rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1"
+                          className="w-[64px] h-[64px] bg-brand-card group-hover:bg-[var(--color-brand-primary,#b6ef00)] text-[var(--color-brand-primary,#b6ef00)] group-hover:text-[rgb(16,16,16)] rounded-full flex items-center justify-center transition-all duration-300"
                         >
                           <svg className="w-6 h-6 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
@@ -106,7 +106,7 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                         </a>
                       ) : (
                         <div 
-                          className="w-[64px] h-[64px] bg-brand-card hover:bg-[var(--color-brand-primary,#b6ef00)] text-[var(--color-brand-primary,#b6ef00)] hover:text-[rgb(16,16,16)] rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 group-hover:-translate-x-1 cursor-pointer"
+                          className="w-[64px] h-[64px] bg-brand-card group-hover:bg-[var(--color-brand-primary,#b6ef00)] text-[var(--color-brand-primary,#b6ef00)] group-hover:text-[rgb(16,16,16)] rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer"
                         >
                           <svg className="w-6 h-6 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
