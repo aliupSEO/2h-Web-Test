@@ -36,7 +36,7 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
                   {data.subtitle}
                 </span>
               </div>
-              <h1 className="text-[40px] md:text-[76px] leading-[1.2] md:leading-[99px] font-sans font-normal text-[#ffffff] mb-10">
+              <h1 className="text-[40px] md:text-[76px] leading-[1.2] md:leading-[99px] font-sans font-normal text-[#ffffff] uppercase mb-10">
                 {data.title}
               </h1>
               
