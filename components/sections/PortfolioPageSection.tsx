@@ -32,17 +32,17 @@ export default function PortfolioPageSection({ data }: { data: PortfolioPageData
             <div className="animate-fade-slide-up max-w-4xl">
               <div className="mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-none" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
-                <span className="text-[15px] md:text-[17px] leading-[30px] font-serif font-normal text-[#ffffff]">
+                <span className="text-[15px] md:text-[17px] leading-[30px] font-sans font-normal text-[#ffffff]">
                   {data.subtitle}
                 </span>
               </div>
-              <h1 className="text-[40px] md:text-[76px] leading-[1.2] md:leading-[99px] font-serif font-normal text-[#ffffff] mb-10">
+              <h1 className="text-[40px] md:text-[76px] leading-[1.2] md:leading-[99px] font-sans font-normal text-[#ffffff] mb-10">
                 {data.title}
               </h1>
               
               <a 
                 href="/contact" 
-                className="inline-flex items-center justify-center px-8 md:px-10 py-4 rounded-full bg-[#b6ef00] hover:bg-[#a3d800] transition-colors duration-300 font-serif font-medium text-[15px] leading-[15px] text-[#101010]"
+                className="inline-flex items-center justify-center px-8 md:px-10 py-4 rounded-full bg-[#b6ef00] hover:bg-[#a3d800] transition-colors duration-300 font-sans font-medium text-[15px] leading-[15px] text-[#101010]"
               >
                 Kostenloses Erstgespräch buchen
               </a>
