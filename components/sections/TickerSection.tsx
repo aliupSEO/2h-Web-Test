@@ -19,7 +19,7 @@ export default function TickerSection({ items, text }: TickerSectionProps) {
   const tickerItems = [...parsedItems, ...parsedItems, ...parsedItems, ...parsedItems, ...parsedItems];
 
   return (
-    <section className="relative w-full overflow-hidden border-y border-[#e5e7eb] py-4" style={{ background: "var(--color-ticker-bg, #f4f4f5)" }}>
+    <section className="relative w-full overflow-hidden py-4" style={{ background: "var(--color-ticker-bg, #f4f4f5)" }}>
       {/* Inline styles for the marquee animation */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes ticker-marquee {
