@@ -1417,8 +1417,8 @@ export interface SeoPageData {
 export function extractSeoPageData(html: string): SeoPageData {
   let content = html;
   
-  // Convert Elementor icon list widgets into standard section subtitles
-  content = content.replace(/<div[^>]*elementor-widget-icon-list[^>]*>[\s\S]*?<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/div>/gi, '<div class="section-subtitle">$1</div>');
+  // Convert Elementor icon list widgets into standard section subtitles (safely consuming all trailing closing divs up to the next h2)
+  content = content.replace(/<div[^>]*elementor-widget-icon-list[^>]*>[\s\S]*?<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>[\s\S]*?(?=<h2)/gi, '<div class="section-subtitle">$1</div>\n');
   
   if (html.includes('class="next-step-section"')) {
     const parts = html.split(/<div[^>]*class="next-step-section"[^>]*>/);
