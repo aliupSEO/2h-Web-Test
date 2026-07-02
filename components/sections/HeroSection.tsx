@@ -111,7 +111,7 @@ export default function HeroSection({
 
         {/* Main Heading */}
         <h1
-          className={`animate-fade-slide-up animation-delay-200 text-[40px] md:text-[76px] leading-[1.2] md:leading-[99px] font-normal uppercase font-sans tracking-wide ${description ? "mb-4" : "mb-10"} max-w-[720px] ${align === "center" ? "mx-auto" : ""}`}
+          className={`animate-fade-slide-up animation-delay-200 text-[40px] md:text-[55px] leading-[1.2] md:leading-[66px] font-normal uppercase font-sans tracking-wide ${description ? "mb-4" : "mb-10"} max-w-[720px] ${align === "center" ? "mx-auto" : ""}`}
           style={{ color: "var(--color-text-light, #ffffff)" }}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: title || "" }}
@@ -120,7 +120,7 @@ export default function HeroSection({
         {/* Description */}
         {description && (
           <p
-            className={`animate-fade-slide-up animation-delay-300 text-[18px] md:text-[22px] leading-[1.5] md:leading-[31px] font-medium font-sans mb-8 max-w-[640px] whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
+            className={`animate-fade-slide-up animation-delay-300 text-[18px] md:text-[22px] leading-[1.5] md:leading-[30.8px] font-normal font-sans mb-8 max-w-[640px] whitespace-pre-line ${align === "center" ? "mx-auto" : ""}`}
             style={{ color: "var(--color-text-light, #ffffff)" }}
             suppressHydrationWarning
           >
@@ -133,14 +133,14 @@ export default function HeroSection({
           {cta ? (
             <Link
               href={cta.href}
-              className="inline-flex items-center justify-center px-12 md:px-[60px] py-4 md:py-[22px] rounded-full border border-[var(--color-brand-primary,#b6ef00)] bg-transparent text-white font-sans font-medium text-[15px] leading-[15px] uppercase tracking-wide hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[#101010] transition-colors duration-300"
+              className="inline-flex items-center justify-center px-12 md:px-[60px] py-4 md:py-[22px] rounded-full border border-[var(--color-brand-primary,#b6ef00)] bg-transparent text-white font-sans font-normal text-[15px] leading-[15px] uppercase tracking-wide hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[#101010] transition-colors duration-300"
               suppressHydrationWarning
             >
               {cta.text}
             </Link>
           ) : (
             <span 
-              className="inline-flex items-center justify-center px-12 md:px-[60px] py-4 md:py-[22px] rounded-full border border-[var(--color-brand-primary,#b6ef00)] bg-transparent text-white font-sans font-medium text-[15px] leading-[15px] uppercase tracking-wide hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[#101010] transition-colors duration-300 cursor-pointer"
+              className="inline-flex items-center justify-center px-12 md:px-[60px] py-4 md:py-[22px] rounded-full border border-[var(--color-brand-primary,#b6ef00)] bg-transparent text-white font-sans font-normal text-[15px] leading-[15px] uppercase tracking-wide hover:bg-[var(--color-brand-primary,#b6ef00)] hover:text-[#101010] transition-colors duration-300 cursor-pointer"
               suppressHydrationWarning
             >
               DIGITALE LÖSUNGEN
@@ -150,13 +150,13 @@ export default function HeroSection({
 
         {/* Bullet Points */}
         {bulletPoints && bulletPoints.length > 0 && (
-          <div className={`mt-6 flex flex-wrap items-center gap-6 animate-fade-slide-up animation-delay-[500ms] ${align === "center" ? "justify-center" : ""}`}>
+          <div className={`mt-6 flex flex-col items-start gap-2 animate-fade-slide-up animation-delay-[500ms] ${align === "center" ? "justify-center items-center" : ""}`}>
             {bulletPoints.map((point, i) => (
               <div key={i} className="flex items-center gap-2">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
                   <path d="M10 3L4.5 8.5L2 6" stroke="var(--color-brand-primary, #b6ef00)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-sm font-sans tracking-wide" style={{ color: "var(--color-text-light, #ffffff)" }} suppressHydrationWarning>
+                <span className="text-[17px] leading-[29.8px] font-serif font-normal" style={{ color: "#D3D3D3" }} suppressHydrationWarning>
                   {point}
                 </span>
               </div>
