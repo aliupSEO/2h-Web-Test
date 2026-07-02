@@ -1,6 +1,7 @@
 import React from "react";
 import SectionBadge from "@/components/ui/SectionBadge";
-import { Link } from "lucide-react";
+import VerticalSeparator from "@/components/ui/VerticalSeparator";
+import { Link, ArrowUpRight } from "lucide-react";
 
 export interface BuildingBlockData {
   title: string;
@@ -23,9 +24,10 @@ export default function BuildingBlocksSection({ data }: BuildingBlocksSectionPro
   if (!data || !data.blocks || data.blocks.length === 0) return null;
 
   return (
-    <section className="relative py-24 px-6 md:px-12 lg:px-24 bg-white">
+    <section className="pb-24 pt-0 px-6 md:px-12 lg:px-24 bg-white overflow-hidden">
       <div className="relative z-10 max-w-[1200px] mx-auto">
         <div className="text-center mb-16 animate-fade-slide-up">
+          {data.subtitle && <VerticalSeparator />}
           {data.subtitle && (
             <div className="flex justify-center items-center gap-2 mb-4">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-brand-primary, #b6ef00)" }}></span>
@@ -60,7 +62,7 @@ export default function BuildingBlocksSection({ data }: BuildingBlocksSectionPro
             return (
               <div 
                 key={index}
-                className="relative bg-[#f4f4f5] rounded-[24px] overflow-hidden p-10 pb-20 transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-start"
+                className="group relative bg-[#f4f4f5] rounded-[24px] overflow-hidden p-10 pb-20 transition-all duration-300 flex flex-col justify-start"
               >
                 <h3 
                   className="text-[22px] leading-[30px] font-normal uppercase mb-4"
@@ -71,8 +73,8 @@ export default function BuildingBlocksSection({ data }: BuildingBlocksSectionPro
                 </h3>
                 
                 <p 
-                  className="text-[16px] leading-[26px] font-normal"
-                  style={{ color: "#7A7A7A" }}
+                  className="text-[17px] leading-[29.8px] font-normal"
+                  style={{ fontFamily: "var(--font-serif)", color: "#727272" }}
                   suppressHydrationWarning
                 >
                   {block.description}
@@ -89,9 +91,14 @@ export default function BuildingBlocksSection({ data }: BuildingBlocksSectionPro
                 <div className="absolute bottom-0 right-[80px] w-[24px] h-[24px] bg-transparent rounded-br-[24px] shadow-[12px_12px_0_0_#ffffff] pointer-events-none z-10"></div>
                 
                 {/* Black Circular Button inside the cutout */}
-                <div className="absolute bottom-0 right-0 w-[80px] h-[80px] flex items-center justify-center z-20 cursor-pointer group-hover:scale-110 transition-transform duration-300">
-                  <div className="w-[60px] h-[60px] rounded-full bg-[#101010] flex items-center justify-center shadow-md">
-                    <Link size={20} color="white" />
+                <div className="absolute bottom-0 right-0 w-[80px] h-[80px] flex items-center justify-center z-20 cursor-pointer transition-transform duration-300">
+                  <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center transition-all duration-300 bg-[#101010] group-hover:bg-[var(--color-brand-primary,#b6ef00)]">
+                    <div className="group-hover:hidden">
+                      <Link size={20} color="white" />
+                    </div>
+                    <div className="hidden group-hover:block">
+                      <ArrowUpRight size={24} color="black" />
+                    </div>
                   </div>
                 </div>
               </div>

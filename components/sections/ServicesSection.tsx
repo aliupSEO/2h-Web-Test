@@ -107,7 +107,7 @@ export default function ServicesSection({ data, variant = "light" }: ServicesSec
             <h2 className="font-sans font-medium text-[32px] md:text-[46px] leading-[1.2] md:leading-[60px] text-white uppercase tracking-wider mb-4 whitespace-pre-line px-2 md:px-0">
               {data.title}
             </h2>
-            <p className="font-sans font-normal text-[20px] leading-[20px] text-[rgba(255,255,255,0.99)] max-w-5xl">
+            <p className="font-sans font-normal text-[18px] md:text-[20px] leading-[1.4] md:leading-[20px] text-[rgba(255,255,255,0.99)] max-w-5xl">
               {data.subtitle}
             </p>
           </div>

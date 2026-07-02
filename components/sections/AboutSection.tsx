@@ -20,12 +20,12 @@ export default function AboutSection({ data }: AboutSectionProps) {
           {data.subtitle && <SectionBadge label={data.subtitle} variant="light" />}
           
           <h2 
-            className="text-[42px] leading-[46.2px] font-normal mb-6 uppercase"
+            className="text-[32px] md:text-[42px] leading-[1.1] md:leading-[46.2px] font-normal mb-6 uppercase"
             style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
             suppressHydrationWarning
           >
             {data.titleLine1}
-            {data.titleLine2 && <br />}
+            {data.titleLine2 && <br className="hidden md:block" />}
             {data.titleLine2}
           </h2>
 
@@ -125,6 +125,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
                 src={data.imageUrl}
                 alt={data.motto || "About Image"}
                 fill
+                quality={95}
                 className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority

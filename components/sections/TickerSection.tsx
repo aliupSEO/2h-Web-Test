@@ -37,7 +37,7 @@ export default function TickerSection({ items, text }: TickerSectionProps) {
         {tickerItems.map((item, index) => (
           <React.Fragment key={index}>
             <span 
-              className="mx-8 text-[24px] leading-[28.8px] font-sans tracking-[2px] uppercase whitespace-nowrap"
+              className="mx-8 text-[18px] md:text-[24px] leading-[28.8px] font-sans tracking-[2px] uppercase whitespace-nowrap"
               style={{ color: "var(--color-ticker-text, #101010)" }}
             >
               {item}

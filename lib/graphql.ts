@@ -1025,15 +1025,17 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
     sectionHtml = html.split('<!-- NEXT STEP SECTION -->')[1].split('<!--')[0];
   } else if (html.includes('next-step-section')) {
     sectionHtml = html.split('<div class="next-step-section">')[1] || html;
-  } else if (html.match(/Wie viele Anfragen/i)) {
-    const match = html.match(/Wie viele Anfragen/i);
-    sectionHtml = html.substring(Math.max(0, match!.index! - 500));
-    const nextSectionIdx = sectionHtml.indexOf('<section', 10);
+  } else if (html.match(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch/i)) {
+    const matches = [...html.matchAll(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch/gi)];
+    const lastMatch = matches[matches.length - 1];
+    sectionHtml = html.substring(Math.max(0, lastMatch.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 501);
     if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
   } else if (html.match(/Was ist bei Ihnen/i)) {
-    const match = html.match(/Was ist bei Ihnen/i);
-    sectionHtml = html.substring(Math.max(0, match!.index! - 500));
-    const nextSectionIdx = sectionHtml.indexOf('<section', 10);
+    const matches = [...html.matchAll(/Was ist bei Ihnen/gi)];
+    const lastMatch = matches[matches.length - 1];
+    sectionHtml = html.substring(Math.max(0, lastMatch.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 501);
     if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
   } else {
     return null;
@@ -1086,7 +1088,7 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
   }
 
   const btnMatch = afterH2.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
-  let imgMatch = afterH2.match(/<img[^>]*src=["'](.*?)["']/i);
+  let imgMatch = sectionHtml.match(/background-image:url\(['"]?(.*?)['"]?\)/i) || afterH2.match(/<img[^>]*src=["'](.*?)["']/i);
   if (!imgMatch) {
     const beforeImages = [...beforeH2.matchAll(/<img[^>]*src=["'](.*?)["']/gi)];
     if (beforeImages.length > 0) {
@@ -1095,8 +1097,10 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
   }
 
   let imageUrl = imgMatch?.[1] || "";
-  if (imageUrl) {
+  if (imageUrl && !imageUrl.startsWith('url(')) {
       imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+  } else if (imageUrl.startsWith('url(')) {
+      imageUrl = imageUrl.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
   }
 
   const features: string[] = [];
@@ -1114,6 +1118,14 @@ export function extractNextStepSectionData(html: string): NextStepSectionData | 
         const decoded = decodeHtmlEntities(rawText).trim();
         if (decoded && decoded !== '') {
           features.push(decoded);
+        }
+      }
+      
+      if (features.length === 0) {
+        const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+        let m;
+        while ((m = liRegex.exec(sectionHtml)) !== null) {
+          features.push(decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()));
         }
       }
   }
@@ -1417,17 +1429,17 @@ export interface SeoPageData {
 export function extractSeoPageData(html: string): SeoPageData {
   let content = html;
   
-  // Convert Elementor icon list widgets into standard section subtitles (safely consuming all trailing closing divs up to the next h2)
-  content = content.replace(/<div[^>]*elementor-widget-icon-list[^>]*>[\s\S]*?<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>[\s\S]*?(?=<h2)/gi, '<div class="section-subtitle">$1</div>\n');
+  // Safely convert Elementor icon lists into subtitles if they are meant to be one (single item)
+  content = content.replace(/<div[^>]*elementor-widget-icon-list[^>]*>(?:(?!<li[\s\S]*?<li).)*?<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/div>/gi, '<div class="section-subtitle">$1</div>\n');
   
+  // Also handle cases where a subtitle is erroneously wrapped in an h2 but contains icon-list classes
+  content = content.replace(/<h2[^>]*>\s*<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>\s*<\/h2>/gi, '<div class="section-subtitle">$1</div>\n');
   if (html.includes('class="next-step-section"')) {
     const parts = html.split(/<div[^>]*class="next-step-section"[^>]*>/);
     content = parts[0];
   }
 
-  // Support for Elementor icon-list widgets used as subtitles
-  content = content.replace(/<div[^>]*elementor-widget-icon-list[^>]*>[\s\S]*?<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/div>/gi, '<div class="section-subtitle">$1</div>');
-
+  // (Removed destructive icon list replacement)
   let heroData: SeoHeroData = {} as any;
   const sections: SeoSectionData[] = [];
   
@@ -1475,31 +1487,52 @@ export function extractSeoPageData(html: string): SeoPageData {
   
   for (const blockHtml of blocksSplit) {
     let h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-    let title = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "";
+    const title = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "";
     
+    if (/Mehr Anfragen|Erstgespräch|Wie viele Anfragen/i.test(title) || /Mehr Anfragen|Erstgespräch|Wie viele Anfragen/i.test(blockHtml)) {
+        // Next Step / CTA Section
+        const h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+        const stitle = h2Match ? h2Match[1].replace(/<[^>]*>?/gm, '').trim() : title;
+        
+        const descMatch = blockHtml.match(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i) || 
+                          blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+        const desc = descMatch ? descMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+        
+        const btnMatch = blockHtml.match(/<a[^>]*class="elementor-button[^>]*>([\s\S]*?<span class="elementor-button-text"[^>]*>([\s\S]*?)<\/span>[\s\S]*?)<\/a>/i) ||
+                         blockHtml.match(/<a[^>]*>([\s\S]*?)<\/a>/i);
+        const btnText = btnMatch ? (btnMatch[2] || btnMatch[1]).replace(/<[^>]*>?/gm, '').trim() : "Kostenloses Erstgespräch buchen";
+        const btnLink = btnMatch ? (blockHtml.match(/href=["'](.*?)["']/i)?.[1] || "#") : "#";
+        
+        const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+        const items: string[] = [];
+        let m;
+        while ((m = liRegex.exec(blockHtml)) !== null) {
+          items.push(m[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+        
+        // Find background image if possible
+        const imgMatch = blockHtml.match(/background-image:url\(['"]?(.*?)['"]?\)/i) || 
+                         blockHtml.match(/src=["'](.*?)["']/i);
+        const imageUrl = imgMatch ? imgMatch[1] : "";
+
+        sections.push({
+          type: "nextStep",
+          data: {
+            title: stitle,
+            description: desc,
+            btnText: btnText,
+            btnLink: btnLink,
+            features: items,
+            imageUrl: imageUrl
+          }
+        });
+        continue; // Skip rest of loop for this block
+    }
+
     const hasImg = /<img/i.test(blockHtml);
     const h3Matches = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
     
-    if (h3Matches.length > 1) {
-      if (/faq|fragen/i.test(title)) {
-        sections.push({
-          type: "faq",
-          data: {
-            title: title,
-            subtitle: "FAQ",
-            faqs: h3Matches.map(m => ({ question: m[1].replace(/<[^>]*>?/gm, '').trim(), answer: m[2].replace(/<[^>]*>?/gm, '').trim() }))
-          }
-        });
-      } else if (/warum|vorteil/i.test(title)) {
-        sections.push({
-          type: "benefits",
-          data: {
-            title: title,
-            subtitle: "Deine Vorteile",
-            items: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
-          }
-        });
-      } else if (/Google setzt/i.test(title)) {
+    if (/Google setzt/i.test(title)) {
         const headings = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
         const subtitle = headings.length > 0 ? headings[0][1].replace(/<[^>]*>?/gm, '').trim() : "";
         const motto = headings.length > 1 ? headings[1][1].replace(/<[^>]*>?/gm, '').trim() : "";
@@ -1519,7 +1552,7 @@ export function extractSeoPageData(html: string): SeoPageData {
           const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
           let match;
           while ((match = liRegex.exec(ulMatch[1])) !== null) {
-            listItems.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+            listItems.push(match[1].replace(/<[^>]*>?/gm, '').replace(/\n[\s\S]*/, '').trim());
           }
         }
         
@@ -1536,6 +1569,84 @@ export function extractSeoPageData(html: string): SeoPageData {
             motto: motto,
             items: listItems,
             imageUrl: imageUrl
+          }
+        });
+    } else if (/\bfaq\b|\bfragen\b/i.test(title)) {
+        let faqs: { question: string, answer: string }[] = [];
+        
+        if (h3Matches.length > 0) {
+           faqs = h3Matches.map(m => ({ question: m[1].replace(/<[^>]*>?/gm, '').trim(), answer: m[2].replace(/<[^>]*>?/gm, '').trim() }));
+        } else {
+            // Sequential parsing of FAQ parts
+            const pMatches = [...blockHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+            
+            for (let i = 0; i < pMatches.length; i++) {
+              const fullP = pMatches[i][0];
+              const innerHtml = pMatches[i][1];
+              
+              if (innerHtml.includes('?') && innerHtml.includes('<br')) {
+                // Case: Question and Answer in the same paragraph separated by <br>
+                const parts = innerHtml.split(/<br\s*\/?>/i);
+                const q = parts[0].replace(/<[^>]*>?/gm, '').trim();
+                const a = parts.slice(1).join('<br>').replace(/<[^>]*>?/gm, '').trim();
+                if (q && a) faqs.push({ question: q, answer: a });
+              } else if (innerHtml.includes('?')) {
+                // Case: This paragraph is a question. The answer follows.
+                const q = innerHtml.replace(/<[^>]*>?/gm, '').trim();
+                
+                // Collect everything until the next question paragraph
+                let aContent = "";
+                const startIndex = blockHtml.indexOf(fullP) + fullP.length;
+                
+                // Find start of next question
+                let nextQIndex = -1;
+                for (let j = i + 1; j < pMatches.length; j++) {
+                  if (pMatches[j][1].includes('?')) {
+                    nextQIndex = blockHtml.indexOf(pMatches[j][0]);
+                    break;
+                  }
+                }
+                
+                const endIndex = nextQIndex !== -1 ? nextQIndex : blockHtml.length;
+                aContent = blockHtml.substring(startIndex, endIndex);
+                
+                // Extract answer from aContent
+                let a = "";
+                const aMatch = aContent.match(/<div[^>]*class="text"[^>]*>([\s\S]*?)<\/div>/i);
+                if (aMatch) {
+                  a = aMatch[1].replace(/<[^>]*>?/gm, '').trim();
+                } else {
+                  a = aContent.replace(/<script[\s\S]*?<\/script>/gi, '')
+                              .replace(/<style[\s\S]*?<\/style>/gi, '')
+                              .replace(/<[^>]*>?/gm, ' ')
+                              .replace(/\s+/g, ' ')
+                              .trim();
+                  
+                  // Clean up common Elementor footer junk
+                  if (a.includes('Mehr Anfragen')) a = a.split('Mehr Anfragen')[0].trim();
+                }
+                
+                if (q && a) faqs.push({ question: q, answer: a });
+              }
+            }
+        }
+        
+        sections.push({
+          type: "faq",
+          data: {
+            title: title,
+            subtitle: "FAQ",
+            faqs: faqs.filter(f => f.question)
+          }
+        });
+    } else if (h3Matches.length > 1) {
+      if (/warum|vorteil/i.test(title)) {
+        sections.push({
+          type: "benefits",
+          data: {
+            title: title,
+            subtitle: "Deine Vorteile",
+            items: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
           }
         });
       } else if (/baustein/i.test(title)) {
@@ -1633,7 +1744,9 @@ export function extractSeoPageData(html: string): SeoPageData {
         if (anyPMatch) pDesc = anyPMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim();
       }
 
-      let subtitleMatch = blockHtml.match(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/i) || blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i);
+      let subtitleMatch = blockHtml.match(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/i) || 
+                          blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i) || 
+                          blockHtml.match(/<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/i);
       let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "⚠️ WP MISSING: Add <div class=\"section-subtitle\"> above h2";
 
       sections.push({
@@ -1646,7 +1759,7 @@ export function extractSeoPageData(html: string): SeoPageData {
         }
       });
     } else {
-       sections.push({ type: "generic", html: blockHtml });
+        sections.push({ type: "generic", html: blockHtml });
     }
   }
 

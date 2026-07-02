@@ -38,7 +38,6 @@ export default async function SeoPage() {
   }
 
   const { heroData, sections } = extractSeoPageData(page.content || "");
-  const nextStepData = page.content ? extractNextStepSectionData(page.content) : null;
   const servicesData = page.content ? extractServicesSectionData(page.content) : null;
 
   return (
@@ -62,38 +61,34 @@ export default async function SeoPage() {
       )}
 
       {(() => {
-        const aboutSection = sections.find(s => s.type === "about");
-        const benefitsSection = sections.find(s => s.type === "benefits");
-        const buildingBlocksSection = sections.find(s => s.type === "buildingBlocks");
-        const googleFeatureSection = sections.find(s => s.type === "googleFeature");
-        const faqSection = sections.find(s => s.type === "faq");
-        const genericSections = sections.filter(s => s.type === "generic");
-
-        const hasAnySection = aboutSection || benefitsSection || buildingBlocksSection || googleFeatureSection || faqSection || genericSections.length > 0;
-        if (!hasAnySection) return null;
+        if (sections.length === 0) return null;
 
         return (
           <div style={{ background: "var(--color-bg-primary, #0a0a0a)" }}>
-            {aboutSection && <AboutSection data={aboutSection.data as any} />}
-            {benefitsSection && <BenefitsSection data={benefitsSection.data as any} />}
-            {buildingBlocksSection && <BuildingBlocksSection data={buildingBlocksSection.data as any} />}
-            {googleFeatureSection && <GoogleFeatureSection data={googleFeatureSection.data as any} />}
-            {faqSection && <FaqSection data={faqSection.data as any} />}
-            {genericSections.map((section, idx) => (
-              <div key={idx} className="max-w-4xl mx-auto px-6 mt-16"><div 
-                  className="wp-content about-wp-content"
-                  style={{ color: "var(--color-text-primary, #f4f4f5)" }}
-                  dangerouslySetInnerHTML={{ __html: section.html ? section.html.trim() : "" }}
-                  suppressHydrationWarning
-                /></div>
-            ))}
+            {sections.map((section, idx) => {
+              if (section.type === "about") return <AboutSection key={idx} data={section.data as any} />;
+              if (section.type === "benefits") return <BenefitsSection key={idx} data={section.data as any} />;
+              if (section.type === "buildingBlocks") return <BuildingBlocksSection key={idx} data={section.data as any} />;
+              if (section.type === "googleFeature") return <GoogleFeatureSection key={idx} data={section.data as any} />;
+              if (section.type === "faq") return <FaqSection key={idx} data={section.data as any} />;
+              if (section.type === "nextStep") return <NextStepSection key={idx} data={section.data as any} />;
+              if (section.type === "generic") {
+                return (
+                  <div key={idx} className="max-w-4xl mx-auto px-6 mt-16"><div 
+                      className="wp-content about-wp-content"
+                      style={{ color: "var(--color-text-primary, #f4f4f5)" }}
+                      dangerouslySetInnerHTML={{ __html: section.html ? section.html.trim() : "" }}
+                      suppressHydrationWarning
+                    /></div>
+                );
+              }
+              return null;
+            })}
           </div>
         );
       })()}
 
       {servicesData && <ServicesSection data={servicesData} variant="dark" />}
-
-      {nextStepData && <NextStepSection data={nextStepData} />}
     </>
   );
 }

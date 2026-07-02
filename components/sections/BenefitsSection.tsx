@@ -1,5 +1,6 @@
 import React from "react";
 import SectionBadge from "@/components/ui/SectionBadge";
+import VerticalSeparator from "@/components/ui/VerticalSeparator";
 import { BarChart2, Eye, Award, Coins, Handshake } from "lucide-react";
 
 export interface BenefitsSectionData {
@@ -28,8 +29,9 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
   };
 
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-24 bg-white relative">
+    <section className="pb-24 pt-0 px-6 md:px-12 lg:px-24 bg-white relative">
       <div className="max-w-[1000px] mx-auto text-center mb-16 animate-fade-slide-up">
+        {data.subtitle && <VerticalSeparator />}
 
         {data.subtitle && (
           <div className="flex justify-center items-center gap-2 mb-4">
@@ -45,7 +47,7 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
         )}
 
         <h2 
-          className="text-[46px] leading-[59.8px] font-normal mb-6 uppercase mx-auto w-full"
+          className="text-[32px] md:text-[46px] leading-[1.2] md:leading-[59.8px] font-normal mb-6 uppercase mx-auto w-full"
           style={{ fontFamily: "var(--font-federo)", color: "#101010" }}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: data.title }}
@@ -53,7 +55,7 @@ export default function BenefitsSection({ data }: BenefitsSectionProps) {
         
         {data.description && (
           <p 
-            className="text-[22px] leading-[22px] font-normal max-w-[850px] mx-auto"
+            className="text-[18px] md:text-[22px] leading-[1.4] md:leading-[22px] font-normal max-w-[850px] mx-auto"
             style={{ fontFamily: "var(--font-federo)", color: "#7A7A7A" }}
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: data.description }}
