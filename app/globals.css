@@ -94,7 +94,7 @@
   border-radius: var(--btn-primary-border-radius, 9999px) !important;
   padding: var(--btn-primary-padding-y, 10px) var(--btn-primary-padding-x, 24px) !important;
   font-weight: 600 !important;
-  font-size: 13.5px !important;
+  font-size: var(--btn-primary-font-size, 13.5px) !important;
   transition: all 0.3s ease !important;
 
   &:hover {
@@ -276,6 +276,21 @@ body {
 
 .animate-fade-slide-left-blur {
   animation: fadeSlideLeftBlur 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-slide-right {
+  animation: fadeSlideRight 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-fade-slide-up {

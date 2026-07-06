@@ -2,6 +2,8 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import StaggeredText from "@/components/ui/StaggeredText";
+import AnimatedGridBackground from "@/components/ui/AnimatedGridBackground";
 
 interface AgencyAboutSectionProps {
   title?: string;
@@ -31,34 +33,35 @@ export default function AgencyAboutSection({
 
   return (
     <section className="relative w-full py-20 md:py-32 overflow-hidden" style={{ background: "var(--color-bg-primary, #ffffff)" }}>
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <AnimatedGridBackground />
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Column: Image Collage */}
-          <ScrollReveal animation="fade-slide-up" className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex justify-center items-center lg:-translate-x-8 xl:-translate-x-12">
+          <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex justify-center items-center lg:-translate-x-8 xl:-translate-x-12">
 
             {/* Main Background Image */}
-            <div className="absolute top-0 left-0 w-[85%] h-[85%] rounded-[2rem] overflow-hidden shadow-2xl z-10" style={{ borderColor: "var(--color-brand-border, #e5e7eb)" }}>
+            <ScrollReveal animation="fade-slide-right" className="absolute top-0 left-0 w-[85%] h-[85%] rounded-[2rem] overflow-hidden shadow-2xl z-10 border-4" style={{ borderColor: "var(--color-brand-border, #e5e7eb)" }}>
               <Image 
                 src={image1} 
-                alt={title} 
+                alt={title || "Image"} 
                 fill 
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
-            </div>
+            </ScrollReveal>
 
             {/* Overlapping Foreground Image */}
-            <div className="absolute bottom-[-5%] right-[-5%] w-[75%] h-[75%] rounded-[2rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.3)] z-20 border-4" style={{ borderColor: "var(--color-bg-primary, #ffffff)" }}>
+            <ScrollReveal animation="fade-slide-up" delay={200} className="absolute bottom-[-5%] right-[-5%] w-[75%] h-[75%] rounded-[2rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.3)] z-20 border-4" style={{ borderColor: "var(--color-bg-primary, #ffffff)" }}>
               <Image 
                 src={image2} 
-                alt={title} 
+                alt={title || "Image"} 
                 fill 
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
-            </div>
+            </ScrollReveal>
             
-          </ScrollReveal>
+          </div>
 
           {/* Right Column: Text Content */}
           <div className="flex flex-col items-start text-left z-20">
@@ -69,20 +72,31 @@ export default function AgencyAboutSection({
               </h2>
             </ScrollReveal>
             
-            <ScrollReveal animation="fade-slide-up" delay={300}>
-              <p className="text-lg mb-10 leading-relaxed max-w-xl" style={{ color: "var(--color-text-secondary, #4b5563)" }}>
-                {description}
-              </p>
-            </ScrollReveal>
+            {description && (
+              <StaggeredText 
+                text={description} 
+                delay={300} 
+                stagger={100} 
+                className="text-lg mb-10 leading-loose max-w-xl" 
+                style={{ color: "var(--color-text-primary, #000000)" }} 
+              />
+            )}
             
             {btnText && (
               <ScrollReveal animation="fade-slide-up" delay={400}>
                 <Link 
                   href="/about" 
-                  className="btn-primary inline-flex items-center justify-center gap-2"
+                  className="btn-primary group inline-flex items-center justify-center gap-2 hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(34,197,94,0.4)]"
+                  style={{
+                    "--btn-primary-padding-y": "16px",
+                    "--btn-primary-padding-x": "32px",
+                    "--btn-primary-font-size": "16px",
+                    "--btn-primary-hover-bg": "var(--btn-primary-bg, var(--color-brand-primary))",
+                    "--btn-primary-hover-text": "var(--btn-primary-text, #000000)"
+                  } as React.CSSProperties}
                 >
                   {btnText}
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </Link>

@@ -4,18 +4,20 @@ import { useEffect, useRef, useState, ReactNode } from "react";
 
 interface ScrollRevealProps {
   children: ReactNode;
-  animation?: "fade-slide-up" | "fade-in" | "pop-up" | "fade-slide-left-blur";
+  animation?: "fade-slide-up" | "fade-in" | "pop-up" | "fade-slide-left-blur" | string;
   delay?: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000;
   className?: string;
   threshold?: number;
+  style?: React.CSSProperties;
 }
 
 export default function ScrollReveal({
   children,
-  animation = "fade-slide-up",
+  animation = "fade-in",
   delay,
   className = "",
   threshold = 0.1,
+  style,
 }: ScrollRevealProps) {
   const [isVisible, setIsVisible] = useState(false);
   const domRef = useRef<HTMLDivElement>(null);
@@ -47,13 +49,14 @@ export default function ScrollReveal({
     };
   }, [threshold]);
 
-  const animationClass = animation === "fade-slide-up" ? "animate-fade-slide-up" : animation === "pop-up" ? "animate-pop-up" : "animate-fade-in";
+  const animationClass = `animate-${animation}`;
   const delayClass = delay ? `animation-delay-${delay}` : "";
 
   return (
     <div
       ref={domRef}
       className={`${isVisible ? `${animationClass} ${delayClass}` : "opacity-0"} ${className}`}
+      style={style}
     >
       {children}
     </div>
