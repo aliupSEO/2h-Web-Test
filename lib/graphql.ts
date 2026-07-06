@@ -1,0 +1,2424 @@
+/**
+ * lib/graphql.ts
+ *
+ * Single source of truth for all WordPress data fetching.
+ *
+ * AGENT RULES:
+ * - Always add new page queries as named export functions here.
+ * - Never call the WP GraphQL endpoint directly from a page or component.
+ * - Always include SEO fields (title, description, canonicalUrl, openGraph).
+ * - revalidate is intentionally set to 1s — do not increase without good reason.
+ */
+
+// ---------------------------------------------------------------------------
+// Core fetch helper
+// ---------------------------------------------------------------------------
+
+function cleanImageUrl(url: string | undefined): string {
+  if (!url) return "";
+  return url.replace(/-\d+x\d+(?=\.[a-zA-Z]+(?:$|\?))/i, '');
+}
+
+export async function fetchGraphQL(query: string, variables: Record<string, unknown> = {}) {
+  const endpoint = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL;
+  if (!endpoint || endpoint.includes("your-wordpress-site.com")) {
+    console.warn("WordPress GraphQL endpoint is not configured or is using placeholder. Skipping fetch.");
+    return null;
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  // Optional: WordPress Application Password auth
+  const username = process.env.WORDPRESS_API_USERNAME;
+  const password = process.env.WORDPRESS_API_PASSWORD;
+  if (username && password) {
+    const authString = Buffer.from(`${username}:${password}`).toString("base64");
+    headers["Authorization"] = `Basic ${authString}`;
+  }
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query, variables }),
+      next: { revalidate: 1 }, // ISR: Revalidate every 1 second
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("GraphQL Error:", errorText);
+      throw new Error(`GraphQL Error: ${res.status} ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    if (json.errors) {
+      console.error("GraphQL JSON Errors:", json.errors);
+      throw new Error("GraphQL JSON Errors");
+    }
+
+    return json.data;
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SEO fragment (reuse this in every query that needs SEO)
+// ---------------------------------------------------------------------------
+
+export const SEO_FIELDS = `
+  seo {
+    title
+    description
+    focusKeywords
+    canonicalUrl
+    robots
+    openGraph {
+      title
+      description
+      image {
+        secureUrl
+      }
+    }
+  }
+`;
+
+// ---------------------------------------------------------------------------
+// Page query helpers
+//
+// AGENTS: Add new functions here following the same pattern.
+// Each function fetches ONE page's content + SEO.
+// ---------------------------------------------------------------------------
+
+/** Home page (WordPress page with slug "home" or front page) */
+export async function getHomePage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "home" }) {
+        nodes {
+          id
+          title
+          slug
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// 2H Custom Dynamic Block Parsers
+// ---------------------------------------------------------------------------
+
+export interface CustomBlockField {
+  id: string;
+  label: string;
+  type: string;
+  value: string;
+}
+
+export interface CustomBlockData {
+  sectionName: string;
+  fields: CustomBlockField[];
+}
+
+export function extractCustomBlocks(html: string | undefined | null): CustomBlockData[] {
+  if (!html) return [];
+  
+  const blocks: CustomBlockData[] = [];
+  // Parse the hidden <pre> tag that our Gutenberg block now saves
+  const regex = /<pre[^>]*twoh-custom-block-data[^>]*>([\s\S]*?)<\/pre>/gi;
+  let match;
+  
+  while ((match = regex.exec(html)) !== null) {
+    try {
+      // WordPress might encode quotes inside the content
+      let jsonStr = match[1]
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+      
+      const data = JSON.parse(jsonStr) as CustomBlockData;
+      blocks.push(data);
+    } catch (e) {
+      console.error("Failed to parse custom block JSON", e);
+    }
+  }
+  
+  return blocks;
+}
+
+/** Generic page by slug — use this for any page not needing custom logic */
+export async function getPageBySlug(slug: string) {
+  const data = await fetchGraphQL(
+    `
+    query GetPageBySlug($name: String!) {
+      pages(where: { name: $name }) {
+        nodes {
+          id
+          title
+          slug
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `,
+    { name: slug }
+  );
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+/** Contact page */
+export async function getContactPage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "contact" }) {
+        nodes {
+          id
+          title
+          content
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+/** About page */
+export async function getAboutPage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "about" }) {
+        nodes {
+          id
+          title
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+/** Agency page */
+export async function getAgencyPage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "agency" }) {
+        nodes {
+          id
+          title
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+/** Digitale Lösungen page */
+export async function getDigitaleLosungenPage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "digitale-losungen-2" }) {
+        nodes {
+          id
+          title
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+/** Project detail page content (fetches the -content page or fallback to post) */
+export async function getProjectContentBySlug(slug: string) {
+  // Fetch the Post, the -content Page, and the Original Page in one go
+  const data = await fetchGraphQL(
+    `
+    query GetProjectData($name: String!, $contentName: String!) {
+      posts(where: { name: $name, categoryName: "projects" }) {
+        nodes {
+          id
+          title
+          slug
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+      pagesContent: pages(where: { name: $contentName }) {
+        nodes {
+          id
+          title
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+      pagesOriginal: pages(where: { name: $name }) {
+        nodes {
+          id
+          title
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `,
+    { name: slug, contentName: `${slug}-content` }
+  );
+
+  const post = data?.posts?.nodes?.[0];
+  const contentPage = data?.pagesContent?.nodes?.[0];
+  const originalPage = data?.pagesOriginal?.nodes?.[0];
+
+  // Merge them! 
+  // - Use the Post's SEO and title
+  // - Use the Original Page's text if it exists, fallback to Content Page, then Post
+  // - Prioritize the Original Page's featured image (since the user sets it there for the hero background)
+  if (post || contentPage || originalPage) {
+    const base = post || contentPage || originalPage;
+    return {
+      ...base,
+      content: originalPage?.content || contentPage?.content || post?.content,
+      featuredImage: originalPage?.featuredImage || contentPage?.featuredImage || post?.featuredImage
+    };
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// WordPress REST API helpers (non-GraphQL)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches contact form field definitions from the custom firebase-form plugin.
+ * Returns null if the plugin isn't installed or the request fails.
+ */
+export async function getFormSettings() {
+  const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_REST_URL;
+  if (!baseUrl) {
+    console.warn("NEXT_PUBLIC_WORDPRESS_REST_URL not set — skipping form settings fetch.");
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/wp-json/firebase-form/v1/settings`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      next: { revalidate: 60 }, // form config changes rarely
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching form settings:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetches the primary menu items from WPGraphQL.
+ * Falls back to top-level pages if no menu items are registered.
+ */
+export async function getMenuItems() {
+  const data = await fetchGraphQL(`
+    query {
+      menuItems(first: 50, where: { parentDatabaseId: 0 }) {
+        nodes {
+          id
+          label
+          uri
+          childItems {
+            nodes {
+              id
+              label
+              uri
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  if (data?.menuItems?.nodes && data.menuItems.nodes.length > 0) {
+    const uniqueItems: { id: string; label: string; uri: string; childItems?: any }[] = [];
+    const seen = new Set();
+    
+    for (const item of data.menuItems.nodes) {
+      if (!seen.has(item.label)) {
+        seen.add(item.label);
+        uniqueItems.push(item);
+      }
+    }
+    
+    // WordPress returns them in reverse order when multiple menus are fetched without a location.
+    // Reversing them restores the correct order: Startseite, Digitale Lösungen...
+    const reversedItems = uniqueItems.reverse();
+    for (const item of reversedItems) {
+      if (item.childItems?.nodes) {
+        item.childItems.nodes.reverse();
+      }
+    }
+    return reversedItems;
+  }
+
+  return [];
+}
+
+/**
+ * Fetches projects from WordPress posts in the "projects" category.
+ */
+export async function getProjects() {
+  const data = await fetchGraphQL(`
+    query {
+      posts(where: { categoryName: "projects" }) {
+        nodes {
+          title
+          slug
+          excerpt
+          featuredImage { node { sourceUrl } }
+        }
+      }
+    }
+  `);
+  
+  if (!data?.posts?.nodes) return [];
+  
+  return data.posts.nodes.map((post: any) => {
+    const slug = post.slug === 'panamatura-de' ? 'panamatura' : post.slug;
+    return {
+      title: decodeHtmlEntities(post.title),
+      tags: decodeHtmlEntities(post.excerpt?.replace(/<[^>]*>?/gm, '') || "").trim(),
+      link: `/projects/${slug}`,
+      imageUrl: post.featuredImage?.node?.sourceUrl || ""
+    };
+  });
+}
+
+/**
+ * Fetches testimonials from WordPress posts in the "testimonials" category.
+ */
+export async function getTestimonials() {
+  const data = await fetchGraphQL(`
+    query {
+      posts(where: { categoryName: "testimonials" }) {
+        nodes {
+          title
+          content
+          excerpt
+          featuredImage { node { sourceUrl } }
+        }
+      }
+    }
+  `);
+  
+  if (!data?.posts?.nodes) return [];
+  
+  return data.posts.nodes.map((post: any) => ({
+    author: decodeHtmlEntities(post.title),
+    role: decodeHtmlEntities(post.excerpt?.replace(/<[^>]*>?/gm, '') || "").trim(),
+    text: decodeHtmlEntities(post.content?.replace(/<[^>]*>?/gm, '') || "").trim(),
+    imageUrl: post.featuredImage?.node?.sourceUrl || ""
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Content parsers — utilities for extracting structured data from WordPress HTML
+// ---------------------------------------------------------------------------
+
+/**
+ * Decode common HTML entities returned by WordPress REST/GraphQL.
+ * WordPress content often contains encoded curly quotes, dashes, and ampersands.
+ * Use this when extracting text from WordPress HTML for display.
+ */
+export function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&#8217;/g, "\u2019")  // right single quote / apostrophe '
+    .replace(/&#8216;/g, "\u2018")  // left single quote '
+    .replace(/&#8220;/g, "\u201C")  // left double quote "
+    .replace(/&#8221;/g, "\u201D")  // right double quote "
+    .replace(/&#8211;/g, "\u2013")  // en dash –
+    .replace(/&#8212;/g, "\u2014")  // em dash —
+    .replace(/&#038;/g,  "&")       // ampersand
+    .replace(/&amp;/g,   "&")
+    .replace(/&lt;/g,    "<")
+    .replace(/&gt;/g,    ">")
+    .replace(/&quot;/g,  '"')
+    .replace(/&nbsp;/gi, " ");
+}
+
+export interface HeroSectionData {
+  subtitle: string;
+  title: string;
+  descriptionHtml?: string;
+  description?: string;
+  btnText: string;
+  btnLink: string;
+}
+
+export function extractHeroSectionData(html: string): HeroSectionData | null {
+  const sectionHtml = html.split('<!-- ABOUT SECTION -->')[0] || html;
+  const subtitleMatch = sectionHtml.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || sectionHtml.match(/<div class="hero-subtitle">([\s\S]*?)<\/div>/i);
+  const titleMatch = sectionHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || sectionHtml.match(/<div class="hero-title">([\s\S]*?)<\/div>/i);
+  const btnMatch = sectionHtml.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i) || sectionHtml.match(/<a class="hero-button" href="([\s\S]*?)">([\s\S]*?)<\/a>/i);
+
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(sectionHtml)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      // Strip actual HTML comments and encoded HTML comments to see if there's real text
+      const cleanText = pMatch[1]
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/&lt;!--[\s\S]*?--&gt;/g, '')
+        .trim();
+      
+      if (cleanText.length > 0) {
+        description = cleanText;
+        break;
+      }
+    }
+  }
+
+  if (!titleMatch && !subtitleMatch) return null;
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    description: decodeHtmlEntities(description),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '').trim() || ""),
+  };
+}
+
+export interface AgencyHeroSectionData {
+  title: string;
+  description: string;
+  btnText: string;
+  btnLink: string;
+  secondaryBtnText: string;
+  secondaryBtnLink: string;
+  logos: string[];
+  floatingImages: string[];
+  mainImage?: string;
+}
+
+export function extractAgencyHeroSectionData(html: string): AgencyHeroSectionData | null {
+  const titleMatch = html.match(/<h[1-2][^>]*>([\s\S]*?)<\/h[1-2]>/i);
+  const sectionHtml = html; // Just use the full HTML for parsing the hero section
+  
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  const paragraphs: string[] = [];
+  let pMatch;
+  while ((pMatch = pRegex.exec(sectionHtml)) !== null) {
+    const cleanText = pMatch[1].replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]*>?/gm, '').trim();
+    if (cleanText.length > 0) {
+      paragraphs.push(cleanText);
+    }
+  }
+  
+  const description = paragraphs[0] || "";
+
+  const aRegex = /<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  const links = [];
+  let aMatch;
+  while ((aMatch = aRegex.exec(sectionHtml)) !== null) {
+    links.push({
+      link: aMatch[1],
+      text: decodeHtmlEntities(aMatch[2]?.replace(/<[^>]*>?/gm, '').trim() || "")
+    });
+  }
+
+  // Fallback: If the user didn't format the buttons as links in WP, use the 2nd and 3rd paragraphs
+  const btnText = links[0]?.text || paragraphs[1] || "";
+  const btnLink = links[0]?.link || "#";
+  const secondaryBtnText = links[1]?.text || paragraphs[2] || "";
+  const secondaryBtnLink = links[1]?.link || "#";
+  
+  // Extract all images in the content (search the ENTIRE html, not just the top section)
+  const allImages: string[] = [];
+  const imgRegex = /<img[^>]*src=["'](.*?)["']/gi;
+  let imgMatch;
+  while ((imgMatch = imgRegex.exec(html)) !== null) {
+    allImages.push(cleanImageUrl(imgMatch[1]));
+  }
+
+  const floatingImages: string[] = [];
+  const logos: string[] = [];
+  let mainImage = "";
+
+  // If they provided exactly 3 or 4 images, treat them as the floating components cluster
+  if (allImages.length >= 3) {
+    floatingImages.push(...allImages.slice(0, 4));
+    logos.push(...allImages.slice(4));
+  } else if (allImages.length > 0) {
+    // If they only provided 1 or 2 images, use the first as the main image and the rest as logos
+    mainImage = allImages[0];
+    logos.push(...allImages.slice(1));
+  }
+
+  return {
+    title: titleMatch?.[1] || "",
+    description: decodeHtmlEntities(description),
+    btnLink,
+    btnText,
+    secondaryBtnLink,
+    secondaryBtnText,
+    logos,
+    floatingImages,
+    mainImage
+  };
+}
+
+export interface DigitaleHeroSectionData {
+  subtitle: string;
+  title: string;
+  description: string;
+  btnText: string;
+  btnLink: string;
+  imageUrl: string;
+}
+
+export function extractDigitaleHeroSectionData(html: string): DigitaleHeroSectionData | null {
+  // Try to isolate the hero section (everything before the first <h3> or <h2>)
+  const heroHtml = html.split(/<h[23]/i)[0] || html;
+
+  // Subtitle can be an <h6> or the first <li> in a list
+  const subtitleMatch = heroHtml.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || heroHtml.match(/<li[^>]*>([\s\S]*?)<\/li>/i);
+  const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  
+  // Find paragraphs that DO NOT contain links for the description
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(heroHtml)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      description = pMatch[1];
+      break;
+    }
+  }
+
+  const btnMatch = heroHtml.match(/<a[^>]*href="(.*?)"[^>]*>([\s\S]*?)<\/a>/i);
+  const imgMatch = heroHtml.match(/<img[^>]*src="(.*?)"/i);
+
+  if (!titleMatch) return null;
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || "DIGITALE"),
+    title: decodeHtmlEntities(titleMatch?.[1] || "LÖSUNGEN"),
+    description: decodeHtmlEntities(description),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2].replace(/<[^>]*>?/gm, '').trim() || ""),
+    imageUrl: cleanImageUrl(imgMatch?.[1]),
+  };
+}
+
+export function extractDigitaleNextStepSectionData(html: string): NextStepSectionData | null {
+  const h2Index = html.search(/<h2[^>]*>/i);
+  if (h2Index === -1) return null;
+
+  const beforeH2 = html.substring(0, h2Index);
+  const afterH2 = html.substring(h2Index);
+
+  const titleMatch = afterH2.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  if (!titleMatch) return null;
+
+  // Subtitle is usually the last <h6> or .section-subtitle before the <h2>
+  let subtitleText = "";
+  const h6Matches = [...beforeH2.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)];
+  const divMatches = [...beforeH2.matchAll(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/gi)];
+  const pMatches = [...beforeH2.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+  const liMatches = [...beforeH2.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)];
+  
+  if (h6Matches.length > 0) {
+    subtitleText = h6Matches[h6Matches.length - 1][1];
+  } else if (divMatches.length > 0) {
+    subtitleText = divMatches[divMatches.length - 1][1];
+  } else if (liMatches.length > 0) {
+    subtitleText = liMatches[liMatches.length - 1][1];
+  } else if (pMatches.length > 0) {
+    subtitleText = pMatches[pMatches.length - 1][1];
+  }
+  
+  // Description is the first paragraph after the <h2>
+  const descMatch = afterH2.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+  
+  // Button is the first link after the <h2>
+  const btnMatch = afterH2.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+  
+  // Image could be right before <h2> (Cover block) or after. 
+  // Check after <h2> first, if not found, get the last image before <h2>.
+  let imgMatch = afterH2.match(/<img[^>]*src=["'](.*?)["']/i);
+  if (!imgMatch) {
+    const beforeImages = [...beforeH2.matchAll(/<img[^>]*src=["'](.*?)["']/gi)];
+    if (beforeImages.length > 0) {
+      imgMatch = beforeImages[beforeImages.length - 1];
+    }
+  }
+
+  const features: string[] = [];
+  const listRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+  let match;
+  while ((match = listRegex.exec(afterH2)) !== null) {
+    features.push(decodeHtmlEntities(match[1].replace(/<[^>]*>?/gm, '').trim()));
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleText?.replace(/<[^>]*>?/gm, '') || "Nächster Schritt"),
+    title: decodeHtmlEntities(titleMatch?.[1]?.replace(/<[^>]*>?/gm, '') || ""),
+    description: decodeHtmlEntities(descMatch?.[1]?.replace(/<[^>]*>?/gm, '') || ""),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '') || ""),
+    features,
+    imageUrl: cleanImageUrl(imgMatch?.[1]),
+  };
+}
+
+export interface AboutSectionData {
+  subtitle: string;
+  titleLine1: string;
+  titleLine2: string;
+  description: string;
+  contentHtml?: string;
+  list1?: string[];
+  motto: string;
+  list2?: string[];
+  btnText: string;
+  btnLink: string;
+  phoneText: string;
+  phoneLink: string;
+  imageUrl: string;
+}
+
+export function extractAboutSectionData(html: string): AboutSectionData | null {
+  let sectionHtml = html;
+  if (html.includes('<!-- ABOUT SECTION -->')) {
+    sectionHtml = html.split('<!-- ABOUT SECTION -->')[1].split('<!--')[0];
+  } else if (html.includes('about-section')) {
+    sectionHtml = html.split('<div class="about-section">')[1] || html;
+  } else {
+    return null;
+  }
+
+  const subtitleMatch = sectionHtml.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || sectionHtml.match(/<div class="section-subtitle">(.*?)<\/div>/i);
+  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || sectionHtml.match(/<div class="section-title">([\s\S]*?)<\/div>/i);
+  
+  const titleText = titleMatch?.[1] || "";
+  let titleLine1 = titleText;
+  let titleLine2 = "";
+  if (titleText.toLowerCase().includes('<br')) {
+      const parts = titleText.split(/<br\s*\/?>/i);
+      titleLine1 = parts[0].replace(/<\/?span>/g, '').trim();
+      titleLine2 = parts[1].trim();
+  } else {
+      const parts = titleText.split('<br');
+      titleLine1 = parts[0].replace(/<\/?span>/g, '').trim();
+  }
+
+  let description = "";
+  let motto = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  let pCount = 0;
+  while ((pMatch = pRegex.exec(sectionHtml)) !== null) {
+    const text = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+    if (!pMatch[1].includes('<a') && text.length > 5) {
+      if (pCount === 0) {
+        description = pMatch[1];
+      } else if (pCount === 1) {
+        motto = pMatch[1];
+        break;
+      }
+      pCount++;
+    }
+  }
+  
+  if (!description) {
+      description = sectionHtml.match(/<p class="description">(.*?)<\/p>/i)?.[1] || "";
+  }
+
+  const h5Match = sectionHtml.match(/<h5[^>]*>([\s\S]*?)<\/h5>/i);
+  if (h5Match) {
+    motto = h5Match[1];
+  }
+  
+  let list1: string[] = [];
+  let list2: string[] = [];
+  const ulRegex = /<ul[^>]*>([\s\S]*?)<\/ul>/gi;
+  const lists = [...sectionHtml.matchAll(ulRegex)];
+  const extractLis = (ulHtml: string) => {
+    return [...ulHtml.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map(m => decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()));
+  };
+  if (lists.length > 0) {
+    list1 = extractLis(lists[0][1]);
+  }
+  if (lists.length > 1) {
+    list2 = extractLis(lists[1][1]);
+  }
+
+  const links = [...sectionHtml.matchAll(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/gi)];
+  let btnLink = "", btnText = "", phoneLink = "", phoneText = "";
+  for (const match of links) {
+      if (match[1].startsWith('tel:')) {
+          phoneLink = match[1];
+          phoneText = match[2].replace(/<[^>]*>?/gm, '').trim();
+      } else if (!btnLink) {
+          btnLink = match[1];
+          btnText = match[2].replace(/<[^>]*>?/gm, '').trim();
+      }
+  }
+
+  const imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/i);
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    titleLine1: decodeHtmlEntities(titleLine1),
+    titleLine2: decodeHtmlEntities(titleLine2),
+    description: decodeHtmlEntities(description),
+    list1: list1,
+    motto: decodeHtmlEntities(motto || ""),
+    list2: list2,
+    btnText: decodeHtmlEntities(btnText),
+    btnLink: btnLink,
+    phoneText: decodeHtmlEntities(phoneText),
+    phoneLink: phoneLink,
+    imageUrl: cleanImageUrl(imgMatch?.[1]),
+  };
+}
+
+export interface ServiceItemData {
+  title: string;
+  description: string;
+  link: string;
+}
+
+export interface ServicesSectionData {
+  subtitle: string;
+  title: string;
+  services: ServiceItemData[];
+  imageUrl?: string;
+}
+
+export function extractServicesSectionData(html: string): ServicesSectionData | null {
+  let sectionHtml = html;
+  if (html.includes('<!-- SERVICES SECTION -->')) {
+    sectionHtml = html.split('<!-- SERVICES SECTION -->')[1].split('<!--')[0];
+  } else if (html.includes('services-section')) {
+    sectionHtml = html.split('<div class="services-section">')[1] || html;
+  } else {
+    return null;
+  }
+
+  let subtitleMatch = sectionHtml.match(/<h[4-6][^>]*>([\s\S]*?)<\/h[4-6]>/i) || sectionHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i);
+  const titleMatch = sectionHtml.match(/<h[1-2][^>]*>([\s\S]*?)<\/h[1-2]>/i) || sectionHtml.match(/<div class="section-title">([\s\S]*?)<\/div>/i);
+
+  const h3Matches = [...sectionHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
+  
+  let subtitleText = subtitleMatch ? subtitleMatch[1].trim() : "";
+
+  // Fallback: If no h4-h6 or section-subtitle (or if it's empty), use the first paragraph after the title
+  if (!subtitleText) {
+    const titleEndIndex = titleMatch && titleMatch.index !== undefined ? titleMatch.index + titleMatch[0].length : 0;
+    const firstServiceIndex = h3Matches.length > 0 && h3Matches[0].index !== undefined
+      ? h3Matches[0].index 
+      : (sectionHtml.indexOf('<div class="service-item">') > -1 ? sectionHtml.indexOf('<div class="service-item">') : sectionHtml.length);
+    
+    const searchArea = sectionHtml.substring(titleEndIndex, firstServiceIndex);
+    const pMatch = searchArea.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    if (pMatch) {
+      subtitleText = pMatch[1].trim();
+    }
+  }
+
+  const services: ServiceItemData[] = [];
+  
+  if (h3Matches.length > 0) {
+      for (let i = 0; i < h3Matches.length; i++) {
+          const startIndex = h3Matches[i].index + h3Matches[i][0].length;
+          const endIndex = i + 1 < h3Matches.length ? h3Matches[i+1].index : sectionHtml.length;
+          const block = sectionHtml.substring(startIndex, endIndex);
+          
+          let desc = "";
+          const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+          let pMatch;
+          while ((pMatch = pRegex.exec(block)) !== null) {
+            if (!pMatch[1].includes('<a')) {
+              desc = pMatch[1];
+              break;
+            }
+          }
+          
+          const aMatch = block.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+          
+          services.push({
+              title: decodeHtmlEntities(h3Matches[i][1]),
+              description: decodeHtmlEntities(desc),
+              link: aMatch ? aMatch[1] : ""
+          });
+      }
+  } else {
+      const itemRegex = /<div class="service-item">[\s\S]*?<h5 class="service-title">(.*?)<\/h5>[\s\S]*?<p class="service-desc">(.*?)<\/p>[\s\S]*?<a class="service-link" href="(.*?)">/g;
+      let match;
+      while ((match = itemRegex.exec(sectionHtml)) !== null) {
+        services.push({
+          title: decodeHtmlEntities(match[1]),
+          description: decodeHtmlEntities(match[2]),
+          link: match[3]
+        });
+      }
+  }
+
+  const imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/i);
+  let imgUrl = cleanImageUrl(imgMatch?.[1]);
+  if (imgUrl) {
+    // Remove WP size suffixes like -300x200 to get the full-res image
+    imgUrl = imgUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleText || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    services,
+    imageUrl: imgUrl
+  };
+}
+
+export interface TeamMemberData {
+  title: string;
+  paragraphs: string[];
+  bio: string;
+  image: string;
+}
+
+export interface TeamSectionData {
+  members: TeamMemberData[];
+}
+
+export function extractTeamSectionData(html: string): TeamSectionData | null {
+  const teamSection = html.split('<div class="team-section">')[1]?.split('MITTEN IN WIEN-MARIAHILF')[0];
+  if (!teamSection) return null;
+
+  const chunks = teamSection.split('<h2 class="elementor-heading-title elementor-size-default">');
+  chunks.shift(); // remove the part before the first h2
+
+  const members = chunks.map(chunk => {
+    const titleMatch = chunk.match(/^(.*?)<\/h2>/);
+    const title = titleMatch ? decodeHtmlEntities(titleMatch[1].trim()) : '';
+
+    const paragraphs = [...chunk.matchAll(/<p[^>]*>(.*?)<\/p>/gi)]
+      .map(m => decodeHtmlEntities(m[1].replace(/<[^>]+>/g, '').trim()))
+      .filter(text => text && !text.includes('Gründer') && !text.includes('Externer Partner') && text !== '&nbsp;');
+
+    const bioMatch = chunk.match(/<p class="member-bio">(.*?)<\/p>/) || chunk.match(/<figcaption[^>]*>(.*?)<\/figcaption>/);
+    const bio = bioMatch ? decodeHtmlEntities(bioMatch[1].replace(/<[^>]+>/g, '').trim()) : '';
+    
+    const imgMatch = chunk.match(/<img[^>]*src=["'](.*?)["']/);
+    let image = cleanImageUrl(imgMatch?.[1]);
+    if (image) {
+      image = image.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+    }
+
+    return { title, paragraphs, bio, image };
+  }).filter(m => m.title); // filter out empty remaining chunks
+
+  return { members };
+}
+
+export interface OfficeSectionData {
+  title: string;
+  paragraphs: string[];
+  imageUrl: string;
+  mapUrl?: string;
+}
+
+export function extractOfficeSectionData(html: string): OfficeSectionData | null {
+  const titleMatch = html.match(/<h2 class="elementor-heading-title elementor-size-default">MITTEN IN WIEN-MARIAHILF ZU HAUSE<\/h2>/);
+  if (!titleMatch) return null;
+
+  const sectionHtml = html.split('<h2 class="elementor-heading-title elementor-size-default">MITTEN IN WIEN-MARIAHILF ZU HAUSE</h2>')[1]?.split('<!-- NEXT STEP SECTION -->')[0] || '';
+
+  const paragraphs = [...sectionHtml.matchAll(/<p[^>]*>(.*?)<\/p>/gi)]
+    .map(m => decodeHtmlEntities(m[1].replace(/<[^>]+>/g, '').trim()))
+    .filter(text => text && !text.includes('<img')).filter(Boolean);
+
+  const imgMatch = sectionHtml.match(/<img[^>]*src=["'](.*?)["']/);
+  let imageUrl = imgMatch ? imgMatch[1] : '';
+  if (imageUrl) {
+    imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+  }
+
+  const mapIframeMatch = sectionHtml.match(/<iframe[^>]*src=["'](.*?)["']/i);
+  const mapUrl = mapIframeMatch ? decodeHtmlEntities(mapIframeMatch[1]) : undefined;
+
+  return {
+    title: "MITTEN IN WIEN-MARIAHILF ZU HAUSE",
+    paragraphs,
+    imageUrl,
+    mapUrl
+  };
+}
+
+
+export interface ProjectItemData {
+  tags: string;
+  title: string;
+  link: string;
+  imageUrl: string;
+}
+
+export interface ProjectsSectionData {
+  subtitle: string;
+  title: string;
+  projects: ProjectItemData[];
+}
+
+export function extractProjectsSectionData(html: string): ProjectsSectionData | null {
+  let sectionHtml = html;
+  if (html.includes('<!-- PROJECTS SECTION -->')) {
+    sectionHtml = html.split('<!-- PROJECTS SECTION -->')[1].split('<!--')[0];
+  } else if (html.includes('projects-section')) {
+    sectionHtml = html.split('<div class="projects-section">')[1] || html;
+  } else {
+    return null;
+  }
+
+  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || sectionHtml.match(/<div class="section-title">(.*?)<\/div>/i);
+  let beforeH2 = sectionHtml;
+  if (titleMatch) {
+      beforeH2 = sectionHtml.substring(0, titleMatch.index);
+  }
+  const subtitleMatch = beforeH2.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || beforeH2.match(/<div class="section-subtitle">(.*?)<\/div>/i);
+
+  const projects: ProjectItemData[] = [];
+  const h3Matches = [...sectionHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
+  
+  if (h3Matches.length > 0) {
+      for (let i = 0; i < h3Matches.length; i++) {
+          const title = h3Matches[i][1];
+          const prevIndex = i > 0 ? (h3Matches[i-1].index! + h3Matches[i-1][0].length) : (titleMatch?.index !== undefined ? titleMatch.index + titleMatch[0].length : 0);
+          const blockBefore = sectionHtml.substring(prevIndex, h3Matches[i].index!);
+          const tagsMatches = [...blockBefore.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)];
+          const tags = tagsMatches.length > 0 ? tagsMatches[tagsMatches.length - 1][1] : "";
+          
+          const startIndex = h3Matches[i].index! + h3Matches[i][0].length;
+          const endIndex = i + 1 < h3Matches.length ? h3Matches[i+1].index! : sectionHtml.length;
+          const blockAfter = sectionHtml.substring(startIndex, endIndex);
+          
+          const aMatch = blockAfter.match(/<a[^>]*href=["'](.*?)["']/i);
+          const imgMatch = blockAfter.match(/<img[^>]*src=["'](.*?)["']/i);
+          
+          projects.push({
+              title: decodeHtmlEntities(title),
+              tags: decodeHtmlEntities(tags),
+              link: aMatch ? aMatch[1] : "",
+              imageUrl: cleanImageUrl(imgMatch?.[1])
+          });
+      }
+  } else {
+      const itemRegex = /<div class="project-item">[\s\S]*?<h6 class="project-tags">(.*?)<\/h6>[\s\S]*?<h3 class="project-title">(.*?)<\/h3>[\s\S]*?<a class="project-link" href="(.*?)">[\s\S]*?<img[^>]*class="project-image"[^>]*src="(.*?)"/g;
+      let match;
+      while ((match = itemRegex.exec(sectionHtml)) !== null) {
+        projects.push({
+          tags: decodeHtmlEntities(match[1]),
+          title: decodeHtmlEntities(match[2]),
+          link: match[3],
+          imageUrl: match[4]
+        });
+      }
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    projects
+  };
+}
+
+export interface PortfolioItemData {
+  imageUrl: string;
+  title: string;
+  link?: string;
+  tags?: string;
+  description?: string;
+}
+
+export interface PortfolioPageData {
+  subtitle: string;
+  title: string;
+  description: string;
+  items: PortfolioItemData[];
+  imageUrl?: string;
+}
+
+export function extractPortfolioPageData(html: string): PortfolioPageData | null {
+  const h2Index = html.search(/<h2[^>]*>/i);
+  if (h2Index === -1) return null;
+
+  const beforeH2 = html.substring(0, h2Index);
+  const afterH2 = html.substring(h2Index);
+
+  const titleMatch = afterH2.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  if (!titleMatch) return null;
+
+  let subtitleText = "";
+  const h6Matches = [...beforeH2.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)];
+  const divMatches = [...beforeH2.matchAll(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/gi)];
+  if (h6Matches.length > 0) {
+    subtitleText = h6Matches[h6Matches.length - 1][1];
+  } else if (divMatches.length > 0) {
+    subtitleText = divMatches[divMatches.length - 1][1];
+  }
+
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(afterH2)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      description = pMatch[1];
+      break;
+    }
+  }
+
+  const items: PortfolioItemData[] = [];
+  
+  // Split by either wrapper class
+  const parts = html.split(/<div class="(?:portfolio-item|item)">/i);
+  parts.shift(); // Remove content before first wrapper
+  
+  parts.forEach(part => {
+    const imgMatch = part.match(/<img[^>]*?src=["'](.*?)["']/i);
+    const itemTitleMatch = part.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
+    const linkMatch = part.match(/<a[^>]*?href=["'](.*?)["']/i);
+    const tagsMatch = part.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i);
+    const descMatch = part.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    
+    // Attempt to extract link if wrapped in a project-link class
+    const aMatch = part.match(/<a[^>]*class="project-link"[^>]*href=["'](.*?)["']/i);
+    
+    if (imgMatch) {
+      let rawTitle = itemTitleMatch ? itemTitleMatch[1] : '';
+      // Clean up title (remove spans, decode entities)
+      rawTitle = decodeHtmlEntities(rawTitle.replace(/<[^>]*>?/gm, '')).trim();
+      
+      // Fallback for missing title if image has name (like shimale)
+      if (!rawTitle) {
+        if (imgMatch[1].toLowerCase().includes('shimale')) {
+          rawTitle = 'Shimale Peleg';
+        }
+      }
+      
+      let finalLink = linkMatch ? linkMatch[1] : (aMatch ? aMatch[1] : undefined);
+      
+      // Override links for specific projects to match Next.js routing
+      const lowerTitle = rawTitle.toLowerCase();
+      if (lowerTitle.includes('mozarthaus')) {
+        finalLink = '/projects/mozarthaus-wien';
+      } else if (lowerTitle.includes('jumpin prater')) {
+        finalLink = '/projects/jumpin-prater';
+      } else if (lowerTitle.includes('panamatura')) {
+        finalLink = '/projects/panamatura';
+      }
+      
+      items.push({
+        imageUrl: imgMatch[1].replace(/-\d+x\d+(?=\.[a-zA-Z]+(?:$|\?))/i, ''),
+        title: rawTitle,
+        link: finalLink,
+        tags: tagsMatch ? decodeHtmlEntities(tagsMatch[1].replace(/<[^>]*>?/gm, '')).trim() : undefined,
+        description: descMatch ? decodeHtmlEntities(descMatch[1].replace(/<[^>]*>?/gm, '')).trim() : undefined
+      });
+    }
+  });
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleText?.replace(/<[^>]*>?/gm, '') || ""),
+    title: decodeHtmlEntities(titleMatch?.[1]?.replace(/<[^>]*>?/gm, '') || ""),
+    description: decodeHtmlEntities(description),
+    items
+  };
+}
+
+export interface TestimonialItemData {
+  text: string;
+  author: string;
+  role: string;
+  imageUrl: string;
+}
+
+export interface TestimonialsSectionData {
+  subtitle: string;
+  title: string;
+  testimonials: TestimonialItemData[];
+}
+
+export function extractTestimonialsSectionData(html: string): TestimonialsSectionData | null {
+  let sectionHtml = html;
+  if (html.includes('<!-- TESTIMONIALS SECTION -->')) {
+    sectionHtml = html.split('<!-- TESTIMONIALS SECTION -->')[1].split('<!--')[0];
+  } else if (html.includes('testimonials-section')) {
+    sectionHtml = html.split('<div class="testimonials-section">')[1] || html;
+  } else if (html.match(/KUNDENSTIMMEN/i)) {
+    const match = html.match(/KUNDENSTIMMEN/i);
+    sectionHtml = html.substring(Math.max(0, match!.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 10);
+    if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
+  } else {
+    return null;
+  }
+
+  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || sectionHtml.match(/<div class="section-title">(.*?)<\/div>/i);
+  let beforeH2 = sectionHtml;
+  if (titleMatch) {
+      beforeH2 = sectionHtml.substring(0, titleMatch.index);
+  }
+  const subtitleMatch = beforeH2.match(/<h6[^>]*>([\s\S]*?)<\/h6>/i) || beforeH2.match(/<div class="section-subtitle">(.*?)<\/div>/i);
+
+  const testimonials: TestimonialItemData[] = [];
+  const afterH2Str = titleMatch && titleMatch.index !== undefined ? sectionHtml.substring(titleMatch.index + titleMatch[0].length) : sectionHtml;
+  const h6Matches = [...afterH2Str.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)]; 
+  
+  if (h6Matches.length > 0) {
+      for (let i = 0; i < h6Matches.length; i++) {
+          const author = h6Matches[i][1];
+          const prevIndex = i > 0 ? h6Matches[i-1].index! + h6Matches[i-1][0].length : 0;
+          const blockBefore = afterH2Str.substring(prevIndex, h6Matches[i].index!);
+          const pMatches = [...blockBefore.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+          let text = "";
+          for (let j = pMatches.length - 1; j >= 0; j--) {
+             if (!pMatches[j][1].includes('<img') && !pMatches[j][1].includes('<a')) {
+                 text = pMatches[j][1];
+                 break;
+             }
+          }
+          
+          const startIndex = h6Matches[i].index! + h6Matches[i][0].length;
+          const endIndex = i + 1 < h6Matches.length ? h6Matches[i+1].index! : afterH2Str.length;
+          const blockAfter = afterH2Str.substring(startIndex, endIndex);
+          
+          const roleMatch = blockAfter.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+          const imgMatch = blockAfter.match(/<img[^>]*src=["'](.*?)["']/i);
+          
+          testimonials.push({
+              author: decodeHtmlEntities(author),
+              text: decodeHtmlEntities(text),
+              role: decodeHtmlEntities(roleMatch ? roleMatch[1] : ""),
+              imageUrl: cleanImageUrl(imgMatch?.[1])
+          });
+      }
+  } else {
+      const itemRegex = /<div class="testimonial-item">[\s\S]*?<p class="testimonial-text">(.*?)<\/p>[\s\S]*?<h6 class="testimonial-author">(.*?)<\/h6>[\s\S]*?<p class="testimonial-role">(.*?)<\/p>[\s\S]*?<img[^>]*class="testimonial-image"[^>]*src="(.*?)"/g;
+      let match;
+      while ((match = itemRegex.exec(sectionHtml)) !== null) {
+        testimonials.push({
+          text: decodeHtmlEntities(match[1]),
+          author: decodeHtmlEntities(match[2]),
+          role: decodeHtmlEntities(match[3]),
+          imageUrl: match[4]
+        });
+      }
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleMatch?.[1] || ""),
+    title: decodeHtmlEntities(titleMatch?.[1] || ""),
+    testimonials
+  };
+}
+
+export interface NextStepSectionData {
+  subtitle: string;
+  title: string;
+  description: string;
+  btnText: string;
+  btnLink: string;
+  features: string[];
+  imageUrl: string;
+}
+
+export function extractNextStepSectionData(html: string): NextStepSectionData | null {
+  let sectionHtml = html;
+  if (html.includes('<!-- NEXT STEP SECTION -->')) {
+    sectionHtml = html.split('<!-- NEXT STEP SECTION -->')[1].split('<!--')[0];
+  } else if (html.includes('next-step-section')) {
+    sectionHtml = html.split('<div class="next-step-section">')[1] || html;
+  } else if (html.match(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch|Budget kann mehr/i)) {
+    const matches = [...html.matchAll(/Wie viele Anfragen|Mehr Anfragen|Erstgespräch|Budget kann mehr/gi)];
+    const lastMatch = matches[matches.length - 1];
+    sectionHtml = html.substring(Math.max(0, lastMatch.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 501);
+    if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
+  } else if (html.match(/Was ist bei Ihnen/i)) {
+    const matches = [...html.matchAll(/Was ist bei Ihnen/gi)];
+    const lastMatch = matches[matches.length - 1];
+    sectionHtml = html.substring(Math.max(0, lastMatch.index! - 500));
+    const nextSectionIdx = sectionHtml.indexOf('<section', 501);
+    if (nextSectionIdx !== -1) sectionHtml = sectionHtml.substring(0, nextSectionIdx);
+  } else {
+    const titleMatch = sectionHtml.match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i) || 
+                     sectionHtml.match(/<div[^>]*class="[^"]*(?:title|heading)[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+  
+    let title = titleMatch?.[1]?.replace(/<[^>]*>?/gm, '').trim() || "";
+    let afterTitle = sectionHtml;
+    if (titleMatch && titleMatch.index !== undefined) {
+        afterTitle = sectionHtml.substring(titleMatch.index + titleMatch[0].length);
+    }
+  
+    let description = "";
+    // Look for the first paragraph or div that contains the description text
+    const pRegex = /<(?:p|div)[^>]*>([\s\S]*?)<\/(?:p|div)>/gi;
+    let pMatch;
+    while ((pMatch = pRegex.exec(afterTitle)) !== null) {
+      const text = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      if (text.length > 20 && !text.includes('<a') && !text.includes('<ul')) {
+        description = text;
+        break;
+      }
+    }
+    return null;
+  }
+
+  // Improve title extraction: Look for the H2 that is closest to the keywords if possible, 
+  // or at least ensure we don't pick up a preceding H2 from another section.
+  const titleMatch = sectionHtml.match(/<h2[^>]*>([\s\S]*?(?:Wie viele Anfragen|Mehr Anfragen|Erstgespräch|Budget kann mehr|Was ist bei Ihnen)[\s\S]*?)<\/h2>/i) || 
+                     sectionHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || 
+                     sectionHtml.match(/<h2 class="section-title">([\s\S]*?)<\/h2>/i);
+  
+  let beforeH2 = sectionHtml;
+  if (titleMatch && titleMatch.index !== undefined) {
+      beforeH2 = sectionHtml.substring(0, titleMatch.index);
+  }
+  
+  let subtitleText = "";
+  const h6Matches = [...beforeH2.matchAll(/<h6[^>]*>([\s\S]*?)<\/h6>/gi)];
+  const divMatches = [...beforeH2.matchAll(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/gi)];
+  const liMatches = [...beforeH2.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)];
+  
+  if (h6Matches.length > 0) {
+    subtitleText = h6Matches[h6Matches.length - 1][1];
+  } else if (divMatches.length > 0) {
+    subtitleText = divMatches[divMatches.length - 1][1];
+  } else if (liMatches.length > 0) {
+    subtitleText = liMatches[liMatches.length - 1][1];
+  }
+
+  const afterH2 = titleMatch && titleMatch.index !== undefined ? sectionHtml.substring(titleMatch.index + titleMatch[0].length) : sectionHtml;
+
+  let description = "";
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let pMatch;
+  while ((pMatch = pRegex.exec(afterH2)) !== null) {
+    if (!pMatch[1].includes('<a')) {
+      description = pMatch[1];
+      break;
+    }
+  }
+  if (!description) {
+    const divMatch = afterH2.match(/<div class="elementor-widget-container">([^<]+)<\/div>/i);
+    if (divMatch && divMatch[1].trim().length > 10) {
+      description = divMatch[1].trim();
+    }
+  }
+  if (!description) {
+      description = afterH2.match(/<p class="description">([\s\S]*?)<\/p>/i)?.[1] || "";
+  }
+  if (!description) {
+      const divHeadingMatch = afterH2.match(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i);
+      if (divHeadingMatch && divHeadingMatch[1].trim().length > 10) {
+          description = divHeadingMatch[1].trim();
+      }
+  }
+
+  const btnMatch = afterH2.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+  let imgMatch = sectionHtml.match(/background-image:url\(['"]?(.*?)['"]?\)/i) || afterH2.match(/<img[^>]*src=["'](.*?)["']/i);
+  if (!imgMatch) {
+    const beforeImages = [...beforeH2.matchAll(/<img[^>]*src=["'](.*?)["']/gi)];
+    if (beforeImages.length > 0) {
+      imgMatch = beforeImages[beforeImages.length - 1];
+    }
+  }
+
+  let imageUrl = imgMatch?.[1] || "";
+  if (imageUrl && !imageUrl.startsWith('url(')) {
+      imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-zA-Z]+$)/, '');
+  } else if (imageUrl.startsWith('url(')) {
+      imageUrl = imageUrl.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+  }
+
+  const features: string[] = [];
+  if (sectionHtml.includes('<li')) {
+      const listRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+      let match;
+      while ((match = listRegex.exec(afterH2)) !== null) {
+        features.push(decodeHtmlEntities(match[1].replace(/<[^>]*>?/gm, '').trim()));
+      }
+  } else {
+      const itemRegex = /<div class="feature-item">(.*?)<\/div>/g;
+      let match;
+      while ((match = itemRegex.exec(sectionHtml)) !== null) {
+        const rawText = match[1].replace(/<[^>]*>?/gm, '').trim();
+        const decoded = decodeHtmlEntities(rawText).trim();
+        if (decoded && decoded !== '') {
+          features.push(decoded);
+        }
+      }
+      
+      if (features.length === 0) {
+        const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+        let m;
+        while ((m = liRegex.exec(sectionHtml)) !== null) {
+          features.push(decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()));
+        }
+      }
+  }
+
+  return {
+    subtitle: decodeHtmlEntities(subtitleText || "Nächster Schritt"),
+    title: decodeHtmlEntities(titleMatch?.[1]?.replace(/<[^>]*>?/gm, '') || "Ihr Budget kann mehr leisten"),
+    description: decodeHtmlEntities(description?.replace(/<[^>]*>?/gm, '') || ""),
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2]?.replace(/<[^>]*>?/gm, '') || ""),
+    features,
+    imageUrl: imageUrl,
+  };
+}
+
+export interface FooterColumnLink {
+  label: string;
+  url: string;
+}
+
+export interface FooterColumnData {
+  title: string;
+  links: FooterColumnLink[];
+}
+
+export interface DigitaleServiceData {
+  title: string;
+  link: string;
+  imageUrl: string;
+}
+
+export function extractDigitaleServicesData(html: string): DigitaleServiceData[] {
+  const parts = html.split(/Kostenloses Erstgespräch vereinbaren.*?<\/p>/i);
+  const servicesHtml = parts.length > 1 ? parts[1].split(/<h2[^>]*>Kein großer Aufwand/i)[0] : "";
+
+  const services: DigitaleServiceData[] = [];
+  
+  // Look for an optional image, followed by a heading/paragraph containing an <a> tag
+  const regex = /(?:<figure[^>]*>[\s\S]*?<img[^>]*src="([^"]+)"[\s\S]*?<\/figure>\s*)?(?:<h3[^>]*>|<p[^>]*>)([\s\S]*?)(?:<\/h3>|<\/p>)/gi;
+
+  let match;
+  while ((match = regex.exec(servicesHtml)) !== null) {
+    const imageUrl = match[1] || "";
+    const innerHtml = match[2];
+    
+    if (!innerHtml.includes('<a')) continue;
+    
+    const linkMatch = innerHtml.match(/href="([^"]+)"/i);
+    const link = linkMatch ? linkMatch[1] : "";
+    
+    let title = innerHtml.replace(/<a[^>]*><\/a>/g, '');
+    title = title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    title = title.replace(/&amp;/g, '&');
+    
+    if (title) {
+      services.push({ title, link, imageUrl });
+    }
+  }
+
+  return services;
+}
+
+export interface FooterSectionData {
+  btnText: string;
+  btnLink: string;
+  column2: FooterColumnData;
+  column3: FooterColumnData;
+  gameTitle: string;
+}
+
+export function extractFooterSectionData(html: string): FooterSectionData | null {
+  if (!html?.includes('footer-section')) return null;
+
+  const btnMatch = html.match(/<a class="footer-btn" href="(.*?)">(.*?)<\/a>/);
+  
+  const col2Title = html.match(/<div class="footer-col-2">[\s\S]*?<h4 class="footer-heading">(.*?)<\/h4>/);
+  const col2Links: FooterColumnLink[] = [];
+  const col2HtmlMatch = html.match(/<div class="footer-col-2">([\s\S]*?)<\/div>/);
+  if (col2HtmlMatch) {
+    const linkRegex = /<a class="footer-link" href="(.*?)">(.*?)<\/a>/g;
+    let match;
+    while ((match = linkRegex.exec(col2HtmlMatch[1])) !== null) {
+      col2Links.push({ url: match[1], label: decodeHtmlEntities(match[2]) });
+    }
+  }
+
+  const col3Title = html.match(/<div class="footer-col-3">[\s\S]*?<h4 class="footer-heading">(.*?)<\/h4>/);
+  const col3Links: FooterColumnLink[] = [];
+  const col3HtmlMatch = html.match(/<div class="footer-col-3">([\s\S]*?)<\/div>/);
+  if (col3HtmlMatch) {
+    const linkRegex = /<a class="footer-link" href="(.*?)">(.*?)<\/a>/g;
+    let match;
+    while ((match = linkRegex.exec(col3HtmlMatch[1])) !== null) {
+      col3Links.push({ url: match[1], label: decodeHtmlEntities(match[2]) });
+    }
+  }
+
+  const gameTitle = html.match(/<div class="footer-col-4">[\s\S]*?<h4 class="footer-heading">(.*?)<\/h4>/);
+
+  return {
+    btnLink: btnMatch?.[1] || "",
+    btnText: decodeHtmlEntities(btnMatch?.[2] || ""),
+    column2: {
+      title: decodeHtmlEntities(col2Title?.[1] || ""),
+      links: col2Links
+    },
+    column3: {
+      title: decodeHtmlEntities(col3Title?.[1] || ""),
+      links: col3Links
+    },
+    gameTitle: decodeHtmlEntities(gameTitle?.[1] || "")
+  };
+}
+
+export async function getFooterData() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "footer" }) {
+        nodes {
+          content
+        }
+      }
+    }
+  `);
+  const html = data?.pages?.nodes?.[0]?.content;
+  if (!html) return null;
+  return extractFooterSectionData(html);
+}
+
+// ---------------------------------------------------------------------------
+// Wir Page specific helpers
+// ---------------------------------------------------------------------------
+
+/** Wir page (WordPress page with slug "wir") */
+export async function getWirPage() {
+  const data = await fetchGraphQL(`
+    query {
+      pages(where: { name: "wir" }) {
+        nodes {
+          id
+          title
+          slug
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          ${SEO_FIELDS}
+        }
+      }
+    }
+  `);
+  return data?.pages?.nodes?.[0] ?? null;
+}
+
+
+
+export interface ContactPageData {
+  imageUrl?: string;
+  subtitle: string;
+  title: string;
+  description: string;
+  emailTitle?: string;
+  email: string;
+  phoneTitle?: string;
+  phone: string;
+  addressTitle?: string;
+  address: string;
+  locationTitle?: string;
+  location?: string;
+  formTitle?: string;
+  mapTitle?: string;
+  mapUrl?: string;
+  submitLabel?: string;
+  fields?: { id: string; label: string; type: string; required?: boolean; placeholder?: string; }[];
+}
+
+export function extractKontaktPageData(html: string): ContactPageData {
+  const fields: { id: string; label: string; type: string; required?: boolean; placeholder?: string; }[] = [];
+  
+  // Extract fields from fluent forms structure or similar
+  const groupRegex = /<div class="ff-form-group">([\s\S]*?)<\/div>/gi;
+  let submitLabel = "Send Message";
+  let match;
+  while ((match = groupRegex.exec(html)) !== null) {
+    const groupHtml = match[1];
+    if (groupHtml.includes('type="submit"')) {
+      const btnMatch = groupHtml.match(/<button[^>]*type=["']submit["'][^>]*>([\s\S]*?)<\/button>/i);
+      if (btnMatch) submitLabel = btnMatch[1].trim();
+      continue;
+    }
+    
+    const labelMatch = groupHtml.match(/<label[^>]*>([\s\S]*?)<\/label>/i);
+    let label = labelMatch ? labelMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+    label = label.replace(/\*$/, '').trim(); 
+    const required = groupHtml.includes('required');
+    
+    let type = "text";
+    let id = label.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    let placeholder = label;
+    
+    if (groupHtml.includes('<textarea')) {
+      type = "textarea";
+      const nameMatch = groupHtml.match(/<textarea[^>]*name=["'](.*?)["']/i);
+      if (nameMatch) id = nameMatch[1];
+      const placeholderMatch = groupHtml.match(/<textarea[^>]*placeholder=["'](.*?)["']/i);
+      if (placeholderMatch) placeholder = placeholderMatch[1];
+    } else {
+      const inputMatch = groupHtml.match(/<input[^>]*type=["'](.*?)["'][^>]*name=["'](.*?)["']/i);
+      if (inputMatch) {
+        type = inputMatch[1];
+        id = inputMatch[2];
+      }
+      const placeholderMatch = groupHtml.match(/<input[^>]*placeholder=["'](.*?)["']/i);
+      if (placeholderMatch) placeholder = placeholderMatch[1];
+    }
+    
+    if (label || placeholder) {
+      fields.push({ id, label: label || placeholder, type, required, placeholder });
+    }
+  }
+
+  // Parse structured data from WP HTML
+  const getMatch = (regex: RegExp) => {
+    const m = html.match(regex);
+    return m ? decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()) : undefined;
+  };
+
+  const subtitle = getMatch(/<div class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/i) || "Kontakt";
+  const title = getMatch(/<h1 class="section-title"[^>]*>([\s\S]*?)<\/h1>/i) || "Lass uns über dein Projekt sprechen";
+  const description = getMatch(/<p class="section-desc"[^>]*>([\s\S]*?)<\/p>/i) || "Wir freuen uns auf deine Nachricht.";
+  
+  const imgMatch = html.match(/<div class="contact-image"[^>]*>[\s\S]*?<img[^>]*src=["'](.*?)["']/i) || html.match(/<img[^>]*src=["'](.*?)["']/i);
+  const imageUrl = cleanImageUrl(imgMatch?.[1]);
+
+  const emailTitle = getMatch(/<div class="contact-method email"[^>]*>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/i) || "e-Mail";
+  const email = getMatch(/<div class="contact-method email"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i) || "office@2h-websolutions.at";
+
+  let locationTitle = getMatch(/<div class="contact-method location"[^>]*>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/i);
+  const address = getMatch(/<div class="contact-method location"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i) || "Wien, Österreich";
+
+  const phoneTitle = getMatch(/<div class="contact-method phone"[^>]*>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/i) || "Einfach anrufen";
+  const phone = getMatch(/<div class="contact-method phone"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i) || "+43 676 450 85 79";
+
+  let formTitle = getMatch(/<div class="contact-form"[^>]*>[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  let mapTitle = undefined;
+
+  // Fallback for unstructured text added via Gutenberg paragraphs at the end of the content
+  const allParagraphs = Array.from(html.matchAll(/<p class="wp-block-paragraph">([\s\S]*?)<\/p>/gi))
+    .map(m => decodeHtmlEntities(m[1].replace(/<[^>]*>?/gm, '').trim()))
+    .filter(Boolean);
+    
+  if (allParagraphs.length >= 2) {
+    if (!formTitle) formTitle = allParagraphs[allParagraphs.length - 2];
+    mapTitle = allParagraphs[allParagraphs.length - 1];
+  }
+  
+  // Set defaults if still empty
+  locationTitle = locationTitle || "Der Standort";
+
+  const mapIframeMatch = html.match(/<iframe[^>]*src=["'](.*?)["']/i);
+  const mapUrl = mapIframeMatch ? decodeHtmlEntities(mapIframeMatch[1]) : undefined;
+
+  return {
+    subtitle,
+    title,
+    description,
+    emailTitle,
+    email,
+    locationTitle,
+    address,
+    location: address,
+    phoneTitle,
+    phone,
+    formTitle,
+    mapTitle,
+    mapUrl,
+    submitLabel,
+    imageUrl,
+    fields: fields.length > 0 ? fields : undefined
+  };
+}
+
+export interface SeoHeroData {
+  subtitle: string;
+  title: string;
+  description: string;
+  ctaText?: string;
+  ctaLink?: string;
+  bulletPoints?: string[];
+  tickerText?: string;
+}
+
+export interface SeoSectionData {
+  type: string;
+  data?: any;
+  html?: string;
+}
+
+
+
+export interface SeoPageData {
+  heroData: SeoHeroData;
+  sections: SeoSectionData[];
+}
+
+export function extractGoogleAdsPageData(html: string): SeoPageData {
+  let content = html;
+  
+  // 1. NORMALIZE SUBTITLES
+  // Convert list items or headings that are meant to be subtitles
+  content = content.replace(/<(?:li|span|p|div)[^>]*>([\s\S]*?)<\/(?:li|span|p|div)>/gi, (match, p1) => {
+    const text = p1.replace(/<br\s*\/?>/gi, '').replace(/<[^>]*>?/gm, '').trim();
+    if (text === "Was Google Ads bringt" || text === "FAQ" || text === "Der Unterschied liegt im Ansatz") {
+       return `<div class="section-subtitle">${text}</div>\n`;
+    }
+    return match;
+  });
+
+  let heroData: SeoHeroData = {} as any;
+  const sections: SeoSectionData[] = [];
+  
+  // Split by H2 OR Subtitle
+  const rawParts = content.split(/(?=<div class="section-subtitle"|<h2)/i);
+  if (rawParts.length > 0) {
+    let heroHtml = rawParts[0];
+    
+    // Normalize hero structures
+    heroHtml = heroHtml.replace(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/gi, (match, p1) => {
+      if (p1.includes('<h1')) return match;
+      return `<p>${p1}</p>`;
+    });
+    
+    const bulletPoints: string[] = [];
+    const iconListRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+    let iconMatch;
+    while ((iconMatch = iconListRegex.exec(heroHtml)) !== null) {
+      const text = iconMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      if (text && text.toLowerCase() !== 'faq' && !text.includes('Google Ads bringt')) {
+        bulletPoints.push(text);
+      }
+    }
+
+    const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    const pMatch = heroHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const btnMatch = heroHtml.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+    
+    heroData = {
+      subtitle: "Service",
+      title: titleMatch ? titleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaText: btnMatch ? btnMatch[2].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaLink: btnMatch ? btnMatch[1].trim() : "",
+      bulletPoints,
+      tickerText: ""
+    };
+  }
+
+  // Helper for image normalization
+  const getFullImageUrl = (html: string) => {
+    const match = html.match(/<img[^>]*src=["'](.*?)["']/i);
+    if (!match) return "";
+    return match[1].replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+  };
+
+  const allImages = [...content.matchAll(/<img[^>]*src=["'](.*?)["']/gi)].map(m => m[1].replace(/-\d+x\d+(?=\.[a-z]+$)/i, ''));
+  // Remove duplicates
+  const uniqueImages = Array.from(new Set(allImages));
+  
+  // We'll track which image index we are on for sections
+  let contentImageIndex = 0;
+  // If the first image is in the hero block, we should skip it for content sections
+  if (uniqueImages.length > 0 && rawParts[0].includes(uniqueImages[0])) {
+    contentImageIndex = 1;
+  }
+
+  // Process blocks
+  const blocks: string[] = [];
+  const partsToProcess = rawParts.slice(1);
+  for (let i = 0; i < partsToProcess.length; i++) {
+    let block = partsToProcess[i];
+    if (block.includes('class="section-subtitle"') && i + 1 < partsToProcess.length && partsToProcess[i+1].includes('<h2')) {
+      blocks.push(block + partsToProcess[i+1]);
+      i++;
+    } else {
+      blocks.push(block);
+    }
+  }
+
+  for (let i = 0; i < blocks.length; i++) {
+    const blockHtml = blocks[i];
+    let hMatch = blockHtml.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
+    const title = hMatch ? hMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+    
+    // Assign image for this section
+    let imageUrl = getFullImageUrl(blockHtml);
+    if (!imageUrl && contentImageIndex < uniqueImages.length) {
+       imageUrl = uniqueImages[contentImageIndex];
+       contentImageIndex++;
+    }
+
+    // Extract text blocks (paragraphs or elementor headings)
+    const pMatches = [...blockHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>|<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/gi)];
+    let desc = "";
+    let motto = "";
+    const validTexts: string[] = [];
+    if (pMatches.length > 0) {
+      for (const m of pMatches) {
+        const text = (m[1] || m[2] || "").replace(/<[^>]*>?/gm, '').trim();
+        if (text && text !== title && !text.includes("Was Google Ads bringt") && !text.includes("FAQ") && text.length > 5) {
+          validTexts.push(text);
+        }
+      }
+    }
+    if (validTexts.length > 0) desc = validTexts[0];
+    if (validTexts.length > 1) motto = validTexts[1];
+
+    let subtitleMatch = blockHtml.match(/<div[^>]*class="section-subtitle"[^>]*>([\s\S]*?)<\/div>/i) || blockHtml.match(/<h[4-6][^>]*>([\s\S]*?)<\/h[4-6]>/i);
+    let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+
+    // Detect BuildingBlocks (cards) section
+    // Look for h3 or elementor-heading-title followed by p or div
+    const cardMatches = [...blockHtml.matchAll(/<(?:h3|div)[^>]*class="[^"]*(?:title|heading)[^"]*"[^>]*>([\s\S]*?)<\/(?:h3|div)>\s*<(?:p|div)[^>]*>([\s\S]*?)<\/(?:p|div)>/gi)];
+    
+    if (cardMatches.length >= 3 && !blockHtml.includes('elementor-icon-list-text') && !/\bfaq\b|\bfragen\b/i.test(title)) {
+       const blocksArr = cardMatches.map(m => ({
+          title: m[1].replace(/<[^>]*>?/gm, '').trim(),
+          description: m[2].replace(/<[^>]*>?/gm, '').trim()
+       })).filter(b => b.title && b.description && b.title !== title && b.title !== subtitle);
+       
+       if (blocksArr.length >= 2) {
+         sections.push({
+           type: "buildingBlocks",
+           data: {
+             subtitle: subtitle,
+             title: title,
+             description: desc,
+             blocks: blocksArr,
+             backgroundImage: imageUrl
+           } as any
+         });
+         continue;
+       }
+    }
+
+    if (/Mehr Anfragen|Erstgespräch|Wie viele Anfragen|Budget kann mehr|next-step-section/i.test(blockHtml)) {
+        // nextStep
+        const stitle = title || "";
+        const sdescMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i) || blockHtml.match(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i);
+        const sdesc = sdescMatch ? sdescMatch[1].replace(/<[^>]*>?/gm, '').trim() : desc;
+        
+        const items: string[] = [];
+        const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+        let m;
+        while ((m = liRegex.exec(blockHtml)) !== null) {
+          items.push(m[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+
+        sections.push({
+          type: "nextStep",
+          data: {
+            title: stitle,
+            description: sdesc,
+            btnText: "Kostenloses Erstgespräch buchen",
+            btnLink: "https://2hws-termin-buchen.vercel.app/",
+            features: items,
+            imageUrl: imageUrl || getFullImageUrl(blockHtml)
+          }
+        });
+        continue;
+    }
+
+    if (/\bfaq\b|\bfragen\b|\bquestions\b/i.test(title) || /\bfaq\b|\bfragen\b|\bquestions\b/i.test(blockHtml) || blockHtml.includes('acc-btn')) {
+        const faqs: { question: string, answer: string }[] = [];
+        
+        // 1. Try accordion patterns (acc-btn and acc-content)
+        const accBtns = [...blockHtml.matchAll(/<div[^>]*class="acc-btn"[^>]*>([\s\S]*?)<\/div>/gi)];
+        const accTexts = [...blockHtml.matchAll(/<div[^>]*class="text"[^>]*>([\s\S]*?)<\/div>/gi)];
+        for (let j = 0; j < accBtns.length && j < accTexts.length; j++) {
+           const q = accBtns[j][1].replace(/<[^>]*>?/gm, '').trim();
+           const a = accTexts[j][1].replace(/<[^>]*>?/gm, '').trim();
+           if (q && a && !faqs.some(f => f.question === q)) faqs.push({ question: q, answer: a });
+        }
+
+        // 2. Try h3/p pairs
+        const h3MatchesFAQ = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+        for (const m of h3MatchesFAQ) {
+           const q = m[1].replace(/<[^>]*>?/gm, '').trim();
+           const a = m[2].replace(/<[^>]*>?/gm, '').trim();
+           if (q && a && !faqs.some(f => f.question === q)) faqs.push({ question: q, answer: a });
+        }
+
+        // 3. Try tag-agnostic question-like blocks
+        const allTextMatches = [...blockHtml.matchAll(/<(?:p|div|h[1-6]|span)[^>]*>([\s\S]*?)<\/(?:p|div|h[1-6]|span)>/gi)];
+        for (let j = 0; j < allTextMatches.length; j++) {
+           const text = allTextMatches[j][1].replace(/<[^>]*>?/gm, '').trim();
+           // If it ends with ? and isn't too long, it's likely a question
+           if (text.endsWith('?') && text.length < 250 && j + 1 < allTextMatches.length) {
+              const q = text;
+              const a = allTextMatches[j+1][1].replace(/<[^>]*>?/gm, '').trim();
+              if (q && a && a.length > 5 && !faqs.some(f => f.question === q)) {
+                 faqs.push({ question: q, answer: a });
+                 j++;
+              }
+           }
+        }
+        
+        sections.push({ 
+          type: "faq", 
+          data: { 
+            subtitle: subtitle || (/\bfaq\b/i.test(blockHtml) ? "FAQ" : ""),
+            title: title || "Häufige Fragen zum SEA", 
+            faqs 
+          } as any 
+        });
+        continue;
+    }
+
+    // Default to AboutSection for image sections
+    const items: string[] = [];
+    
+    // Extract items from ALL uls in the block
+    const uls = [...blockHtml.matchAll(/<ul[^>]*>([\s\S]*?)<\/ul>/gi)];
+    uls.forEach(ul => {
+      const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+      let m;
+      while ((m = liRegex.exec(ul[1])) !== null) {
+        const text = m[1].replace(/<[^>]*>?/gm, '').trim();
+        if (text && text !== "Was Google Ads bringt" && text !== "FAQ") {
+          items.push(text);
+        }
+      }
+    });
+    
+    // Also extract from icon lists
+    const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+    let iconMatch;
+    while ((iconMatch = liRegex.exec(blockHtml)) !== null) {
+      const text = iconMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      if (text && !text.includes("Was Google Ads bringt") && !text.includes("FAQ") && !items.includes(text)) {
+        items.push(text);
+      }
+    }
+
+    // Support H3/P pairs for "bringt" style sections
+    const h3pMatches = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+    if (h3pMatches.length > 0) {
+      h3pMatches.forEach(m => {
+        const h3text = m[1].replace(/<[^>]*>?/gm, '').trim();
+        const ptext = m[2].replace(/<[^>]*>?/gm, '').trim();
+        const combined = `${h3text}: ${ptext}`;
+        if (!items.includes(combined)) items.push(combined);
+      });
+    }
+
+    const isBenefits = subtitle === "Was Google Ads bringt" || title.toLowerCase().includes("bringt");
+
+    sections.push({
+      type: isBenefits ? "benefits" : "about",
+      data: {
+        titleLine1: title,
+        title: title, // Support both formats
+        titleLine2: "",
+        subtitle: subtitle,
+        description: desc,
+        motto: motto,
+        list1: items,
+        benefits: items, // Map to benefits for BenefitsSection
+        imageUrl: isBenefits ? "" : imageUrl,
+        btnText: "Mehr erfahren",
+        btnLink: "#"
+      } as any
+    });
+  }
+
+  return { heroData, sections };
+}
+
+export function extractSeoPageData(html: string): SeoPageData {
+  let content = html;
+  
+  // Also handle cases where a subtitle is erroneously wrapped in an h2 but contains icon-list classes
+  content = content.replace(/<h2[^>]*>\s*<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>\s*<\/h2>/gi, '<div class="section-subtitle">$1</div>\n');
+  if (html.includes('class="next-step-section"')) {
+    const parts = html.split(/<div[^>]*class="next-step-section"[^>]*>/);
+    content = parts[0];
+  }
+
+  // (Removed destructive icon list replacement)
+  let heroData: SeoHeroData = {} as any;
+  const sections: SeoSectionData[] = [];
+  
+  const h2Split = content.split(/(?=<h2)/i);
+  if (h2Split.length > 0) {
+    let heroHtml = h2Split[0];
+    
+    // If heroHtml contains a section-subtitle but NO h1, 
+    // it's likely actually the start of the first content section, not a hero.
+    if (heroHtml.includes('section-subtitle') && !heroHtml.includes('<h1')) {
+       // Keep it in content for later processing
+    } else {
+       content = content.substring(heroHtml.length);
+       // Normalize hero structures
+    }
+    
+    heroHtml = heroHtml.replace(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/gi, (match, p1) => {
+      if (p1.includes('<h1')) return match;
+      return `<p>${p1}</p>`;
+    });
+
+    const bulletPoints: string[] = [];
+    const iconListRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+    let iconMatch;
+    while ((iconMatch = iconListRegex.exec(heroHtml)) !== null) {
+      const text = iconMatch[1].replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim();
+      if (text && text.toLowerCase() !== 'faq') {
+        bulletPoints.push(text);
+      }
+    }
+    
+    // Also extract from standard ul/li lists if present in the hero HTML
+    const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+    let liMatch;
+    while ((liMatch = liRegex.exec(heroHtml)) !== null) {
+      const text = liMatch[1].replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim();
+      if (text && text.toLowerCase() !== 'faq' && !bulletPoints.includes(text)) {
+        bulletPoints.push(text);
+      }
+    }
+
+    const titleMatch = heroHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    const pMatch = heroHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const btnMatch = heroHtml.match(/<a[^>]*href=["'](.*?)["'][^>]*>([\s\S]*?)<\/a>/i);
+    
+    const allParagraphs: string[] = [];
+    const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let pMatchItem;
+    while ((pMatchItem = pRegex.exec(heroHtml)) !== null) {
+      allParagraphs.push(pMatchItem[1]);
+    }
+    const tickerTextRaw = allParagraphs.length >= 3 ? allParagraphs[allParagraphs.length - 1] : "";
+    const tickerText = tickerTextRaw.replace(/<[^>]*>?/gm, '').trim();
+    
+    heroData = {
+      subtitle: "Service",
+      title: titleMatch ? titleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      description: pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaText: btnMatch ? btnMatch[2].replace(/<[^>]*>?/gm, '').trim() : "",
+      ctaLink: btnMatch ? btnMatch[1].trim() : "",
+      bulletPoints,
+      tickerText
+    };
+  }
+
+  const sectionRegex = /(?:<h6[^>]*>[\s\S]*?<\/h6>\s*|<div class="section-subtitle">[\s\S]*?<\/div>\s*)?<h2[\s\S]*?(?=(?:<h6[^>]*>[\s\S]*?<\/h6>\s*|<div class="section-subtitle">[\s\S]*?<\/div>\s*)?<h2|$)/gi;
+  const blocksSplit = content.match(sectionRegex) || [];
+  
+  for (const blockHtml of blocksSplit) {
+    let h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+    let title = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "";
+    
+    if (!/baustein|leistungen|\bfaq\b|\bfragen\b/i.test(title) && (/Mehr Anfragen|Erstgespräch|Wie viele Anfragen/i.test(title) || /Erstgespräch|Wie viele Anfragen/i.test(blockHtml))) {
+        // Next Step / CTA Section
+        const h2Match = blockHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+        const stitle = h2Match ? h2Match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : title;
+        
+        const descMatch = blockHtml.match(/<div[^>]*elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i) || 
+                          blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+        const desc = descMatch ? descMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+        
+        const btnMatch = blockHtml.match(/<a[^>]*class="elementor-button[^>]*>([\s\S]*?<span class="elementor-button-text"[^>]*>([\s\S]*?)<\/span>[\s\S]*?)<\/a>/i) ||
+                         blockHtml.match(/<a[^>]*>([\s\S]*?)<\/a>/i);
+        const btnText = btnMatch ? (btnMatch[2] || btnMatch[1]).replace(/<[^>]*>?/gm, '').trim() : "Kostenloses Erstgespräch buchen";
+        const btnLink = btnMatch ? (blockHtml.match(/href=["'](.*?)["']/i)?.[1] || "#") : "#";
+        
+        const liRegex = /<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/gi;
+        const items: string[] = [];
+        let m;
+        while ((m = liRegex.exec(blockHtml)) !== null) {
+          items.push(m[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+        
+        // Find background image if possible
+        const imgMatch = blockHtml.match(/background-image:url\(['"]?(.*?)['"]?\)/i) || 
+                         blockHtml.match(/src=["'](.*?)["']/i);
+        const imageUrl = cleanImageUrl(imgMatch?.[1]);
+
+        sections.push({
+          type: "nextStep",
+          data: {
+            title: stitle,
+            description: desc,
+            btnText: btnText,
+            btnLink: btnLink,
+            features: items,
+            imageUrl: imageUrl
+          }
+        });
+        continue; // Skip rest of loop for this block
+    }
+
+    const hasImg = /<img/i.test(blockHtml);
+    const h3Matches = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+    
+    const h3Elements = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
+    const h3AnyBlocks = h3Elements.map((h3, i) => {
+        const h3Title = h3[1].replace(/<[^>]*>?/gm, '').trim();
+        const startIdx = h3.index! + h3[0].length;
+        const endIdx = (i + 1 < h3Elements.length) ? h3Elements[i+1].index! : blockHtml.length;
+        const content = blockHtml.slice(startIdx, endIdx);
+        
+        let desc = "";
+        const ulMatch = content.match(/<ul[^>]*>([\s\S]*?)(?:<\/ul>|$)/i);
+        if (ulMatch) {
+             const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+             let m;
+             let html = "";
+             while ((m = liRegex.exec(ulMatch[1])) !== null) {
+                 const text = m[1].replace(/<[^>]*>?/gm, '').trim();
+                 html += `<div class="flex items-start gap-2 mb-2"><svg class="w-4 h-4 mt-1 text-[var(--color-brand-primary,#22c55e)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg><span>${text}</span></div>`;
+             }
+             desc = html;
+        } else {
+             const parts = content.split(/<\/?p[^>]*>|<br\s*\/?>/i)
+                .map(p => p.replace(/<[^>]*>?/gm, '').trim())
+                .filter(p => p.length > 0);
+                
+             desc = parts.join('<br/><br/>');
+        }
+        return { title: h3Title, description: desc };
+    });
+
+    if (/Google setzt/i.test(title)) {
+        const headings = [...blockHtml.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)];
+        const subtitle = headings.length > 0 ? headings[0][1].replace(/<[^>]*>?/gm, '').trim() : "";
+        const motto = headings.length > 1 ? headings[1][1].replace(/<[^>]*>?/gm, '').trim() : "";
+        
+        let description = "";
+        const descMatch = blockHtml.match(/<div[^>]*elementor-heading-title[^>]*data-ninja-font="barlow[^>]*>([\s\S]*?)<\/div>/i);
+        if (descMatch) {
+          description = descMatch[1].replace(/<[^>]*>?/gm, '').trim();
+        } else {
+          const pMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+          if (pMatch) description = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+        }
+        
+        const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+        const listItems: string[] = [];
+        if (ulMatch) {
+          const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+          let match;
+          while ((match = liRegex.exec(ulMatch[1])) !== null) {
+            listItems.push(match[1].replace(/<[^>]*>?/gm, '').replace(/\n[\s\S]*/, '').trim());
+          }
+        }
+        
+        const imgMatch = blockHtml.match(/<img[^>]+src="([^">]+)"/i);
+        let imageUrl = cleanImageUrl(imgMatch?.[1]);
+        imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+        
+        sections.push({
+          type: "googleFeature",
+          data: {
+            title: title,
+            subtitle: subtitle,
+            description: description,
+            motto: motto,
+            items: listItems,
+            imageUrl: imageUrl
+          }
+        });
+    } else if (/\bfaq\b|\bfragen\b/i.test(title)) {
+        let faqs: { question: string, answer: string }[] = [];
+        
+        if (h3Matches.length > 0) {
+           faqs = h3Matches.map(m => ({ question: m[1].replace(/<[^>]*>?/gm, '').trim(), answer: m[2].replace(/<[^>]*>?/gm, '').trim() }));
+        } else {
+            // Check for acc-btn / acc-content structure first
+            const accMatches = [...blockHtml.matchAll(/<div[^>]*class=["'][^"']*acc-btn[^"']*["'][^>]*>([\s\S]*?)<\/div>\s*<div[^>]*class=["'][^"']*acc-content[^"']*["'][^>]*>([\s\S]*?)<\/div>/gi)];
+            if (accMatches.length > 0) {
+              faqs = accMatches.map(m => ({
+                question: m[1].replace(/<[^>]*>?/gm, '').trim(),
+                answer: m[2].replace(/<[^>]*>?/gm, '').trim()
+              }));
+            } else {
+              // Sequential parsing of FAQ parts
+              const pMatches = [...blockHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+              
+              for (let i = 0; i < pMatches.length; i++) {
+                const fullP = pMatches[i][0];
+              const innerHtml = pMatches[i][1];
+              
+              if (innerHtml.includes('?') && innerHtml.includes('<br')) {
+                // Case: Question and Answer in the same paragraph separated by <br>
+                const parts = innerHtml.split(/<br\s*\/?>/i);
+                const q = parts[0].replace(/<[^>]*>?/gm, '').trim();
+                const a = parts.slice(1).join('<br>').replace(/<[^>]*>?/gm, '').trim();
+                if (q && a) faqs.push({ question: q, answer: a });
+              } else if (innerHtml.includes('?')) {
+                // Case: This paragraph is a question. The answer follows.
+                const q = innerHtml.replace(/<[^>]*>?/gm, '').trim();
+                
+                // Collect everything until the next question paragraph
+                let aContent = "";
+                const startIndex = blockHtml.indexOf(fullP) + fullP.length;
+                
+                // Find start of next question
+                let nextQIndex = -1;
+                for (let j = i + 1; j < pMatches.length; j++) {
+                  if (pMatches[j][1].includes('?')) {
+                    nextQIndex = blockHtml.indexOf(pMatches[j][0]);
+                    break;
+                  }
+                }
+                
+                const endIndex = nextQIndex !== -1 ? nextQIndex : blockHtml.length;
+                aContent = blockHtml.substring(startIndex, endIndex);
+                
+                // Extract answer from aContent
+                let a = "";
+                const aMatch = aContent.match(/<div[^>]*class="text"[^>]*>([\s\S]*?)<\/div>/i);
+                if (aMatch) {
+                  a = aMatch[1].replace(/<[^>]*>?/gm, '').trim();
+                } else {
+                  a = aContent.replace(/<script[\s\S]*?<\/script>/gi, '')
+                              .replace(/<style[\s\S]*?<\/style>/gi, '')
+                              .replace(/<[^>]*>?/gm, ' ')
+                              .replace(/\s+/g, ' ')
+                              .trim();
+                  
+                  // Clean up common Elementor footer junk
+                  if (a.includes('Mehr Anfragen')) a = a.split('Mehr Anfragen')[0].trim();
+                }
+                
+                if (q && a) faqs.push({ question: q, answer: a });
+              }
+            }
+          }
+        }
+        
+        sections.push({
+          type: "faq",
+          data: {
+            title: title,
+            subtitle: "FAQ",
+            faqs: faqs.filter(f => f.question)
+          }
+        });
+    } else if (h3Matches.length > 1 || h3AnyBlocks.length > 1) {
+      if (/warum|vorteil/i.test(title)) {
+        sections.push({
+          type: "benefits",
+          data: {
+            title: title,
+            subtitle: "Deine Vorteile",
+            items: h3Matches.map(m => ({ title: m[1].replace(/<[^>]*>?/gm, '').trim(), description: m[2].replace(/<[^>]*>?/gm, '').trim() }))
+          }
+        });
+      } else if (/baustein|leistungen/i.test(title) && h3AnyBlocks.length > 1) {
+         const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i) || 
+                        blockHtml.match(/<div class="elementor-heading-title[^>]*>([\s\S]*?)<\/div>/i);
+         let pDesc = pMatch ? pMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+         if (pDesc === title) {
+           const nextDesc = blockHtml.match(new RegExp(`<div class="elementor-heading-title[^>]*>${title}<\/div>\\s*<\/div>\\s*<div[^>]*>\\s*<div class="elementor-heading-title[^>]*>([\\s\\S]*?)<\/div>`, "i"));
+           if (nextDesc) pDesc = nextDesc[1].replace(/<[^>]*>?/gm, '').trim();
+         }
+         
+         const imgMatch = blockHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+         let imageUrl = cleanImageUrl(imgMatch?.[1]);
+         imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+         
+         const btnMatch = blockHtml.match(/<a[^>]*class="[^"]*elementor-button[^"]*"[^>]*>([\s\S]*?<span class="elementor-button-text"[^>]*>([\s\S]*?)<\/span>[\s\S]*?)<\/a>/i);
+         let btnText = "";
+         let btnLink = "";
+         if (btnMatch) {
+             btnText = (btnMatch[2] || btnMatch[1]).replace(/<[^>]*>?/gm, '').trim();
+             btnLink = blockHtml.match(/href=["'](.*?)["']/i)?.[1] || "#";
+         }
+
+         let subtitleMatch = blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i) || 
+                             blockHtml.match(/<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/i);
+         let subtitle = subtitleMatch ? subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim() : "Service";
+         console.log('BUILDING BLOCKS SUBTITLE:', subtitle);
+
+         sections.push({
+          type: "buildingBlocks",
+          data: {
+            title: title,
+            subtitle: subtitle,
+            description: pDesc,
+            backgroundImage: imageUrl,
+            btnText: btnText,
+            btnLink: btnLink,
+            blocks: h3AnyBlocks
+          }
+        });
+      } else {
+         sections.push({ type: "generic", html: blockHtml });
+      }
+    } else if (/weitere leistungen/i.test(title)) {
+       const imgMatch = blockHtml.match(/<img[^>]*src=["'](.*?)["']/i);
+       const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+       const items: string[] = [];
+       if (ulMatch) {
+         const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+         let match;
+         while ((match = liRegex.exec(ulMatch[1])) !== null) {
+           items.push(match[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim());
+         }
+       }
+       const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i);
+       
+       let imageUrl = cleanImageUrl(imgMatch?.[1]);
+       // Remove WordPress thumbnail sizes like -300x169 to get the full resolution image
+       imageUrl = imageUrl.replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+       
+       sections.push({
+          type: "weitereLeistungen",
+          data: {
+            title: title,
+            description: pMatch ? pMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim() : "",
+            imageUrl: imageUrl,
+            items: items
+          }
+       });
+    } else if (hasImg) {
+      const imgMatch = blockHtml.match(/<img[^>]*src=["'](.*?)["']/i);
+      const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+      const items: string[] = [];
+      if (ulMatch) {
+        const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let match;
+        while ((match = liRegex.exec(ulMatch[1])) !== null) {
+          items.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+      }
+      let pDesc = "";
+      const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+      if (pMatch) {
+        pDesc = pMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      } else {
+        const anyPMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+        if (anyPMatch) pDesc = anyPMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      }
+      
+      const mottoMatch = blockHtml.match(/<h[3456][^>]*>([\s\S]*?)<\/h[3456]>/i) || blockHtml.match(/<p[^>]*><strong>([\s\S]*?)<\/strong><\/p>/i);
+      let motto = mottoMatch ? mottoMatch[1].replace(/<[^>]*>?/gm, '').trim() : "";
+      if (!motto && items.length > 0) motto = "TYPISCHE PROBLEME:";
+
+      sections.push({
+         type: "about",
+         data: {
+           titleLine1: title,
+           titleLine2: "",
+           subtitle: "",
+           description: pDesc,
+           motto: motto,
+           list1: items,
+           list2: [],
+           imageUrl: cleanImageUrl(imgMatch?.[1]),
+           btnText: "",
+           btnLink: "",
+           phoneText: "",
+           phoneLink: ""
+         }
+      });
+    } else if (/<ul/i.test(blockHtml)) {
+      const ulMatch = blockHtml.match(/<ul[^>]*>([\s\S]*?)<\/ul>/i);
+      const items: string[] = [];
+      if (ulMatch) {
+        const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let match;
+        while ((match = liRegex.exec(ulMatch[1])) !== null) {
+          items.push(match[1].replace(/<[^>]*>?/gm, '').trim());
+        }
+      }
+      
+      let pDesc = "";
+      const pMatch = blockHtml.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+      if (pMatch) {
+        pDesc = pMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim();
+      } else {
+        const anyPMatch = blockHtml.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+        if (anyPMatch) pDesc = anyPMatch[1].replace(/<(?!br\s*\/?)[^>]+>/gi, '').trim();
+      }
+
+      let subtitleMatch = blockHtml.match(/<h[56][^>]*>([\s\S]*?)<\/h[56]>/i) || 
+                          blockHtml.match(/<div class="section-subtitle">([\s\S]*?)<\/div>/i) || 
+                          blockHtml.match(/<span[^>]*elementor-icon-list-text[^>]*>([\s\S]*?)<\/span>/i);
+      
+      let subtitle = "";
+      if (!subtitleMatch || !subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim()) {
+        if (pDesc) {
+          // The user likely put the subtitle in the H2 and the title in the <p>
+          subtitle = title;
+          title = pDesc;
+          pDesc = "";
+        } else {
+          subtitle = "⚠️ WP MISSING: Add <div class=\"section-subtitle\"> above h2";
+        }
+      } else {
+        subtitle = subtitleMatch[1].replace(/<[^>]*>?/gm, '').trim();
+      }
+
+      sections.push({
+        type: "benefits",
+        data: {
+          title: title,
+          subtitle: subtitle,
+          description: pDesc,
+          benefits: items
+        }
+      });
+    } else {
+        sections.push({ type: "generic", html: blockHtml });
+    }
+  }
+
+  return { heroData, sections };
+}

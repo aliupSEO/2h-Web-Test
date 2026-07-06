@@ -1,0 +1,214 @@
+"use client";
+
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import SectionBadge from "@/components/ui/SectionBadge";
+import SectionTitle from "@/components/ui/SectionTitle";
+import { TestimonialsSectionData } from "@/lib/graphql";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+
+interface TestimonialsSectionProps {
+  data: TestimonialsSectionData | null;
+}
+
+export default function TestimonialsSection({ data }: TestimonialsSectionProps) {
+  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  // Swipe / Drag state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) setItemsPerPage(1);
+      else if (window.innerWidth < 1024) setItemsPerPage(2);
+      else setItemsPerPage(3);
+    };
+    
+    // Initial check
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (!data || !data.testimonials || data.testimonials.length === 0) return null;
+
+  const totalPages = Math.ceil(data.testimonials.length / itemsPerPage);
+
+  // Group testimonials into pages
+  const pages = [];
+  for (let i = 0; i < data.testimonials.length; i += itemsPerPage) {
+    pages.push(data.testimonials.slice(i, i + itemsPerPage));
+  }
+
+  // Ensure current page is valid when resizing changes total pages
+  if (currentPage >= totalPages && totalPages > 0) {
+    setCurrentPage(totalPages - 1);
+  }
+
+  // Swipe / Drag Handlers
+  const minSwipeDistance = 50;
+
+  const onDragStart = (e: React.TouchEvent | React.MouseEvent) => {
+    setTouchEnd(null);
+    setIsDragging(true);
+    if ('touches' in e) {
+      setTouchStart(e.targetTouches[0].clientX);
+    } else {
+      setTouchStart((e as React.MouseEvent).clientX);
+    }
+  };
+
+  const onDragMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDragging) return;
+    if ('touches' in e) {
+      setTouchEnd(e.targetTouches[0].clientX);
+    } else {
+      setTouchEnd((e as React.MouseEvent).clientX);
+    }
+  };
+
+  const onDragEnd = () => {
+    setIsDragging(false);
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && currentPage < totalPages - 1) {
+      setCurrentPage(prev => prev + 1);
+    }
+    if (isRightSwipe && currentPage > 0) {
+      setCurrentPage(prev => prev - 1);
+    }
+    
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  return (
+    <section 
+      className="py-24 overflow-hidden" 
+      id="testimonials"
+      style={{ background: "var(--color-bg-primary, #F8FAFC)" }}
+    >
+      <ScrollReveal className="flex flex-col items-center text-center mb-8 px-6 md:px-12 lg:px-24">
+        <SectionBadge label={data.subtitle} variant="light" />
+        <SectionTitle text={data.title} variant="light" as="h2" />
+      </ScrollReveal>
+
+      {/* Carousel Wrapper */}
+      <div 
+        className="relative w-full max-w-7xl mx-auto overflow-hidden cursor-grab active:cursor-grabbing"
+        onTouchStart={onDragStart}
+        onTouchMove={onDragMove}
+        onTouchEnd={onDragEnd}
+        onMouseDown={onDragStart}
+        onMouseMove={onDragMove}
+        onMouseUp={onDragEnd}
+        onMouseLeave={() => {
+          if (isDragging) onDragEnd();
+        }}
+      >
+        <div 
+          className="flex transition-transform duration-700 ease-in-out w-full select-none"
+          style={{ transform: `translateX(-${currentPage * 100}%)` }}
+        >
+          {pages.map((page, pageIndex) => (
+            <div key={pageIndex} className="w-full shrink-0 px-6 md:px-12 lg:px-24">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-4">
+                {page.map((testimonial, index) => (
+                  <ScrollReveal 
+                    key={index}
+                    delay={((index % 3) + 1) * 100 as any}
+                    className="group relative bg-[#f4f5f5] rounded-[24px] px-8 pt-8 md:px-10 md:pt-10 pb-[140px] h-full min-h-[500px] flex flex-col justify-start"
+                  >
+                    {/* Green Quotes */}
+                    <div className="mb-6">
+                      <svg className="w-10 h-10" style={{ color: "var(--color-brand-primary, #b6ef00)" }} fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                      </svg>
+                    </div>
+                    
+                    {/* Testimonial Text */}
+                    <p 
+                      className="text-[17px] leading-[30px] text-[#727272] font-serif font-normal relative z-10 flex-grow"
+                    >
+                      {testimonial.text}
+                    </p>
+
+                    {/* Author Text (Positioned to the right of the cutout) */}
+                    <div className="absolute bottom-6 left-[96px] right-6 z-10 flex flex-col justify-center">
+                      <h6 className="font-sans font-normal text-[17px] leading-[26px] text-[rgb(16,16,16)]">
+                        {testimonial.author}
+                      </h6>
+                      <p 
+                        className="font-serif font-normal text-[15px] leading-[23px] text-[#727272] mt-1"
+                        suppressHydrationWarning
+                      >
+                        {testimonial.role}
+                      </p>
+                    </div>
+
+                    {/* Bottom Left White Cutout (Smaller proportions to match design) */}
+                    <div 
+                      className="absolute bottom-0 left-0 w-[80px] h-[80px] rounded-tr-[24px] z-0"
+                      style={{ background: "var(--color-bg-primary, #F8FAFC)" }}
+                    >
+                      
+                      {/* Inverse Corner - Top */}
+                      <svg className="absolute bottom-full left-0 w-[16px] h-[16px] pointer-events-none" viewBox="0 0 100 100" fill="currentColor" preserveAspectRatio="none" style={{ color: "var(--color-bg-primary, #F8FAFC)" }}>
+                        <path d="M0 100 V0 C0 55.23 44.77 100 100 100 H0 Z" />
+                      </svg>
+                      
+                      {/* Inverse Corner - Right */}
+                      <svg className="absolute bottom-0 left-full w-[16px] h-[16px] pointer-events-none" viewBox="0 0 100 100" fill="currentColor" preserveAspectRatio="none" style={{ color: "var(--color-bg-primary, #F8FAFC)" }}>
+                        <path d="M0 100 V0 C0 55.23 44.77 100 100 100 H0 Z" />
+                      </svg>
+
+                      {/* Avatar */}
+                      <div 
+                        className="absolute bottom-4 left-4 w-[48px] h-[48px] rounded-full overflow-hidden border-2 shadow-sm"
+                        style={{ borderColor: "var(--color-bg-primary, #F8FAFC)" }}
+                      >
+                        <Image
+                          src={testimonial.imageUrl}
+                          alt={testimonial.author}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Functional Pagination Dots */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index)}
+              className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
+                currentPage === index 
+                  ? "bg-zinc-800" 
+                  : "bg-transparent border border-zinc-400 hover:border-zinc-800"
+              }`}
+              aria-label={`Go to page ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}

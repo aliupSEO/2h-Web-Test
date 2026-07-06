@@ -1,0 +1,330 @@
+@import "tailwindcss";
+
+/* =====================================================
+   BRAND TOKENS — edit these to skin a new project
+   NOTE: These defaults are overridden at runtime by the
+   WordPress Design System Settings plugin when available.
+   See lib/design-system.ts for the injection logic.
+   ===================================================== */
+:root {
+  --background: #0a0a0a;
+  --foreground: #f4f4f5;
+
+  /* ── Brand Colors (defaults) ────────────────────────── */
+  --color-brand-primary:   #22c55e;  /* emerald-500 */
+  --color-brand-secondary: #0a0a0a;  /* near black */
+  --color-brand-accent:    #86efac;  /* emerald-300 */
+
+  /* ── Background Colors (defaults) ───────────────────── */
+  --color-bg-primary:    #0a0a0a;
+  --color-bg-alternate:  #111111;
+  --color-bg-dark:       #000000;
+  --color-footer-bg:     #3a3a3a;
+
+  /* ── Text Colors (defaults) ─────────────────────────── */
+  --color-text-primary:   #f4f4f5;
+  --color-text-secondary: #a1a1aa;
+  --color-text-light:     #ffffff;
+  --color-brand-muted:    #6b7280;
+
+  /* ── Semantic Colors (defaults) ────────────────────── */
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error:   #ef4444;
+  --color-info:    #3b82f6;
+
+  /* ── Typography (defaults) ─────────────────────────── */
+  --body-font-size: 16px;
+  --body-line-height: 1.75;
+  --body-paragraph-spacing: 1em;
+  --link-color: var(--color-brand-primary);
+  --link-hover-color: var(--color-brand-accent);
+  --link-decoration: none;
+
+  /* ── Form Inputs (defaults) ────────────────────────── */
+  --input-bg: #111111;
+  --input-border-color: #1f2937;
+  --input-border-radius: 8px;
+  --input-focus-color: #22c55e;
+  --input-placeholder-color: #6b7280;
+
+  /* ── Shadows (defaults) ────────────────────────────── */
+  --shadow-small: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-medium: 0 4px 6px rgba(0,0,0,0.3);
+  --shadow-large: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+@theme inline {
+  /* Typography */
+  --font-sans: var(--font-family-primary, system-ui, sans-serif);
+  --font-serif: var(--font-family-secondary, system-ui, sans-serif);
+
+  /* Surface — use CSS vars so WP Design System can override */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Brand — mapped from CSS vars for Tailwind utility access */
+  --color-brand-green:       var(--color-brand-primary);
+  --color-brand-green-light: var(--color-brand-accent);
+  --color-brand-green-dark:  #16a34a;
+  --color-brand-dark:        var(--color-bg-primary);
+  --color-brand-card:        var(--color-bg-alternate);
+  --color-brand-border:      var(--input-border-color);
+  --color-brand-muted:       var(--color-brand-muted);
+
+  /* Direct color tokens for Tailwind classes */
+  --color-bg-primary:    var(--color-bg-primary);
+  --color-bg-alternate:  var(--color-bg-alternate);
+  --color-text-primary:  var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-light:    var(--color-text-light);
+  --color-brand-primary: var(--color-brand-primary);
+}
+
+/* =====================================================
+   BUTTON VARIANTS — Managed by Design System settings
+   These @utility classes use CSS variables set by the
+   WordPress Design System Settings plugin. When the plugin
+   is installed, button styles are fully configurable from WP.
+   ===================================================== */
+@utility btn-primary {
+  background-color: var(--btn-primary-bg, var(--color-brand-primary)) !important;
+  color: var(--btn-primary-text, #000000) !important;
+  border: var(--btn-primary-border-width, 0px) solid var(--btn-primary-border-color, transparent) !important;
+  border-radius: var(--btn-primary-border-radius, 9999px) !important;
+  padding: var(--btn-primary-padding-y, 10px) var(--btn-primary-padding-x, 24px) !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  transition: all 0.3s ease !important;
+
+  &:hover {
+    background-color: var(--btn-primary-hover-bg, var(--color-brand-accent)) !important;
+    color: var(--btn-primary-hover-text, #000000) !important;
+    border-color: var(--btn-primary-hover-border, transparent) !important;
+  }
+}
+
+@utility btn-secondary {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  color: var(--btn-secondary-text, var(--color-text-primary)) !important;
+  border: var(--btn-secondary-border-width, 1px) solid var(--btn-secondary-border-color, var(--color-brand-border)) !important;
+  border-radius: var(--btn-secondary-border-radius, 9999px) !important;
+  padding: var(--btn-secondary-padding-y, 10px) var(--btn-secondary-padding-x, 24px) !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  transition: all 0.3s ease !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+
+  &:hover {
+    background-color: var(--btn-secondary-hover-bg, var(--color-brand-primary)) !important;
+    color: var(--btn-secondary-hover-text, #000000) !important;
+    border-color: var(--btn-secondary-hover-border, var(--color-brand-primary)) !important;
+  }
+}
+
+@utility btn-outline {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  color: var(--btn-outline-text, var(--color-text-primary)) !important;
+  border: var(--btn-outline-border-width, 1px) solid var(--btn-outline-border-color, var(--color-brand-primary)) !important;
+  border-radius: var(--btn-outline-border-radius, 9999px) !important;
+  padding: var(--btn-outline-padding-y, 10px) var(--btn-outline-padding-x, 24px) !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  transition: all 0.3s ease !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+
+  &:hover {
+    background-color: var(--btn-outline-hover-bg, var(--color-brand-primary)) !important;
+    color: var(--btn-outline-hover-text, #000000) !important;
+    border-color: var(--btn-outline-hover-border, var(--color-brand-primary)) !important;
+  }
+}
+
+@utility btn-text-only {
+  background-color: var(--btn-text-only-bg, transparent) !important;
+  color: var(--btn-text-only-text, var(--color-brand-primary)) !important;
+  border: var(--btn-text-only-border-width, 0px) solid var(--btn-text-only-border-color, transparent) !important;
+  border-radius: var(--btn-text-only-border-radius, 0px) !important;
+  padding: var(--btn-text-only-padding-y, 0px) var(--btn-text-only-padding-x, 0px) !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  transition: all 0.3s ease !important;
+
+  &:hover {
+    background-color: var(--btn-text-only-hover-bg, transparent) !important;
+    color: var(--btn-text-only-hover-text, var(--color-brand-accent)) !important;
+    border-color: var(--btn-text-only-hover-border, transparent) !important;
+  }
+}
+
+/* =====================================================
+   BASE RESETS
+   ===================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--body-font-size);
+  line-height: var(--body-line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =====================================================
+   WORDPRESS CONTENT — prose styles for dangerouslySetInnerHTML
+   These apply to raw WP page content rendered in pages.
+   ===================================================== */
+.wp-content {
+  line-height: 1.75;
+  color: var(--foreground);
+}
+.wp-content h1,
+.wp-content h2,
+.wp-content h3,
+.wp-content h4 {
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: var(--color-text-primary);
+}
+.wp-content p {
+  margin-bottom: var(--body-paragraph-spacing);
+}
+.wp-content a {
+  color: var(--link-color);
+  text-decoration: var(--link-decoration);
+}
+.wp-content a:hover {
+  color: var(--link-hover-color);
+}
+.wp-content ul,
+.wp-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+.wp-content li {
+  margin-bottom: 0.25em;
+}
+.wp-content img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* =====================================================
+   ANIMATIONS — reusable hero / section entrance effects
+   ===================================================== */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes popUp {
+  0% { opacity: 0; transform: scale(0.8); }
+  70% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-pop-up {
+  animation: popUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes fadeSlideLeftBlur {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0px);
+  }
+}
+
+.animate-fade-slide-left-blur {
+  animation: fadeSlideLeftBlur 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1.2s ease both;
+}
+
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+.animation-delay-500 { animation-delay: 0.5s; }
+.animation-delay-600 { animation-delay: 0.6s; }
+.animation-delay-700 { animation-delay: 0.7s; }
+.animation-delay-800 { animation-delay: 0.8s; }
+.animation-delay-900 { animation-delay: 0.9s; }
+.animation-delay-1000 { animation-delay: 1.0s; }
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+}
+
+.animate-breathe {
+  animation: breathe 8s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes reveal-width {
+  0% { max-width: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  100% { max-width: 100%; opacity: 1; }
+}
+
+.animate-reveal-width {
+  animation: reveal-width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  max-width: 0%;
+  opacity: 0;
+  /* Delay heavily so the line draws AFTER the text has completely faded in */
+  animation-delay: 1.2s;
+}

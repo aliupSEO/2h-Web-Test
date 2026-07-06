@@ -1,0 +1,94 @@
+import type { Metadata } from "next";
+import { getDesignSystemSettings, getDesignSystemCSS } from "@/lib/design-system";
+import "./globals.css";
+
+/**
+ * AGENT RULES:
+ * - Do NOT add "use client" to this file — it breaks streaming and metadata.
+ * - Font is Inter — do not import other fonts here without also updating globals.css.
+ * - Update the metadata defaults below for each new project.
+ * - Design system CSS is fetched from WordPress and injected as a <style> tag.
+ *   If the Design System Settings plugin is not installed, the hardcoded defaults
+ *   in globals.css are used instead.
+ */
+
+
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dsSettings = await getDesignSystemSettings();
+  
+  return {
+    // ── Edit these per project ──────────────────────────────────────────────
+    title: {
+      default: dsSettings?.branding?.site_title || "Your Site Name",
+      template: `%s | ${dsSettings?.branding?.site_title || "Your Site Name"}`,
+    },
+    description: dsSettings?.branding?.tagline || "Your site description — edit this in app/layout.tsx",
+    icons: {
+      icon: "/favicon.svg",
+      shortcut: "/favicon.svg",
+      apple: "/favicon.svg",
+    },
+    // ── Keep these ─────────────────────────────────────────────────────────
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+    },
+  };
+}
+
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  // Fetch design system tokens from WordPress (cached 60s)
+  // Falls back to globals.css defaults if plugin not installed
+  const dsSettings = await getDesignSystemSettings();
+  const dsCSS = dsSettings ? getDesignSystemCSS(dsSettings) : "";
+
+  // Extract font names to build Google Fonts URL dynamically
+  let googleFontsUrl = "";
+  if (dsSettings) {
+    const primary = dsSettings.typography.font_primary.split(',')[0].replace(/['"]/g, '').trim();
+    const secondary = dsSettings.typography.font_secondary.split(',')[0].replace(/['"]/g, '').trim();
+    
+    // Build Google Fonts URL with both fonts
+    const fonts = new Set([primary, secondary].filter(f => f && f.toLowerCase() !== 'system-ui' && f.toLowerCase() !== 'sans-serif' && f.toLowerCase() !== 'serif'));
+    
+    if (fonts.size > 0) {
+      const familyParams = Array.from(fonts).map(font => `family=${font.replace(/ /g, '+')}:wght@300;400;500;600;700;800`).join('&');
+      googleFontsUrl = `https://fonts.googleapis.com/css2?${familyParams}&display=swap`;
+    }
+  }
+
+  return (
+    <html lang="de" translate="no" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {googleFontsUrl && (
+          <link href={googleFontsUrl} rel="stylesheet" />
+        )}
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
+        {/* Design system tokens from WordPress — injected at top of body.
+            CSS custom properties on :root work regardless of <style> placement. */}
+        {dsCSS && (
+          <style
+            id="design-system-tokens"
+            dangerouslySetInnerHTML={{ __html: dsCSS }}
+          />
+        )}
+        <Header />
+        <main className="flex-1 w-full">
+          {children}
+        </main>
+        <Footer />
+      </body>
+    </html>
+  );
+}
+
