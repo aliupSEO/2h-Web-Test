@@ -9,11 +9,16 @@ import { Metadata } from "next";
 import { 
   getAgencyPage, 
   extractAgencyHeroSectionData,
+  extractAgencyServicesData,
+  getProjects,
+  extractProjectsSectionData
 } from "@/lib/graphql";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AgencyHeroSection from "@/components/sections/AgencyHeroSection";
 import AgencyAboutSection from "@/components/sections/AgencyAboutSection";
+import AgencyServicesSection from "@/components/sections/AgencyServicesSection";
+import AgencyProjectsSection from "@/components/sections/AgencyProjectsSection";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getAgencyPage();
@@ -29,6 +34,41 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AgencyPage() {
   const page = await getAgencyPage();
   const heroData = page?.content ? extractAgencyHeroSectionData(page.content) : null;
+  const dbProjects = await getProjects();
+  
+  // Custom parser for the user's uploaded projects at the bottom of the Agency page
+  let pageProjects: any[] = [];
+  let projectsTitle = "";
+  let h2Parts: string[] = [];
+  let projectsPartIndex = -1;
+  
+  if (page?.content) {
+    h2Parts = page.content.split(/(?=<h2[^>]*>)/i).filter((p: string) => p.replace(/<[^>]*>?/gm, '').trim().length > 0);
+    projectsPartIndex = h2Parts.findIndex((part: string) => /<h4[^>]*>/i.test(part));
+    
+    if (projectsPartIndex !== -1) {
+      const projectsSection = h2Parts[projectsPartIndex];
+      const match = projectsSection.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+      if (match && match[1]) {
+        projectsTitle = match[1].replace(/<[^>]*>?/gm, '').trim();
+      }
+      
+      const imgRegex = /<img[^>]*src=["'](.*?)["']/gi;
+      const h4Regex = /<h4[^>]*>([\s\S]*?)<\/h4>/gi;
+      
+      const images = [...projectsSection.matchAll(imgRegex)].map(m => m[1]);
+      const titles = [...projectsSection.matchAll(h4Regex)].map(m => m[1].replace(/<[^>]*>?/gm, '').trim());
+      
+      for (let i = 0; i < images.length; i++) {
+        let title = titles[i] || "";
+        let imageUrl = images[i].replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
+        pageProjects.push({ title, tags: "", link: "", imageUrl });
+      }
+    }
+  }
+  
+  // Use page content if available, otherwise fallback to WP categories
+  const projects = pageProjects.length > 0 ? pageProjects : dbProjects;
 
   // Extract About Section data from WordPress
   let aboutTitle: string | undefined = undefined;
@@ -39,43 +79,45 @@ export default async function AgencyPage() {
   let techStack: string[] = [];
 
   if (page?.content) {
-    const aboutSplit = page.content.split(/Über uns/i);
-    
-    // Extract tech stack from the hero section part (before Über uns)
-    const heroContent = aboutSplit[0];
-    const heroParagraphs = [...heroContent.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
+    // Extract tech stack from the hero section part (before the first h2 after hero)
+    // We assume the first h2 is the Hero title or the hero has h1.
+    // Let's just find the first paragraph-like elements with short uppercase text.
+    const allParagraphs = [...page.content.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
       .map(m => m[1].replace(/<[^>]*>?/gm, '').trim())
       .filter(t => t.length > 0);
       
-    // Find short uppercase words that represent the tech stack
-    techStack = heroParagraphs.filter(p => p.length > 0 && p.length < 25 && p.toUpperCase() === p);
+    techStack = allParagraphs.filter(p => p.length > 0 && p.length < 25 && p.toUpperCase() === p).slice(0, 4);
 
-    if (aboutSplit.length > 1) {
-      aboutTitle = "Über uns"; // Since we matched it
+    // To find the About section dynamically:
+    // With our perfectly consistent layout, About is always block 1!
+    // (Block 0 = Hero, Block 1 = About, Block 2 = Services Title)
+    const aboutIndex = 1;
+    const aboutContentStr = h2Parts[aboutIndex] || "";
+    
+    const h2Match = aboutContentStr.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+    if (h2Match) {
+      aboutTitle = h2Match[1].replace(/<[^>]*>?/gm, '').trim();
+    }
+    
+    // Extract paragraphs for description
+    const aboutParagraphs = [...aboutContentStr.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
+      .map(m => m[1].replace(/<[^>]*>?/gm, '').trim())
+      .filter(t => t.length > 0);
       
-      // Grab everything before the next h2 to scope our search
-      const aboutSectionEnd = aboutSplit[1].search(/<h[2-6]/i);
-      const aboutSectionHtml = aboutSectionEnd !== -1 ? aboutSplit[1].substring(0, aboutSectionEnd) : aboutSplit[1];
-
-      // Find images after 'Über uns'
-      const aboutImages = [...aboutSectionHtml.matchAll(/<img[^>]*src=["'](.*?)["']/gi)].map(m => m[1]);
-      if (aboutImages.length >= 2) {
-        // remove the size suffix like -1024x532 to get full resolution
-        aboutImage1 = aboutImages[0].replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
-        aboutImage2 = aboutImages[1].replace(/-\d+x\d+(?=\.[a-z]+$)/i, '');
-      }
-      
-      // Find all paragraphs in this section
-      const pMatches = [...aboutSectionHtml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
-        .map(m => m[1].replace(/<[^>]*>?/gm, '').trim())
-        .filter(text => text.length > 0);
-        
-      if (pMatches.length > 0) {
-        aboutDesc = pMatches[0];
-      }
-      if (pMatches.length > 1) {
-        aboutBtnText = pMatches[pMatches.length - 1]; // The last paragraph is usually the button text
-      }
+    aboutDesc = aboutParagraphs.join("\n\n");
+    
+    // Extract images
+    const imgRegex = /<img[^>]*src=["'](.*?)["']/gi;
+    const aboutImages = [...aboutContentStr.matchAll(imgRegex)].map(m => m[1].replace(/-\d+x\d+(?=\.[a-z]+$)/i, ''));
+    aboutImage1 = aboutImages[0];
+    aboutImage2 = aboutImages[1];
+    
+    // Extract button if present
+    const btnMatch = aboutContentStr.match(/<a[^>]*class=["'][^"']*wp-block-button__link[^"']*["'][^>]*>([\s\S]*?)<\/a>/i);
+    if (btnMatch) {
+      aboutBtnText = btnMatch[1].replace(/<[^>]*>?/gm, '').trim();
+    } else {
+      aboutBtnText = "";
     }
   }
 
@@ -104,6 +146,12 @@ export default async function AgencyPage() {
         image2={aboutImage2}
         btnText={aboutBtnText}
       />
+
+      {/* Services Section */}
+      <AgencyServicesSection services={extractAgencyServicesData(page?.content || "")} />
+
+      {/* Projects Showcase Section */}
+      <AgencyProjectsSection title={projectsTitle || "Unsere Projekte"} projects={projects} />
 
     </main>
   );

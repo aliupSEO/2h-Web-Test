@@ -283,9 +283,11 @@ interface AboutSectionData {
 ### Content parsing rules
 
 - **Create an `extractXxxData(html: string)` function** for each section that needs structured data from WP HTML.
-- **Use regex or DOM parsing** to extract fields — NEVER hardcode the values.
+- ⛔ **NEVER use hardcoded keywords or text-matching regexes** (e.g. `/Unsere Leistungen|Services/`) to identify sections. This completely breaks the website when the user renames a heading in WordPress.
+- ✅ **Always use structural parsing / array indices** to identify sections. Split the HTML by `<h2>` tags and use absolute index positions based on the WordPress editor block order (e.g., `parts[0]` = Hero, `parts[1]` = About, `parts[2]` = Services Title) or structural fingerprints (e.g., "the section containing `<h4>`"). This ensures 100% text-agnostic editing.
+- **Use regex or DOM parsing** to extract fields *within* a block — NEVER hardcode the values.
 - **Always provide a "WordPress not connected" fallback** — show a clear message asking the user to set up WordPress. Do NOT provide hardcoded content fallbacks.
-- **Parse errors should be surfaced** — if a regex fails to match, log a warning and render an empty/placeholder state, NOT hardcoded text.
+- **Parse errors should be surfaced** — if extraction fails, log a warning and render an empty/placeholder state, NOT hardcoded text.
 
 ### Handling missing WordPress data
 

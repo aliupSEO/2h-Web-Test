@@ -43,7 +43,7 @@ export async function fetchGraphQL(query: string, variables: Record<string, unkn
       method: "POST",
       headers,
       body: JSON.stringify({ query, variables }),
-      next: { revalidate: 1 }, // ISR: Revalidate every 1 second
+      next: { revalidate: 0 }, // Force fresh data during active development // ISR: Revalidate every 1 second
     });
 
     if (!res.ok) {
@@ -408,7 +408,15 @@ export async function getMenuItems() {
 export async function getProjects() {
   const data = await fetchGraphQL(`
     query {
-      posts(where: { categoryName: "projects" }) {
+      projects: posts(first: 100, where: { categoryName: "projects" }) {
+        nodes {
+          title
+          slug
+          excerpt
+          featuredImage { node { sourceUrl } }
+        }
+      }
+      projekte: posts(first: 100, where: { categoryName: "projekte" }) {
         nodes {
           title
           slug
@@ -419,9 +427,14 @@ export async function getProjects() {
     }
   `);
   
-  if (!data?.posts?.nodes) return [];
+  const projectNodes = data?.projects?.nodes || [];
+  const projekteNodes = data?.projekte?.nodes || [];
   
-  return data.posts.nodes.map((post: any) => {
+  // Combine and remove duplicates based on slug
+  const allNodes = [...projectNodes, ...projekteNodes];
+  const uniqueNodes = Array.from(new Map(allNodes.map(item => [item.slug, item])).values());
+  
+  return uniqueNodes.map((post: any) => {
     const slug = post.slug === 'panamatura-de' ? 'panamatura' : post.slug;
     return {
       title: decodeHtmlEntities(post.title),
@@ -2421,4 +2434,68 @@ export function extractSeoPageData(html: string): SeoPageData {
   }
 
   return { heroData, sections };
+}
+
+export interface AgencyServiceItem {
+  id: string;
+  title: string;
+  category?: string;
+  description: string;
+  imageUrl: string;
+}
+
+export function extractAgencyServicesData(html: string): AgencyServiceItem[] {
+  const services: AgencyServiceItem[] = [];
+  
+  if (!html) return services;
+
+  // Split the HTML into blocks, keeping the <h2> tags
+  // Filter out any empty strings that might occur before the first <h2>
+  const h2Parts = html.split(/(?=<h2[^>]*>)/i).filter(p => p.replace(/<[^>]*>?/gm, '').trim().length > 0);
+  
+  // 1. Find Projects Section (has h4 tags)
+  const projectsIndex = h2Parts.findIndex(part => /<h4[^>]*>/i.test(part));
+  
+  if (projectsIndex === -1 || projectsIndex < 3) {
+    return services; // Structure not found
+  }
+
+  // 2. Services Title Block is exactly index 2 
+  // (Index 0 = Hero, Index 1 = About, Index 2 = Services Title)
+  const servicesTitleIndex = 2;
+  const servicesTitleBlock = h2Parts[servicesTitleIndex];
+  
+  const titleMatch = servicesTitleBlock.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  const categoryTitle = titleMatch ? decodeHtmlEntities(titleMatch[1].replace(/<[^>]*>?/gm, '').trim()) : "Services";
+  
+  // 4. Individual services are all the blocks between the Services Title and the Projects section
+  const serviceBlocks = h2Parts.slice(servicesTitleIndex + 1, projectsIndex);
+  
+  serviceBlocks.forEach((block, index) => {
+    const h2m = block.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+    const title = h2m ? decodeHtmlEntities(h2m[1].replace(/<[^>]*>?/gm, '').trim()) : "";
+    
+    // Extract description from the first paragraph
+    const pMatches = [...block.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+    let description = "";
+    if (pMatches.length > 0) {
+      description = decodeHtmlEntities(pMatches[0][1].replace(/<[^>]*>?/gm, '').trim());
+    }
+    
+    // Extract image if any
+    const imgMatch = block.match(/<img[^>]*src=["'](.*?)["']/i);
+    const imageUrl = imgMatch ? cleanImageUrl(imgMatch[1]) : "";
+    
+    if (title) {
+      services.push({
+        id: `service-${index}`,
+        title,
+        description,
+        imageUrl,
+        category: categoryTitle,
+      });
+    }
+  });
+
+  return services;
 }

@@ -25,7 +25,7 @@ export default function AgencyAboutSection({
       <section className="py-20 text-center" style={{ background: "var(--color-bg-primary, #ffffff)" }}>
         <h2 style={{ color: "var(--color-brand-primary, #22c55e)" }} className="text-2xl font-bold mb-4">WordPress Connection Needed</h2>
         <p style={{ color: "var(--color-text-secondary, #a1a1aa)" }}>
-          Please add an "Über uns" section with 2 images in the WordPress page content to display this section.
+          Please add an introductory section (with a heading and 2 images) in the WordPress page content to display this section.
         </p>
       </section>
     );
@@ -37,28 +37,38 @@ export default function AgencyAboutSection({
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Column: Image Collage */}
-          <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex justify-center items-center lg:-translate-x-8 xl:-translate-x-12">
+          <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex justify-center items-center lg:-translate-x-8 xl:-translate-x-12 group cursor-pointer">
 
             {/* Main Background Image */}
-            <ScrollReveal animation="fade-slide-right" className="absolute top-0 left-0 w-[85%] h-[85%] rounded-[2rem] overflow-hidden shadow-2xl z-10 border-4" style={{ borderColor: "var(--color-brand-border, #e5e7eb)" }}>
-              <Image 
-                src={image1} 
-                alt={title || "Image"} 
-                fill 
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
+            <ScrollReveal animation="fade-slide-right" className="absolute top-0 left-0 w-[85%] h-[85%] z-10">
+              <div 
+                className="relative w-full h-full rounded-[2rem] overflow-hidden shadow-2xl border-4 transition-all duration-700 ease-out group-hover:-translate-x-2 group-hover:-translate-y-4 group-hover:-rotate-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)]" 
+                style={{ borderColor: "var(--color-brand-border, #e5e7eb)" }}
+              >
+                <Image 
+                  src={image1} 
+                  alt={title || "Image"} 
+                  fill 
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
             </ScrollReveal>
 
             {/* Overlapping Foreground Image */}
-            <ScrollReveal animation="fade-slide-up" delay={200} className="absolute bottom-[-5%] right-[-5%] w-[75%] h-[75%] rounded-[2rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.3)] z-20 border-4" style={{ borderColor: "var(--color-bg-primary, #ffffff)" }}>
-              <Image 
-                src={image2} 
-                alt={title || "Image"} 
-                fill 
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
+            <ScrollReveal animation="fade-slide-up" delay={200} className="absolute bottom-[-5%] right-[-5%] w-[75%] h-[75%] z-20">
+              <div 
+                className="relative w-full h-full rounded-[2rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-4 transition-all duration-700 ease-out group-hover:translate-x-3 group-hover:translate-y-3 group-hover:rotate-2 group-hover:shadow-[0_40px_80px_rgba(0,0,0,0.4)]" 
+                style={{ borderColor: "var(--color-bg-primary, #ffffff)" }}
+              >
+                <Image 
+                  src={image2} 
+                  alt={title || "Image"} 
+                  fill 
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
             </ScrollReveal>
             
           </div>
