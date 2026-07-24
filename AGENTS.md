@@ -165,9 +165,11 @@ All environment variables are documented in `.env.example`.
 | `NEXT_PUBLIC_WORDPRESS_REST_URL` | ✅ | WordPress base URL for REST API (e.g. `https://yoursite.com`) |
 | `WORDPRESS_API_USERNAME` | optional | WordPress application password username (for auth-protected queries) |
 | `WORDPRESS_API_PASSWORD` | optional | WordPress application password (for auth-protected queries) |
-| `FIREBASE_PROJECT_ID` | optional | Firebase project (contact form fallback) |
-| `FIREBASE_API_KEY` | optional | Firebase API key (contact form fallback) |
-| `FIREBASE_COLLECTION` | optional | Firestore collection name (default: `submissions`) |
+| `FIREBASE_PROJECT_ID` | optional | Shared Forms Firebase project (default: `wordpress-websites-70cd9`) |
+| `FIREBASE_CLIENT_ID` | optional | This site's Firestore client doc id under `clients/` |
+| `FIREBASE_SERVER_SECRET` | optional | Shared secret — must match Cloud Functions `SERVER_SECRET` (server only, never `NEXT_PUBLIC_`) |
+| `FIREBASE_FUNCTIONS_REGION` | optional | Cloud Functions region (default: `europe-west3`) |
+| `FIREBASE_SUBMIT_FUNCTION_URL` | optional | Full override URL for `submitContact` callable |
 
 **Rules:**
 - **Do NOT add hardcoded site URLs anywhere in source.** If you need a URL, add it to `.env.example` and read it from env.
@@ -341,22 +343,25 @@ Use WordPress post categories to organize repeatable content types:
 ### Architecture
 ```
 Client: <ContactForm /> (components/ContactForm.tsx)
-  ↓ POST /api/contact (JSON or x-www-form-urlencoded)
+ ↓ POST /api/contact (JSON or x-www-form-urlencoded)
 Server: app/api/contact/route.ts
-  ↓ 1st try → WordPress REST API (/wp-json/firebase-form/v1/submit)
-  ↓ fallback → Firestore REST API (if WP is unreachable)
+ ↓ 1st try → WordPress REST API (/wp-json/firebase-form/v1/submit)
+ ↓ fallback → submitContact Cloud Function (callable)
+      → clients/{FIREBASE_CLIENT_ID}/contacts/{autoId}
 ```
 
 ### Rules
 - **`ContactForm` is a client component** (`"use client"` at top). Never make it a server component.
-- **Do not bypass `/api/contact`** — never POST directly to WordPress from the client (CORS, keys exposure).
+- **Do not bypass `/api/contact`** — never POST directly to WordPress or Firebase from the client (CORS, secrets exposure).
 - The contact route supports **3 form modes** — don't remove any of them:
-  1. `fields` prop (array of field definitions from WP settings API)
-  2. `formHtml` prop (raw WordPress Fluent Form HTML)
-  3. Fallback hardcoded form (name / email / message)
+ 1. `fields` prop (array of field definitions from WP settings API)
+ 2. `formHtml` prop (raw WordPress Fluent Form HTML)
+ 3. Fallback hardcoded form (name / email / message)
 - **reCAPTCHA** is optional and widget-rendered — do not remove the reCAPTCHA logic even if not used.
 - The WordPress REST submit endpoint URL comes from `NEXT_PUBLIC_WORDPRESS_REST_URL` env var.
 - **Form field labels** should come from WordPress settings API when available.
+- **Firebase fallback** calls the shared `submitContact` callable (region `europe-west3` by default). Required payload fields: `name`, `email`, `message`. Extra fields are forwarded; strip `recaptcha` / `_` internal keys. Soft-delete fields (`isDeleted`, `deletedAt`, `expiresAt`) are owned by the Cloud Function — never write them from the app.
+- **Never expose `FIREBASE_SERVER_SECRET`** via `NEXT_PUBLIC_*`.
 
 ---
 
@@ -790,7 +795,7 @@ If plugins aren't installed:
 - No WPGraphQL → site shows "WordPress Connection Needed"
 - No Design System Settings → site uses hardcoded CSS defaults from `globals.css` (works fine)
 - No RankMath → SEO fields will be null
-- No firebase-form → contact form falls back to Firestore
+- No firebase-form → contact form falls back to `submitContact` Cloud Function
 
 ---
 

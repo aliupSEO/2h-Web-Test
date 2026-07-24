@@ -8,53 +8,106 @@ import { NextResponse } from "next/server";
  * Flow:
  *   1. Parse request body (JSON or x-www-form-urlencoded / Fluent Forms)
  *   2. POST to WordPress REST API → /wp-json/firebase-form/v1/submit
- *   3. If WP is unreachable → fallback: write directly to Firestore via REST
+ *   3. If WP is unreachable → fallback: call submitContact Cloud Function
+ *      → clients/{FIREBASE_CLIENT_ID}/contacts/{autoId}
  *
  * AGENT RULES:
  * - WordPress REST base URL comes from NEXT_PUBLIC_WORDPRESS_REST_URL env var.
- * - Firebase env vars are optional — fallback silently skips if not set.
- * - Never expose Firebase keys on the client side.
- * - Do not change the response shape { success: boolean } — the ContactForm component depends on it.
+ * - Firebase env vars are optional — fallback skips if not set.
+ * - Never expose FIREBASE_SERVER_SECRET (or any Firebase secrets) to the client.
+ * - Do not write soft-delete fields — Cloud Function owns those.
+ * - Do not change the response shape { success: boolean } — ContactForm depends on it.
  */
 
+const INTERNAL_FIELD_KEYS = new Set([
+  "clientId",
+  "serverSecret",
+  "name",
+  "email",
+  "message",
+]);
+
+function isStrippedFieldKey(key: string): boolean {
+  const lower = key.toLowerCase();
+  if (key.startsWith("_")) return true;
+  if (lower.includes("recaptcha")) return true;
+  if (lower === "g-recaptcha-response") return true;
+  return false;
+}
+
 // ---------------------------------------------------------------------------
-// Firestore fallback (used only when WordPress is unreachable)
+// Firebase submitContact fallback (used only when WordPress is unreachable)
 // ---------------------------------------------------------------------------
-async function saveToFirestoreBackup(fields: Record<string, string>) {
+async function saveViaSubmitContact(
+  fields: Record<string, string>
+): Promise<boolean> {
   const projectId = process.env.FIREBASE_PROJECT_ID;
-  const apiKey = process.env.FIREBASE_API_KEY;
-  const collection = process.env.FIREBASE_COLLECTION || "submissions";
+  const clientId = process.env.FIREBASE_CLIENT_ID;
+  const serverSecret = process.env.FIREBASE_SERVER_SECRET;
+  const region = process.env.FIREBASE_FUNCTIONS_REGION || "europe-west3";
+  const functionUrl =
+    process.env.FIREBASE_SUBMIT_FUNCTION_URL ||
+    (projectId
+      ? `https://${region}-${projectId}.cloudfunctions.net/submitContact`
+      : "");
 
-  if (!projectId || !apiKey) {
-    console.warn("Firebase env vars not set — skipping Firestore fallback.");
-    return;
+  if (!projectId || !clientId || !serverSecret || !functionUrl) {
+    console.warn(
+      "Firebase submitContact env vars not set — skipping Cloud Function fallback."
+    );
+    return false;
   }
 
-  const firestoreFields: Record<string, { stringValue: string }> = {};
+  const name = fields.name?.trim();
+  const email = fields.email?.trim();
+  const message = fields.message?.trim();
+
+  if (!name || !email || !message) {
+    console.error(
+      "submitContact requires name, email, and message — missing required fields."
+    );
+    return false;
+  }
+
+  const extras: Record<string, string> = {};
   for (const [key, value] of Object.entries(fields)) {
-    if (value != null) {
-      firestoreFields[key] = { stringValue: String(value) };
-    }
+    if (value == null || value === "") continue;
+    if (isStrippedFieldKey(key)) continue;
+    if (INTERNAL_FIELD_KEYS.has(key)) continue;
+    extras[key] = String(value);
   }
-  firestoreFields["submitted_at"] = { stringValue: new Date().toISOString() };
 
   try {
-    const res = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields: firestoreFields }),
-      }
-    );
+    const res = await fetch(functionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        data: {
+          clientId,
+          serverSecret,
+          name,
+          email,
+          message,
+          ...extras,
+        },
+      }),
+    });
 
-    if (!res.ok) {
-      console.error("Firestore backup failed:", await res.text());
-    } else {
-      console.log("Form submission backed up to Firestore.");
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || data?.error) {
+      console.error("submitContact failed:", data?.error || data || res.status);
+      return false;
     }
+
+    console.log("Form submission saved via submitContact Cloud Function.");
+    return true;
   } catch (err) {
-    console.error("Firestore backup error:", err);
+    console.error("submitContact error:", err);
+    return false;
   }
 }
 
@@ -75,7 +128,13 @@ export async function POST(request: Request) {
 
       for (const [key, value] of rawData.entries()) {
         // Skip internal Fluent Forms metadata keys
-        if (key.startsWith("_") || ["action", "form_id"].includes(key)) continue;
+        if (key.startsWith("_") || key === "action") continue;
+        
+        // Retain form_id
+        if (key === "form_id") {
+            fields["form_id"] = value;
+            continue;
+        }
 
         // Unwrap bracket notation: fields[name][0] → name
         let cleanKey = key;
@@ -97,6 +156,10 @@ export async function POST(request: Request) {
       // JSON format — used by our ContactForm component (modes 1 & 3)
       const body = await request.json();
       fields = { ...body };
+      
+      if (body.form_id) {
+          fields.form_id = body.form_id;
+      }
 
       // Auto-detect common field names for WP DB compatibility
       if (!fields.email) {
@@ -106,6 +169,10 @@ export async function POST(request: Request) {
       if (!fields.name) {
         const k = Object.keys(body).find((k) => /name/i.test(k));
         if (k) fields.name = body[k];
+      }
+      if (!fields.message) {
+        const k = Object.keys(body).find((k) => /message|nachricht|msg/i.test(k));
+        if (k) fields.message = body[k];
       }
     }
 
@@ -137,7 +204,7 @@ export async function POST(request: Request) {
           wpErrorMsg = wpData.message || "WordPress REST API rejected the submission.";
           console.warn("WordPress rejected submission:", wpData);
 
-          // Do not fall through to Firestore for validation/reCAPTCHA errors
+          // Do not fall through to Firebase for validation/reCAPTCHA errors
           const isClientError =
             wpRes.status === 400 ||
             wpRes.status === 403 ||
@@ -156,15 +223,27 @@ export async function POST(request: Request) {
       console.warn(wpErrorMsg);
     }
 
-    // ── 2. Firestore fallback ───────────────────────────────────────────────
+    // ── 2. submitContact Cloud Function fallback ────────────────────────────
     if (!wpSuccess) {
-      console.log("Falling back to Firestore direct write…");
-      await saveToFirestoreBackup(fields);
-      return NextResponse.json({
-        success: true,
-        message: "Saved to Firestore (WordPress sync was bypassed).",
-        warning: wpErrorMsg,
-      });
+      console.log("Falling back to submitContact Cloud Function…");
+      const ok = await saveViaSubmitContact(fields);
+      if (ok) {
+        return NextResponse.json({
+          success: true,
+          message: "Saved via submitContact (WordPress sync was bypassed).",
+          warning: wpErrorMsg,
+        });
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Form submission failed. WordPress and Firebase fallback both unavailable.",
+          warning: wpErrorMsg,
+        },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ success: true });

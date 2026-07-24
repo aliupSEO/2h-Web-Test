@@ -150,7 +150,14 @@ export default function ContactPageSection({ data }: ContactPageSectionProps) {
               >
                 {data.formTitle || "Jetzt eine Nachricht senden"}
               </h2>
-              <ContactForm theme="light" fields={data.fields} submitLabel={data.submitLabel} />
+              <ContactForm
+                theme="light"
+                fields={data.fields}
+                submitLabel={data.submitLabel}
+                recaptchaEnabled={data.recaptchaEnabled}
+                recaptchaSiteKey={data.recaptchaSiteKey}
+                recaptchaType={data.recaptchaType}
+              />
             </div>
 
             {/* Right: Map */}

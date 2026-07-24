@@ -332,7 +332,7 @@ export async function getProjectContentBySlug(slug: string) {
  * Fetches contact form field definitions from the custom firebase-form plugin.
  * Returns null if the plugin isn't installed or the request fails.
  */
-export async function getFormSettings() {
+export async function getFormSettings(formId?: number) {
   const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_REST_URL;
   if (!baseUrl) {
     console.warn("NEXT_PUBLIC_WORDPRESS_REST_URL not set — skipping form settings fetch.");
@@ -340,10 +340,13 @@ export async function getFormSettings() {
   }
 
   try {
-    const res = await fetch(`${baseUrl}/wp-json/firebase-form/v1/settings`, {
+    const params = new URLSearchParams();
+    if (formId && formId > 0) params.set("id", String(formId));
+    params.set("_ts", String(Date.now())); // bust caches so new reCAPTCHA fields/keys appear
+    const res = await fetch(`${baseUrl}/wp-json/firebase-form/v1/settings?${params.toString()}`, {
       method: "GET",
       headers: { Accept: "application/json" },
-      next: { revalidate: 60 }, // form config changes rarely
+      cache: "no-store",
     });
     if (!res.ok) return null;
     return await res.json();
@@ -1590,6 +1593,10 @@ export interface ContactPageData {
   mapUrl?: string;
   submitLabel?: string;
   fields?: { id: string; label: string; type: string; required?: boolean; placeholder?: string; }[];
+  recaptchaEnabled?: boolean;
+  recaptchaSiteKey?: string;
+  recaptchaType?: string;
+  formId?: number;
 }
 
 export function extractKontaktPageData(html: string): ContactPageData {
@@ -1615,6 +1622,23 @@ export function extractKontaktPageData(html: string): ContactPageData {
     let type = "text";
     let id = label.toLowerCase().replace(/[^a-z0-9]/g, '_');
     let placeholder = label;
+
+    // Detect reCAPTCHA blocks from plugin shortcode HTML
+    if (
+      groupHtml.includes("g-recaptcha") ||
+      /recaptcha/i.test(groupHtml) ||
+      /recaptcha/i.test(label) ||
+      (label === "Field Label" && !groupHtml.includes("<input") && !groupHtml.includes("<textarea"))
+    ) {
+      fields.push({
+        id: id || "recaptcha",
+        label: label || "reCAPTCHA",
+        type: "recaptcha",
+        required: true,
+        placeholder: "",
+      });
+      continue;
+    }
     
     if (groupHtml.includes('<textarea')) {
       type = "textarea";
