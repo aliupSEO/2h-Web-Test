@@ -30,11 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (never commit)
 .env*
-!.env.example
 
-# WordPress plugins (kept locally, not committed)
+# Local WordPress plugin builds (never commit)
+/plugin/
 /wordpress-plugins
 
 # vercel
