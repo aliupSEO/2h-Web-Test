@@ -99,17 +99,29 @@ export default async function HomePage() {
       {/* Projects Section */}
       <ProjectsSection 
         data={projectsData} 
-        startIndex={(projectsData?.projects?.findIndex(p => p.title.toLowerCase().includes('panama')) ?? -1) > -1 ? (projectsData?.projects?.findIndex(p => p.title.toLowerCase().includes('panama')) ?? 0) : 0} 
+        startIndex={Math.max(
+          0,
+          projectsData?.projects?.findIndex(
+            (p) => (p.title || "").toLowerCase().includes("panama")
+          ) ?? 0
+        )}
       />
 
       {/* Testimonials Section */}
       <TestimonialsSection data={testimonialsData} />
 
       {/* Next Step Section */}
-      <NextStepSection data={{
-        ...nextStepData!,
-        imageUrl: nextStepData?.imageUrl || page?.featuredImage?.node?.sourceUrl || ""
-      }} />
+      {nextStepData && (
+        <NextStepSection
+          data={{
+            ...nextStepData,
+            imageUrl:
+              nextStepData.imageUrl ||
+              page?.featuredImage?.node?.sourceUrl ||
+              "",
+          }}
+        />
+      )}
 
     </main>
   );

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { getDesignSystemSettings, getDesignSystemCSS } from "@/lib/design-system";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
 /**
@@ -13,11 +15,11 @@ import "./globals.css";
  *   in globals.css are used instead.
  */
 
-
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || "GTM-555JCKVP";
 
 export async function generateMetadata(): Promise<Metadata> {
   const dsSettings = await getDesignSystemSettings();
-  
+
   return {
     // ── Edit these per project ──────────────────────────────────────────────
     title: {
@@ -39,9 +41,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -52,15 +51,30 @@ export default async function RootLayout({
 
   // Extract font names to build Google Fonts URL dynamically
   let googleFontsUrl = "";
-  if (dsSettings) {
-    const primary = dsSettings.typography.font_primary.split(',')[0].replace(/['"]/g, '').trim();
-    const secondary = dsSettings.typography.font_secondary.split(',')[0].replace(/['"]/g, '').trim();
-    
-    // Build Google Fonts URL with both fonts
-    const fonts = new Set([primary, secondary].filter(f => f && f.toLowerCase() !== 'system-ui' && f.toLowerCase() !== 'sans-serif' && f.toLowerCase() !== 'serif'));
-    
+  if (dsSettings?.typography) {
+    const primary = (dsSettings.typography.font_primary || "")
+      .split(",")[0]
+      .replace(/['"]/g, "")
+      .trim();
+    const secondary = (dsSettings.typography.font_secondary || "")
+      .split(",")[0]
+      .replace(/['"]/g, "")
+      .trim();
+
+    const fonts = new Set(
+      [primary, secondary].filter(
+        (f) =>
+          f &&
+          f.toLowerCase() !== "system-ui" &&
+          f.toLowerCase() !== "sans-serif" &&
+          f.toLowerCase() !== "serif"
+      )
+    );
+
     if (fonts.size > 0) {
-      const familyParams = Array.from(fonts).map(font => `family=${font.replace(/ /g, '+')}:wght@300;400;500;600;700;800`).join('&');
+      const familyParams = Array.from(fonts)
+        .map((font) => `family=${font.replace(/ /g, "+")}:wght@300;400;500;600;700;800`)
+        .join("&");
       googleFontsUrl = `https://fonts.googleapis.com/css2?${familyParams}&display=swap`;
     }
   }
@@ -70,39 +84,40 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {googleFontsUrl && (
-          <link href={googleFontsUrl} rel="stylesheet" />
-        )}
+        {googleFontsUrl && <link href={googleFontsUrl} rel="stylesheet" />}
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         {/* Google Tag Manager */}
-        <Script id="google-tag-manager" strategy="beforeInteractive">
+        <Script id="google-tag-manager" strategy="afterInteractive">
           {`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-555JCKVP');
+            })(window,document,'script','dataLayer','${GTM_ID}');
           `}
         </Script>
-        {/* Google Tag Manager (noscript) */}
-        <noscript dangerouslySetInnerHTML={{ __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-555JCKVP" height="0" width="0" style="display:none;visibility:hidden"></iframe>` }} />
-        {/* End Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         {/* Design system tokens from WordPress — injected at top of body.
             CSS custom properties on :root work regardless of <style> placement. */}
-        {dsCSS && (
+        {dsCSS ? (
           <style
             id="design-system-tokens"
             dangerouslySetInnerHTML={{ __html: dsCSS }}
           />
-        )}
+        ) : null}
         <Header />
-        <main className="flex-1 w-full">
-          {children}
-        </main>
+        <main className="flex-1 w-full">{children}</main>
         <Footer />
       </body>
     </html>
   );
 }
-

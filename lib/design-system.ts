@@ -183,129 +183,164 @@ export async function getDesignSystemSettings(): Promise<DesignSystemSettings | 
  * the hardcoded defaults in globals.css.
  */
 export function getDesignSystemCSS(settings: DesignSystemSettings): string {
-  const { colors, typography, ui } = settings;
+  try {
+    const colors = settings?.colors;
+    const typography = settings?.typography;
+    const ui = settings?.ui;
 
-  const lines: string[] = [];
-
-  lines.push(":root {");
-
-  // ── Brand Colors ────────────────────────────────────────────────
-  lines.push("  /* Brand Colors */");
-  lines.push(`  --color-brand-primary: ${colors.brand.primary};`);
-  lines.push(`  --color-brand-secondary: ${colors.brand.secondary};`);
-  lines.push(`  --color-brand-accent: ${colors.brand.accent};`);
-
-  // Map to existing Tailwind tokens for backward compatibility
-  lines.push(`  --color-brand-green: ${colors.brand.primary};`);
-  lines.push(`  --color-brand-dark: ${colors.brand.secondary};`);
-
-  // ── Background Colors ──────────────────────────────────────────
-  lines.push("  /* Background Colors */");
-  lines.push(`  --background: ${colors.backgrounds.base};`);
-  lines.push(`  --color-bg-base: ${colors.backgrounds.base};`);
-  lines.push(`  --color-bg-primary: ${colors.backgrounds.base};`);
-  lines.push(`  --color-bg-alternate: ${colors.backgrounds.alternate};`);
-  lines.push(`  --color-bg-dark: ${colors.backgrounds.dark};`);
-  lines.push(`  --color-brand-card: ${colors.backgrounds.alternate};`);
-
-  // ── Text Colors ────────────────────────────────────────────────
-  lines.push("  /* Text Colors */");
-  lines.push(`  --foreground: ${colors.text.primary};`);
-  lines.push(`  --color-text-primary: ${colors.text.primary};`);
-  lines.push(`  --color-text-secondary: ${colors.text.secondary};`);
-  lines.push(`  --color-text-light: ${colors.text.light};`);
-  lines.push(`  --color-brand-muted: ${colors.text.secondary};`);
-
-  // ── Semantic Colors ────────────────────────────────────────────
-  lines.push("  /* Semantic Colors */");
-  lines.push(`  --color-success: ${colors.semantic.success};`);
-  lines.push(`  --color-warning: ${colors.semantic.warning};`);
-  lines.push(`  --color-error: ${colors.semantic.error};`);
-  lines.push(`  --color-info: ${colors.semantic.info};`);
-
-  // ── Typography ─────────────────────────────────────────────────
-  lines.push("  /* Typography */");
-  lines.push(`  --font-family-primary: ${typography.font_primary};`);
-  lines.push(`  --font-family-secondary: ${typography.font_secondary};`);
-  lines.push(`  --body-font-size: ${typography.body.font_size};`);
-  lines.push(`  --body-line-height: ${typography.body.line_height};`);
-  lines.push(`  --body-paragraph-spacing: ${typography.body.paragraph_spacing};`);
-  lines.push(`  --link-color: ${typography.links.color};`);
-  lines.push(`  --link-hover-color: ${typography.links.hover_color};`);
-  lines.push(`  --link-decoration: ${typography.links.decoration};`);
-
-  // Heading variables
-  const headingLevels = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
-  for (const h of headingLevels) {
-    const hd = typography.headings[h];
-    lines.push(`  /* ${h.toUpperCase()} */`);
-    lines.push(`  --${h}-size-desktop: ${hd.size_desktop};`);
-    lines.push(`  --${h}-size-tablet: ${hd.size_tablet};`);
-    lines.push(`  --${h}-size-mobile: ${hd.size_mobile};`);
-    lines.push(`  --${h}-weight: ${hd.weight};`);
-    lines.push(`  --${h}-line-height: ${hd.line_height};`);
-    lines.push(`  --${h}-letter-spacing: ${hd.letter_spacing};`);
-    lines.push(`  --${h}-text-transform: ${hd.text_transform};`);
-    if (hd.color) {
-      lines.push(`  --${h}-color: ${hd.color};`);
+    // Incomplete API payloads must not crash Server Components in production
+    if (!colors?.brand || !typography || !ui?.buttons || !ui?.forms || !ui?.shadows) {
+      console.warn("Design system settings incomplete — skipping CSS injection.");
+      return "";
     }
+
+    const lines: string[] = [];
+
+    lines.push(":root {");
+
+    // ── Brand Colors ────────────────────────────────────────────────
+    lines.push("  /* Brand Colors */");
+    lines.push(`  --color-brand-primary: ${colors.brand.primary};`);
+    lines.push(`  --color-brand-secondary: ${colors.brand.secondary};`);
+    lines.push(`  --color-brand-accent: ${colors.brand.accent};`);
+
+    // Map to existing Tailwind tokens for backward compatibility
+    lines.push(`  --color-brand-green: ${colors.brand.primary};`);
+    lines.push(`  --color-brand-dark: ${colors.brand.secondary};`);
+
+    // ── Background Colors ──────────────────────────────────────────
+    if (colors.backgrounds) {
+      lines.push("  /* Background Colors */");
+      lines.push(`  --background: ${colors.backgrounds.base};`);
+      lines.push(`  --color-bg-base: ${colors.backgrounds.base};`);
+      lines.push(`  --color-bg-primary: ${colors.backgrounds.base};`);
+      lines.push(`  --color-bg-alternate: ${colors.backgrounds.alternate};`);
+      lines.push(`  --color-bg-dark: ${colors.backgrounds.dark};`);
+      lines.push(`  --color-brand-card: ${colors.backgrounds.alternate};`);
+    }
+
+    // ── Text Colors ────────────────────────────────────────────────
+    if (colors.text) {
+      lines.push("  /* Text Colors */");
+      lines.push(`  --foreground: ${colors.text.primary};`);
+      lines.push(`  --color-text-primary: ${colors.text.primary};`);
+      lines.push(`  --color-text-secondary: ${colors.text.secondary};`);
+      lines.push(`  --color-text-light: ${colors.text.light};`);
+      lines.push(`  --color-brand-muted: ${colors.text.secondary};`);
+    }
+
+    // ── Semantic Colors ────────────────────────────────────────────
+    if (colors.semantic) {
+      lines.push("  /* Semantic Colors */");
+      lines.push(`  --color-success: ${colors.semantic.success};`);
+      lines.push(`  --color-warning: ${colors.semantic.warning};`);
+      lines.push(`  --color-error: ${colors.semantic.error};`);
+      lines.push(`  --color-info: ${colors.semantic.info};`);
+    }
+
+    // ── Typography ─────────────────────────────────────────────────
+    lines.push("  /* Typography */");
+    if (typography.font_primary) {
+      lines.push(`  --font-family-primary: ${typography.font_primary};`);
+    }
+    if (typography.font_secondary) {
+      lines.push(`  --font-family-secondary: ${typography.font_secondary};`);
+    }
+    if (typography.body) {
+      lines.push(`  --body-font-size: ${typography.body.font_size};`);
+      lines.push(`  --body-line-height: ${typography.body.line_height};`);
+      lines.push(`  --body-paragraph-spacing: ${typography.body.paragraph_spacing};`);
+    }
+    if (typography.links) {
+      lines.push(`  --link-color: ${typography.links.color};`);
+      lines.push(`  --link-hover-color: ${typography.links.hover_color};`);
+      lines.push(`  --link-decoration: ${typography.links.decoration};`);
+    }
+
+    // Heading variables
+    const headingLevels = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+    for (const h of headingLevels) {
+      const hd = typography.headings?.[h];
+      if (!hd) continue;
+      lines.push(`  /* ${h.toUpperCase()} */`);
+      lines.push(`  --${h}-size-desktop: ${hd.size_desktop};`);
+      lines.push(`  --${h}-size-tablet: ${hd.size_tablet};`);
+      lines.push(`  --${h}-size-mobile: ${hd.size_mobile};`);
+      lines.push(`  --${h}-weight: ${hd.weight};`);
+      lines.push(`  --${h}-line-height: ${hd.line_height};`);
+      lines.push(`  --${h}-letter-spacing: ${hd.letter_spacing};`);
+      lines.push(`  --${h}-text-transform: ${hd.text_transform};`);
+      if (hd.color) {
+        lines.push(`  --${h}-color: ${hd.color};`);
+      }
+    }
+
+    // ── Button Variants ────────────────────────────────────────────
+    const buttonVariants = ["primary", "secondary", "outline", "text_only"] as const;
+    for (const v of buttonVariants) {
+      const btn = ui.buttons[v];
+      if (!btn) continue;
+      const prefix = `--btn-${v.replace("_", "-")}`;
+      lines.push(`  /* Button: ${v} */`);
+      lines.push(`  ${prefix}-bg: ${btn.bg};`);
+      lines.push(`  ${prefix}-text: ${btn.text};`);
+      lines.push(`  ${prefix}-border-color: ${btn.border_color};`);
+      lines.push(`  ${prefix}-border-width: ${btn.border_width};`);
+      lines.push(`  ${prefix}-border-radius: ${btn.border_radius};`);
+      lines.push(`  ${prefix}-padding-x: ${btn.padding_x};`);
+      lines.push(`  ${prefix}-padding-y: ${btn.padding_y};`);
+      lines.push(`  ${prefix}-hover-bg: ${btn.hover_bg};`);
+      lines.push(`  ${prefix}-hover-text: ${btn.hover_text};`);
+      lines.push(`  ${prefix}-hover-border: ${btn.hover_border};`);
+    }
+
+    // ── Forms ──────────────────────────────────────────────────────
+    lines.push("  /* Form Inputs */");
+    lines.push(`  --input-bg: ${ui.forms.input_bg};`);
+    lines.push(`  --input-border-color: ${ui.forms.border_color};`);
+    lines.push(`  --input-border-radius: ${ui.forms.border_radius};`);
+    lines.push(`  --input-focus-color: ${ui.forms.focus_color};`);
+    lines.push(`  --input-placeholder-color: ${ui.forms.placeholder_color};`);
+    lines.push(`  --color-brand-border: ${ui.forms.border_color};`);
+
+    // ── Shadows ────────────────────────────────────────────────────
+    lines.push("  /* Shadows */");
+    lines.push(`  --shadow-small: ${ui.shadows.small};`);
+    lines.push(`  --shadow-medium: ${ui.shadows.medium};`);
+    lines.push(`  --shadow-large: ${ui.shadows.large};`);
+
+    lines.push("}");
+
+    // ── Responsive heading sizes ───────────────────────────────────
+    if (typography.headings) {
+      lines.push("");
+      lines.push("/* Responsive heading sizes — tablet */");
+      lines.push("@media (max-width: 1024px) {");
+      lines.push("  :root {");
+      for (const h of headingLevels) {
+        if (typography.headings[h]) {
+          lines.push(`    --${h}-size: var(--${h}-size-tablet);`);
+        }
+      }
+      lines.push("  }");
+      lines.push("}");
+
+      lines.push("");
+      lines.push("/* Responsive heading sizes — mobile */");
+      lines.push("@media (max-width: 640px) {");
+      lines.push("  :root {");
+      for (const h of headingLevels) {
+        if (typography.headings[h]) {
+          lines.push(`    --${h}-size: var(--${h}-size-mobile);`);
+        }
+      }
+      lines.push("  }");
+      lines.push("}");
+    }
+
+    return lines.join("\n");
+  } catch (error) {
+    console.error("Failed to generate design system CSS:", error);
+    return "";
   }
-
-  // ── Button Variants ────────────────────────────────────────────
-  const buttonVariants = ["primary", "secondary", "outline", "text_only"] as const;
-  for (const v of buttonVariants) {
-    const btn = ui.buttons[v];
-    const prefix = `--btn-${v.replace("_", "-")}`;
-    lines.push(`  /* Button: ${v} */`);
-    lines.push(`  ${prefix}-bg: ${btn.bg};`);
-    lines.push(`  ${prefix}-text: ${btn.text};`);
-    lines.push(`  ${prefix}-border-color: ${btn.border_color};`);
-    lines.push(`  ${prefix}-border-width: ${btn.border_width};`);
-    lines.push(`  ${prefix}-border-radius: ${btn.border_radius};`);
-    lines.push(`  ${prefix}-padding-x: ${btn.padding_x};`);
-    lines.push(`  ${prefix}-padding-y: ${btn.padding_y};`);
-    lines.push(`  ${prefix}-hover-bg: ${btn.hover_bg};`);
-    lines.push(`  ${prefix}-hover-text: ${btn.hover_text};`);
-    lines.push(`  ${prefix}-hover-border: ${btn.hover_border};`);
-  }
-
-  // ── Forms ──────────────────────────────────────────────────────
-  lines.push("  /* Form Inputs */");
-  lines.push(`  --input-bg: ${ui.forms.input_bg};`);
-  lines.push(`  --input-border-color: ${ui.forms.border_color};`);
-  lines.push(`  --input-border-radius: ${ui.forms.border_radius};`);
-  lines.push(`  --input-focus-color: ${ui.forms.focus_color};`);
-  lines.push(`  --input-placeholder-color: ${ui.forms.placeholder_color};`);
-  lines.push(`  --color-brand-border: ${ui.forms.border_color};`);
-
-  // ── Shadows ────────────────────────────────────────────────────
-  lines.push("  /* Shadows */");
-  lines.push(`  --shadow-small: ${ui.shadows.small};`);
-  lines.push(`  --shadow-medium: ${ui.shadows.medium};`);
-  lines.push(`  --shadow-large: ${ui.shadows.large};`);
-
-  lines.push("}");
-
-  // ── Responsive heading sizes ───────────────────────────────────
-  lines.push("");
-  lines.push("/* Responsive heading sizes — tablet */");
-  lines.push("@media (max-width: 1024px) {");
-  lines.push("  :root {");
-  for (const h of headingLevels) {
-    lines.push(`    --${h}-size: var(--${h}-size-tablet);`);
-  }
-  lines.push("  }");
-  lines.push("}");
-
-  lines.push("");
-  lines.push("/* Responsive heading sizes — mobile */");
-  lines.push("@media (max-width: 640px) {");
-  lines.push("  :root {");
-  for (const h of headingLevels) {
-    lines.push(`    --${h}-size: var(--${h}-size-mobile);`);
-  }
-  lines.push("  }");
-  lines.push("}");
-
-  return lines.join("\n");
 }
