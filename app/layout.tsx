@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { getDesignSystemSettings, getDesignSystemCSS } from "@/lib/design-system";
 import "./globals.css";
 
@@ -74,6 +75,19 @@ export default async function RootLayout({
         )}
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
+        {/* Google Tag Manager */}
+        <Script id="google-tag-manager" strategy="beforeInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-555JCKVP');
+          `}
+        </Script>
+        {/* Google Tag Manager (noscript) */}
+        <noscript dangerouslySetInnerHTML={{ __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-555JCKVP" height="0" width="0" style="display:none;visibility:hidden"></iframe>` }} />
+        {/* End Google Tag Manager (noscript) */}
         {/* Design system tokens from WordPress — injected at top of body.
             CSS custom properties on :root work regardless of <style> placement. */}
         {dsCSS && (
